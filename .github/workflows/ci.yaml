@@ -39,4 +39,4 @@ jobs:
         env:
           STACK_NAME: dynamodb-entity-store-ci
         run: >
-          yarn install && yarn deploy-and-run-integration-tests
+          yarn install && cd examples && yarn install && cd .. && yarn deploy-and-run-integration-tests

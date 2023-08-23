@@ -1,0 +1,13 @@
+{
+  // This file is used at development and testing time. No files are emit'ed when running
+  // tsc, and test files are included in type-checking
+  "extends": "./tsconfig-base.json",
+  "include": [
+    "src/**/*.ts",
+    "test/**/*.ts"
+  ],
+  "compilerOptions": {
+    "noEmit": true,
+    "declaration": false
+  }
+}

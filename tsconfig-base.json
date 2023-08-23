@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  // ** "Base" TS Config. Not intended to be used directly **
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist"],
+  "compilerOptions": {
+    // ** Modules **
+    "target": "es2020",
+    // This is overridden in the ESM build config
+    "module": "commonjs",
+    // This is default for commonjs, but not for ES Modules, so be explicit here
+    "moduleResolution": "node",
+
+    // ** Type Checking **
+    "strict": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+
+    // ** Interop **
+    // Set to false - see https://evertpot.com/universal-commonjs-esm-typescript-packages/
+    "esModuleInterop": false,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+
+    // ** Completeness **
+    "skipLibCheck": true,
+
+    // ** Emit **
+    // In tsconfig.json we set noEmit, and declaration to false, so we only actually generate
+    // files at "build" time
+    "sourceMap": true,
+    "declaration": true
+  }
+}

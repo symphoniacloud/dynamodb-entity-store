@@ -1,0 +1,42 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+# Only allow one run at a time for this workflow
+# See https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#concurrency
+# This workflow will only run once per this workflow name, and per ref (which is the branch or tag)
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+# Required because we are using OIDC
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'yarn'
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.OIDC_ROLE }}
+          aws-region: us-east-1
+
+      - name: Run tests
+        env:
+          STACK_NAME: dynamodb-entity-store-ci
+        run: >
+          yarn install && yarn deploy-and-run-integration-tests

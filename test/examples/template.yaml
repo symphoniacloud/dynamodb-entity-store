@@ -1,0 +1,70 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+
+Outputs:
+  TableName:
+    Value: !Ref TestTable
+
+  CustomTableName:
+    Value: !Ref CustomTable
+
+  FarmTableName:
+    Value: !Ref FarmTable
+
+Resources:
+  TestTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: GSIPK
+          AttributeType: S
+        - AttributeName: GSISK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: "GSI"
+          Projection:
+            ProjectionType: ALL
+          KeySchema:
+          - AttributeName: GSIPK
+            KeyType: HASH
+          - AttributeName: GSISK
+            KeyType: RANGE
+
+  CustomTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: CustomPK
+          AttributeType: S
+        - AttributeName: CustomSK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: CustomPK
+          KeyType: HASH
+        - AttributeName: CustomSK
+          KeyType: RANGE
+
+  FarmTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: Name
+          AttributeType: S
+      KeySchema:
+        - AttributeName: Name
+          KeyType: HASH

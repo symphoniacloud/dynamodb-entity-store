@@ -1,0 +1,26 @@
+{
+  "name": "@symphoniacloud/dynamodb-entity-store-examples",
+  "description": "Examples for @symphoniacloud/dynamodb-entity-store",
+  "license": "MIT",
+  "author": {
+    "email": "mike@symphonia.io",
+    "name": "Mike Roberts",
+    "url": "https://symphonia.io"
+  },
+  "scripts": {
+    "example1": "npx ts-node -T src/example1Sheep.ts",
+    "example2": "npx ts-node -T src/example2Chickens.ts",
+    "example3": "npx ts-node -T src/example3Farms.ts",
+    "local-checks": "yarn tsc"
+  },
+  "dependencies": {
+    "@symphoniacloud/dynamodb-entity-store": "*"
+  },
+  "devDependencies": {
+    "@aws-sdk/types": "3.x",
+    "@types/deep-equal": "1.x",
+    "@types/node": "14.x",
+    "ts-node": "10.x",
+    "typescript": "4.x"
+  }
+}

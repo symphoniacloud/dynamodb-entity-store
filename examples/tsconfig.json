@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "include": ["src/**/*.ts"],
+  "compilerOptions": {
+    "target": "es2020",
+    "module": "commonjs",
+    // ** THIS IS NECESSARY IN NODE 14 BECAUSE DYNAMODB-ENTITY-STORE USES PACKAGE.JSON EXPORTS
+    "moduleResolution": "nodenext",
+
+    // ** Type Checking **
+    "strict": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+
+    // ** Interop **
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+
+    // ** Completeness **
+    "skipLibCheck": true,
+
+    "noEmit": true,
+    "declaration": false
+  }
+}

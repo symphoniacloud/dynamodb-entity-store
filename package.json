@@ -1,0 +1,121 @@
+{
+  "name": "@symphoniacloud/dynamodb-entity-store",
+  "description": "A lightly opinionated DynamoDB library for TypeScript & JavaScript applications",
+  "version": "0.0.4",
+  "license": "MIT",
+  "author": {
+    "email": "mike@symphonia.io",
+    "name": "Mike Roberts",
+    "url": "https://symphonia.io"
+  },
+  "keywords": [
+    "dynamodb"
+  ],
+  "homepage": "https://github.com/symphoniacloud/dynamodb-entity-store",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/symphoniacloud/dynamodb-entity-store.git"
+  },
+  "bugs": {
+    "url": "https://github.com/symphoniacloud/dynamodb-entity-store/issues"
+  },
+  "scripts": {
+    "local-checks": "yarn tsc && yarn lint && yarn unit-tests && cd examples && yarn local-checks",
+    "lint": "eslint --max-warnings=0 --fix-dry-run \"{src,test}/**/*.{js,ts}\"",
+    "unit-tests": "yarn vitest run --dir test/unit",
+    "integration-tests": "yarn vitest run --dir test/integration --config ./test/integration/vitest.config.ts",
+    "all-checks": "yarn local-checks && yarn integration-tests",
+    "format": "prettier --check \"{src,test}/**/*.{js,ts}\"",
+    "deploy": "cd test/examples && aws cloudformation deploy --template-file template.yaml --stack-name \"${STACK_NAME-entity-store-test-stack}\" --no-fail-on-empty-changeset",
+    "deploy-and-run-integration-tests": "yarn local-checks && yarn deploy && yarn integration-tests",
+    "build": "rm -rf dist && yarn tsc -p tsconfig-build-esm.json && yarn tsc -p tsconfig-build-cjs.json && echo '{\"type\": \"module\"}' > dist/esm/package.json && echo '{\"type\": \"commonjs\"}' > dist/cjs/package.json",
+    "prepublishOnly": "yarn build"
+  },
+  "engines": {
+    "node": ">=14.21.0"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "3.x",
+    "@aws-sdk/lib-dynamodb": "3.x",
+    "@aws-sdk/util-dynamodb": "3.x"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-cloudformation": "3.x",
+    "@aws-sdk/types": "3.x",
+    "@types/deep-equal": "1.x",
+    "@types/node": "14.x",
+    "@typescript-eslint/eslint-plugin": "5.x",
+    "@typescript-eslint/parser": "5.x",
+    "deep-equal": "2.x",
+    "eslint": "8.x",
+    "eslint-config-prettier": "8.x",
+    "prettier": "2.x",
+    "ts-node": "10.x",
+    "typescript": "4.x",
+    "vitest": "0.x"
+  },
+  "files": [
+    "package.json",
+    "README.md",
+    "LICENSE",
+    "dist/"
+  ],
+  "exports": {
+    "./dynamoDBInterface": {
+      "import": "./dist/esm/dynamoDBInterface.js",
+      "require": "./dist/cjs/dynamoDBInterface.js"
+    },
+    "./entityStore": {
+      "import": "./dist/esm/entityStore.js",
+      "require": "./dist/cjs/entityStore.js"
+    },
+    "./entities": {
+      "import": "./dist/esm/entities.js",
+      "require": "./dist/cjs/entities.js"
+    },
+    "./multipleEntityOperations": {
+      "import": "./dist/esm/multipleEntityOperations.js",
+      "require": "./dist/cjs/multipleEntityOperations.js"
+    },
+    "./operationOptions": {
+      "import": "./dist/esm/operationOptions.js",
+      "require": "./dist/cjs/operationOptions.js"
+    },
+    "./operationResponses": {
+      "import": "./dist/esm/operationResponses.js",
+      "require": "./dist/cjs/operationResponses.js"
+    },
+    "./singleEntityOperations": {
+      "import": "./dist/esm/singleEntityOperations.js",
+      "require": "./dist/cjs/singleEntityOperations.js"
+    },
+    "./tableBackedStore": {
+      "import": "./dist/esm/tableBackedStore.js",
+      "require": "./dist/cjs/tableBackedStore.js"
+    },
+    "./tableBackedStoreConfiguration": {
+      "import": "./dist/esm/tableBackedStoreConfiguration.js",
+      "require": "./dist/cjs/tableBackedStoreConfiguration.js"
+    },
+    "./transactionOperations": {
+      "import": "./dist/esm/transactionOperations.js",
+      "require": "./dist/cjs/transactionOperations.js"
+    },
+    "./support/configSupport": {
+      "import": "./dist/esm/support/configSupport.js",
+      "require": "./dist/cjs/support/configSupport.js"
+    },
+    "./support/entitySupport": {
+      "import": "./dist/esm/support/entitySupport.js",
+      "require": "./dist/cjs/support/entitySupport.js"
+    },
+    "./support/querySupport": {
+      "import": "./dist/esm/support/querySupport.js",
+      "require": "./dist/cjs/support/querySupport.js"
+    },
+    "./util/logger": {
+      "import": "./dist/esm/util/logger.js",
+      "require": "./dist/cjs/util/logger.js"
+    }
+  }
+}

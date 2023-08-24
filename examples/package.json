@@ -22,5 +22,6 @@
     "@types/node": "14.x",
     "ts-node": "10.x",
     "typescript": "4.x"
-  }
+  },
+  "version": "0.0.0"
 }

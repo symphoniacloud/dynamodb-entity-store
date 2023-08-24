@@ -1,10 +1,11 @@
-import { DynamoDBValues, MetaAttributeNames } from '@symphoniacloud/dynamodb-entity-store/entities'
-import { createSingleTableConfiguration } from '@symphoniacloud/dynamodb-entity-store/support/configSupport'
 import {
+  createSingleTableConfiguration,
+  createStore,
+  DynamoDBValues,
   entityFromPkOnlyEntity,
-  getPKValue
-} from '@symphoniacloud/dynamodb-entity-store/support/entitySupport'
-import { createStore } from '@symphoniacloud/dynamodb-entity-store/tableBackedStore'
+  getPKValue,
+  MetaAttributeNames
+} from '@symphoniacloud/dynamodb-entity-store'
 
 export interface Farm {
   name: string

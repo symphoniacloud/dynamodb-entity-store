@@ -1,12 +1,12 @@
-import { Entity } from '@symphoniacloud/dynamodb-entity-store/entities'
-import { createStandardSingleTableStoreConfig } from '@symphoniacloud/dynamodb-entity-store/support/configSupport'
-import { typePredicateParser } from '@symphoniacloud/dynamodb-entity-store/support/entitySupport'
 import {
+  createStandardSingleTableStoreConfig,
+  createStore,
+  Entity,
   rangeWhereSkBeginsWith,
   rangeWhereSkGreaterThan,
-  rangeWhereSkLessThan
-} from '@symphoniacloud/dynamodb-entity-store/support/querySupport'
-import { createStore } from '@symphoniacloud/dynamodb-entity-store/tableBackedStore'
+  rangeWhereSkLessThan,
+  typePredicateParser
+} from '@symphoniacloud/dynamodb-entity-store'
 
 export interface Chicken {
   breed: string

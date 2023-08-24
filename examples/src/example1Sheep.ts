@@ -1,8 +1,9 @@
-import { createStandardSingleTableStoreConfig } from '@symphoniacloud/dynamodb-entity-store/support/configSupport'
-import { createEntity } from '@symphoniacloud/dynamodb-entity-store/support/entitySupport'
-import { rangeWhereSkBetween } from '@symphoniacloud/dynamodb-entity-store/support/querySupport'
-import { createStore } from '@symphoniacloud/dynamodb-entity-store/tableBackedStore'
-// import { consoleLogger } from "@symphoniacloud/dynamodb-entity-store/util/logger"
+import {
+  createEntity,
+  createStandardSingleTableStoreConfig,
+  createStore,
+  rangeWhereSkBetween
+} from '@symphoniacloud/dynamodb-entity-store'
 
 // Our domain type for Sheep
 export interface Sheep {

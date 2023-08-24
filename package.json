@@ -1,7 +1,7 @@
 {
   "name": "@symphoniacloud/dynamodb-entity-store",
   "description": "A lightly opinionated DynamoDB library for TypeScript & JavaScript applications",
-  "version": "0.0.4",
+  "version": "0.0.6",
   "license": "MIT",
   "author": {
     "email": "mike@symphonia.io",
@@ -60,62 +60,7 @@
     "LICENSE",
     "dist/"
   ],
-  "exports": {
-    "./dynamoDBInterface": {
-      "import": "./dist/esm/dynamoDBInterface.js",
-      "require": "./dist/cjs/dynamoDBInterface.js"
-    },
-    "./entityStore": {
-      "import": "./dist/esm/entityStore.js",
-      "require": "./dist/cjs/entityStore.js"
-    },
-    "./entities": {
-      "import": "./dist/esm/entities.js",
-      "require": "./dist/cjs/entities.js"
-    },
-    "./multipleEntityOperations": {
-      "import": "./dist/esm/multipleEntityOperations.js",
-      "require": "./dist/cjs/multipleEntityOperations.js"
-    },
-    "./operationOptions": {
-      "import": "./dist/esm/operationOptions.js",
-      "require": "./dist/cjs/operationOptions.js"
-    },
-    "./operationResponses": {
-      "import": "./dist/esm/operationResponses.js",
-      "require": "./dist/cjs/operationResponses.js"
-    },
-    "./singleEntityOperations": {
-      "import": "./dist/esm/singleEntityOperations.js",
-      "require": "./dist/cjs/singleEntityOperations.js"
-    },
-    "./tableBackedStore": {
-      "import": "./dist/esm/tableBackedStore.js",
-      "require": "./dist/cjs/tableBackedStore.js"
-    },
-    "./tableBackedStoreConfiguration": {
-      "import": "./dist/esm/tableBackedStoreConfiguration.js",
-      "require": "./dist/cjs/tableBackedStoreConfiguration.js"
-    },
-    "./transactionOperations": {
-      "import": "./dist/esm/transactionOperations.js",
-      "require": "./dist/cjs/transactionOperations.js"
-    },
-    "./support/configSupport": {
-      "import": "./dist/esm/support/configSupport.js",
-      "require": "./dist/cjs/support/configSupport.js"
-    },
-    "./support/entitySupport": {
-      "import": "./dist/esm/support/entitySupport.js",
-      "require": "./dist/cjs/support/entitySupport.js"
-    },
-    "./support/querySupport": {
-      "import": "./dist/esm/support/querySupport.js",
-      "require": "./dist/cjs/support/querySupport.js"
-    },
-    "./util/logger": {
-      "import": "./dist/esm/util/logger.js",
-      "require": "./dist/cjs/util/logger.js"
-    }
-  }
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/cjs/index.d.ts"
 }

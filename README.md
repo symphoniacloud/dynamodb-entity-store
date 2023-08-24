@@ -82,8 +82,6 @@ You can install / add Entity Store in the usual way, e.g.
 
 ```% npm install @symphoniacloud/dynamodb-entity-store```
 
-**WARNING :warning: - If you are using Node 14 and TypeScript you'll need to set `compilerOptions`/`moduleResolution` to `nodenext` because this library uses `exports` in _package.json_ to list all entry points.**
-
 ### Entity Store creation
 
 Let's assume that our DynamoDB Table is named `AnimalsTable`.
@@ -91,7 +89,7 @@ Let's assume that our DynamoDB Table is named `AnimalsTable`.
 We can create an entity store to access this table as follows:
 
 ```typescript
-import { createStore, createStandardSingleTableStoreConfig } from 'dynamodb-entity-store'
+import { createStore, createStandardSingleTableStoreConfig } from '@symphoniacloud/dynamodb-entity-store'
 
 const entityStore = createStore(createStandardSingleTableStoreConfig('AnimalsTable'))
 ```
@@ -112,7 +110,7 @@ For each type of _Entity_ in our application we need to define an `Entity` objec
 For Sheep, the entity looks as follows:
 
 ```typescript
-import { Entity } from 'dynamodb-entity-store'
+import { Entity } from '@symphoniacloud/dynamodb-entity-store'
 
 export const SHEEP_ENTITY = createEntity(
   // Type name

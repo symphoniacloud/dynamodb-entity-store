@@ -4,8 +4,6 @@
   "compilerOptions": {
     "target": "es2020",
     "module": "commonjs",
-    // ** THIS IS NECESSARY IN NODE 14 BECAUSE DYNAMODB-ENTITY-STORE USES PACKAGE.JSON EXPORTS
-    "moduleResolution": "nodenext",
 
     // ** Type Checking **
     "strict": true,

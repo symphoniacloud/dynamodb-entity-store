@@ -1,8 +1,11 @@
 import { EntityContext } from '../entityContext'
 import { Entity } from '../../entities'
 import { throwError } from '../../util/errors'
-import { QueryOptions, SkQueryRange } from '../../operationOptions'
-import { MultipleEntityCollectionResponse, QueryMultipleBy } from '../../multipleEntityOperations'
+import {
+  MultipleEntityCollectionResponse,
+  QueryMultipleBy,
+  QueryOptions
+} from '../../multipleEntityOperations'
 import {
   queryMultipleByGsiPk,
   queryMultipleByGsiSkRange,
@@ -10,6 +13,7 @@ import {
   queryMultipleBySkRange
 } from './multipleEntityQueryOperations'
 import { findGsiDetails } from '../common/gsiQueryCommon'
+import { SkQueryRange } from '../../singleEntityOperations'
 
 function findKeyEntityContext<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
   contextsByEntityType: Record<string, EntityContext<unknown, unknown, unknown>>,

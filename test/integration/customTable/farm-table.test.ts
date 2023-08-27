@@ -35,7 +35,7 @@ async function initializeStoreAndTable(options: { emptyTable?: boolean; allowSca
   })
 
   if (options.emptyTable === undefined || options.emptyTable) {
-    const allRecords = (await store.for(FARM_ENTITY).scan({ allPages: true })).items
+    const allRecords = await store.for(FARM_ENTITY).scanAll()
     for (const item of allRecords) {
       await docClient.send(
         new DeleteCommand({
@@ -66,7 +66,7 @@ describe('farm', () => {
       })
 
       const retrievedFarm = await farmStore.getOrThrow(sunflowerFarm)
-      expect(retrievedFarm).toEqual({ item: sunflowerFarm })
+      expect(retrievedFarm).toEqual(sunflowerFarm)
 
       await farmStore.delete(sunflowerFarm)
       expect((await dynamoDbScanTable(farmTableName, docClient)).length).toEqual(0)

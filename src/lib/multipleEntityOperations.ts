@@ -1,6 +1,27 @@
 import { DynamoDBValues, Entity } from './entities'
-import { GsiQueryOptions, QueryAndScanOptions, QueryOptions, SkQueryRange } from './operationOptions'
-import { ConsumedCapacitiesMetadata } from './operationResponses'
+import { ConsumedCapacitiesMetadata, ReturnConsumedCapacityOption } from './advanced'
+import { SkQueryRange } from './singleEntityOperations'
+
+export interface QueryAndScanOptions extends ReturnConsumedCapacityOption {
+  /**
+   * See `Limit` at https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-dynamodb/Interface/QueryInput/
+   * Defaults to no limit set
+   */
+  limit?: number
+
+  /**
+   * See `ExclusiveStartKey` at https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-dynamodb/Interface/QueryInput/
+   */
+  exclusiveStartKey?: DynamoDBValues
+}
+
+export interface QueryOptions extends QueryAndScanOptions {
+  /**
+   * See `ScanIndexForward` at https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-dynamodb/Interface/QueryInput/
+   * Defaults to not set, and therefore 'true' because of underlying implementation in AWS SDK
+   */
+  scanIndexForward?: boolean
+}
 
 export interface MultipleEntityOperations {
   query<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
@@ -30,4 +51,11 @@ export interface MultipleEntityCollectionResponse {
    * Only set if consumedCapacities sub property has a value
    */
   metadata?: ConsumedCapacitiesMetadata
+}
+
+export interface GsiQueryOptions extends QueryOptions {
+  /**
+   * If an entity has multiple GSIs then this property must be used to specify which GSI to use
+   */
+  gsiId?: string
 }

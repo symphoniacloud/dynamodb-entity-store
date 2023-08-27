@@ -1,6 +1,6 @@
-import { Clock } from './util/dateAndTime'
+import { Clock } from './util'
 import { DynamoDBInterface } from './dynamoDBInterface'
-import { EntityStoreLogger } from './util/logger'
+import { EntityStoreLogger } from './util'
 import { MetaAttributeNames } from './entities'
 
 export interface TableBackedStoreConfiguration {

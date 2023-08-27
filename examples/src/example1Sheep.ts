@@ -40,23 +40,19 @@ async function run() {
   await entityStore.for(SHEEP_ENTITY).put({ breed: 'merino', name: 'bob', ageInYears: 4 })
   await entityStore.for(SHEEP_ENTITY).put({ breed: 'suffolk', name: 'alison', ageInYears: 2 })
 
-  const shaun: Sheep = (await entityStore.for(SHEEP_ENTITY).getOrThrow({ breed: 'merino', name: 'shaun' }))
-    .item
+  const shaun: Sheep = await entityStore.for(SHEEP_ENTITY).getOrThrow({ breed: 'merino', name: 'shaun' })
   console.log(`shaun is ${shaun.ageInYears} years old`)
 
   console.log('\nAll merinos:')
-  const merinos: Sheep[] = (await entityStore.for(SHEEP_ENTITY).query().byPk({ breed: 'merino' })).items
+  const merinos: Sheep[] = await entityStore.for(SHEEP_ENTITY).queryAllByPk({ breed: 'merino' })
   for (const sheep of merinos) {
     console.log(`${sheep.name} is ${sheep.ageInYears} years old`)
   }
 
   console.log('\nMerinos with their name starting with the first half of the alphabet:')
-  const earlyAlphabetMerinos = (
-    await entityStore
-      .for(SHEEP_ENTITY)
-      .query()
-      .byPkAndSk({ breed: 'merino' }, rangeWhereNameBetween('a', 'n'))
-  ).items
+  const earlyAlphabetMerinos = await entityStore
+    .for(SHEEP_ENTITY)
+    .queryAllByPkAndSk({ breed: 'merino' }, rangeWhereNameBetween('a', 'n'))
 
   for (const sheep of earlyAlphabetMerinos) {
     console.log(sheep.name)

@@ -129,7 +129,7 @@ test('should call dynamoDB client and return result', async () => {
   const putResult = await putItem(context, { name: 'Sunflower Farm' })
 
   // Assert
-  expect(putResult).toEqual({})
+  expect(putResult).toEqual({ name: 'Sunflower Farm' })
   expect(dynamoDB.puts.length).toEqual(1)
   expect(dynamoDB.puts[0]).toEqual(expectedPutParams)
 })

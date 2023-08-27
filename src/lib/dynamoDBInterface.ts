@@ -34,7 +34,7 @@ import {
   UpdateCommandOutput
 } from '@aws-sdk/lib-dynamodb'
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
-import { EntityStoreLogger, isDebugLoggingEnabled, noopLogger } from './util/logger'
+import { EntityStoreLogger, isDebugLoggingEnabled, noopLogger } from './util'
 
 export interface DynamoDBInterface {
   put(params: PutCommandInput): Promise<PutCommandOutput>

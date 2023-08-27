@@ -1,18 +1,17 @@
 // Also used for generating transaction put items
 import { Clock } from '../../util/dateAndTime'
-import { PutOptions } from '../../operationOptions'
 import {
   conditionExpressionParam,
   createKeyFromSource,
   determineTTL,
   expressionAttributeParamsFromOptions,
-  returnParamsForCapacityMetricsAndValues,
   tableNameParam
 } from '../operationsCommon'
 import { EntityContext } from '../entityContext'
 import { DynamoDBValues, Entity, MetaAttributeNames } from '../../entities'
 import { Mandatory } from '../../util/types'
 import { PutCommandInput } from '@aws-sdk/lib-dynamodb'
+import { PutOptions } from '../../singleEntityOperations'
 
 export function putParams<TItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
   context: EntityContext<TItem, TPKSource, TSKSource>,
@@ -23,8 +22,8 @@ export function putParams<TItem extends TPKSource & TSKSource, TPKSource, TSKSou
     ...tableNameParam(context),
     ...conditionExpressionParam(options),
     ...expressionAttributeParamsFromOptions(options),
-    ...itemParam(context, item, options),
-    ...returnParamsForCapacityMetricsAndValues(options)
+    ...itemParam(context, item, options)
+    // ...returnParamsForCapacityMetricsAndValues(options)
   }
 }
 

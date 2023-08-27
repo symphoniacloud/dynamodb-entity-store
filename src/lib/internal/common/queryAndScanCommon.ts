@@ -1,4 +1,3 @@
-import { QueryAndScanOptions } from '../../operationOptions'
 import { parseItem, returnConsumedCapacityParam } from '../operationsCommon'
 import { DynamoDBValues } from '../../entities'
 import { EntityStoreLogger, isDebugLoggingEnabled } from '../../util/logger'
@@ -9,9 +8,12 @@ import {
   ScanCommandOutput
 } from '@aws-sdk/lib-dynamodb'
 import { EntityContext } from '../entityContext'
-import { MultipleEntityCollectionResponse } from '../../multipleEntityOperations'
+import { MultipleEntityCollectionResponse, QueryAndScanOptions } from '../../multipleEntityOperations'
 import { removeNullOrUndefined } from '../../util/collections'
-import { CollectionResponse, ConsumedCapacitiesMetadata } from '../../operationResponses'
+import {
+  AdvancedCollectionResponse,
+  ConsumedCapacitiesMetadata
+} from '../../advanced/advancedOperationResponses'
 
 export interface QueryScanOperationConfiguration<
   TCommandInput extends ScanCommandInput & QueryCommandInput,
@@ -26,9 +28,10 @@ export interface QueryScanOperationConfiguration<
 export function configureOperation(
   tableName: string,
   options: QueryAndScanOptions,
+  allPages: boolean,
   queryParamsParts?: Omit<QueryCommandInput, 'TableName' | 'ExclusiveStartKey' | 'Limit'>
 ): { operationParams: ScanCommandInput & QueryCommandInput; useAllPageOperation: boolean } {
-  const { allPages, limit, exclusiveStartKey } = options
+  const { limit, exclusiveStartKey } = options
   return {
     operationParams: {
       TableName: tableName,
@@ -37,8 +40,7 @@ export function configureOperation(
       ...(queryParamsParts ? queryParamsParts : {}),
       ...returnConsumedCapacityParam(options)
     },
-    useAllPageOperation:
-      allPages !== undefined && allPages && limit === undefined && exclusiveStartKey === undefined
+    useAllPageOperation: allPages
   }
 }
 
@@ -114,7 +116,7 @@ export function commonCollectionResponseElements(
 export function parseResultsForEntity<TItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
   context: EntityContext<TItem, TPKSource, TSKSource>,
   unparsedResult: UnparsedCollectionResult
-): CollectionResponse<TItem> {
+): AdvancedCollectionResponse<TItem> {
   const entityTypeAttributeName = context.metaAttributeNames.entityType
   const { parsedItems, unparsedItems } = unparsedResult.items.reduce(
     (accum, item: DynamoDBValues) => {

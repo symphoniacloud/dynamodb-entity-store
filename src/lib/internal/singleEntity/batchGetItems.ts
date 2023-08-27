@@ -1,11 +1,11 @@
 import { EntityContext } from '../entityContext'
-import { BatchGetOptions } from '../../operationOptions'
-import { BatchGetResponse } from '../../operationResponses'
 import { isDebugLoggingEnabled } from '../../util/logger'
 import { chunk, removeNullOrUndefined } from '../../util/collections'
 import { DEFAULT_AND_MAX_BATCH_READ_SIZE } from './batchWriteCommon'
 import { createKeyFromSource, parseItem, returnConsumedCapacityParam } from '../operationsCommon'
 import { BatchGetCommandInput, BatchGetCommandOutput } from '@aws-sdk/lib-dynamodb'
+import { AdvancedBatchGetResponse } from '../../advanced/advancedOperationResponses'
+import { BatchGetOptions } from '../../advanced/advancedOperationOptions'
 
 export async function getItems<
   TItem extends TPKSource & TSKSource,
@@ -16,7 +16,7 @@ export async function getItems<
   context: EntityContext<TItem, TPKSource, TSKSource>,
   keySources: TKeySource[],
   options?: BatchGetOptions
-): Promise<BatchGetResponse<TItem, TPKSource, TSKSource>> {
+): Promise<AdvancedBatchGetResponse<TItem, TPKSource, TSKSource>> {
   const batchesParams = createBatchesParams(context, keySources, options)
   const results = await executeAllBatches(context, batchesParams)
   return parseBatchResults(context, results)
@@ -68,7 +68,7 @@ export async function executeAllBatches<TItem extends TPKSource & TSKSource, TPK
 export function parseBatchResults<TItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
   context: EntityContext<TItem, TPKSource, TSKSource>,
   results: BatchGetCommandOutput[]
-): BatchGetResponse<TItem, TPKSource, TSKSource> {
+): AdvancedBatchGetResponse<TItem, TPKSource, TSKSource> {
   const items = results
     .map((r) => Object.values(r.Responses ?? {}))
     .flat(2)

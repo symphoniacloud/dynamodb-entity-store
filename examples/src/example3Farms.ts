@@ -55,11 +55,11 @@ async function run() {
   await farmStore.put({ name: 'Sunflower Farm', address: 'Green Shoots Road, Honesdale, PA' })
   await farmStore.put({ name: 'Worthy Farm', address: 'Glastonbury, England' })
 
-  const worthyFarm = (await farmStore.getOrThrow({ name: 'Worthy Farm' })).item
+  const worthyFarm = await farmStore.getOrThrow({ name: 'Worthy Farm' })
   console.log(`Address of Worthy Farm: ${worthyFarm.address}`)
 
   console.log('\nAll farms:')
-  for (const farm of (await farmStore.scan()).items) {
+  for (const farm of await farmStore.scanAll()) {
     console.log(`Name: ${farm.name}, Address: ${farm.address}`)
   }
 }

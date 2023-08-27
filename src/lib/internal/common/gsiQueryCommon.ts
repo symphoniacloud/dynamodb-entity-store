@@ -1,7 +1,7 @@
 import { GsiGenerators } from '../../entities'
 import { EntityContext } from '../entityContext'
-import { GsiQueryOptions } from '../../operationOptions'
 import { throwError } from '../../util/errors'
+import { GsiQueryOptions } from '../../multipleEntityOperations'
 
 export interface GsiDetails {
   id: string

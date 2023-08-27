@@ -39,7 +39,7 @@ const bobRecord = { ...bobTheSheep, PK: 'SHEEP#BREED#merino', SK: 'NAME#bob', _e
 
 test('put', async () => {
   const { wrapper, store } = wrapperAndStore()
-  expect(await store.for(SHEEP_ENTITY).put(shaunTheSheep)).toEqual({})
+  expect(await store.for(SHEEP_ENTITY).put(shaunTheSheep)).toEqual(shaunTheSheep)
 
   expect(wrapper.puts.length).toEqual(1)
   expect(wrapper.puts[0]).toEqual({
@@ -63,7 +63,7 @@ test('putWithConditions', async () => {
         ':invalidname': 'shaun'
       }
     })
-  ).toEqual({})
+  ).toEqual(shaunTheSheep)
 
   expect(wrapper.puts.length).toEqual(1)
   expect(wrapper.puts[0]).toEqual({
@@ -100,14 +100,14 @@ test('getOrUndefined', async () => {
 
   const storeForSheep = store.for(SHEEP_ENTITY)
 
-  expect(await storeForSheep.getOrUndefined(shaunIdentifier)).toEqual({ item: shaunTheSheep })
+  expect(await storeForSheep.getOrUndefined(shaunIdentifier)).toEqual(shaunTheSheep)
   expect(
     await storeForSheep.getOrUndefined({
       ...shaunIdentifier,
       attributeNotUsedInIdentifier: 'unused'
     })
-  ).toEqual({ item: shaunTheSheep })
-  expect((await storeForSheep.getOrUndefined(bobIdentifier)).item).toBeUndefined()
+  ).toEqual(shaunTheSheep)
+  expect(await storeForSheep.getOrUndefined(bobIdentifier)).toBeUndefined()
 })
 
 test('getOrThrow', async () => {
@@ -128,7 +128,7 @@ test('getOrThrow', async () => {
 
   const storeForSheep = store.for(SHEEP_ENTITY)
 
-  expect(await storeForSheep.getOrThrow(shaunIdentifier)).toEqual({ item: shaunTheSheep })
+  expect(await storeForSheep.getOrThrow(shaunIdentifier)).toEqual(shaunTheSheep)
   expect(async () => await storeForSheep.getOrThrow(bobIdentifier)).rejects.toThrowError(
     'Unable to find item for entity [sheep] with key source {"breed":"merino","name":"bob"}'
   )
@@ -161,7 +161,7 @@ test('queryOnePageByPk', async () => {
       ...METADATA
     }
   )
-  expect(await store.for(SHEEP_ENTITY).query({}).byPk({ breed: 'merino' })).toEqual({
+  expect(await store.for(SHEEP_ENTITY).queryOnePageByPk({ breed: 'merino' })).toEqual({
     items: [shaunTheSheep, bobTheSheep]
   })
 })
@@ -177,9 +177,10 @@ test('queryAllByPk', async () => {
     [{ Items: [shaunRecord, bobRecord], ...METADATA }]
   )
 
-  expect(await store.for(SHEEP_ENTITY).query({ allPages: true }).byPk({ breed: 'merino' })).toEqual({
-    items: [shaunTheSheep, bobTheSheep]
-  })
+  expect(await store.for(SHEEP_ENTITY).queryAllByPk({ breed: 'merino' })).toEqual([
+    shaunTheSheep,
+    bobTheSheep
+  ])
 })
 
 test('queryOnePageByPkWithLimit', async () => {
@@ -196,7 +197,7 @@ test('queryOnePageByPkWithLimit', async () => {
       ...METADATA
     }
   )
-  expect(await store.for(SHEEP_ENTITY).query({ limit: 5 }).byPk({ breed: 'merino' })).toEqual({
+  expect(await store.for(SHEEP_ENTITY).queryOnePageByPk({ breed: 'merino' }, { limit: 5 })).toEqual({
     items: [shaunTheSheep, bobTheSheep]
   })
 })
@@ -219,15 +220,15 @@ test('queryOnePageByPkWithExclusiveStartKey', async () => {
     }
   )
   expect(
-    await store
-      .for(SHEEP_ENTITY)
-      .query({
+    await store.for(SHEEP_ENTITY).queryOnePageByPk(
+      { breed: 'merino' },
+      {
         exclusiveStartKey: {
           PK: 'SHEEP#BREED#merino',
           SK: 'NAME#shaun'
         }
-      })
-      .byPk({ breed: 'merino' })
+      }
+    )
   ).toEqual({
     items: [shaunTheSheep, bobTheSheep]
   })
@@ -252,40 +253,19 @@ test('queryOnePageByPkWithExclusiveStartKeyAndLimit', async () => {
     }
   )
   expect(
-    await store
-      .for(SHEEP_ENTITY)
-      .query({
+    await store.for(SHEEP_ENTITY).queryOnePageByPk(
+      { breed: 'merino' },
+      {
         limit: 5,
         exclusiveStartKey: {
           PK: 'SHEEP#BREED#merino',
           SK: 'NAME#shaun'
         }
-      })
-      .byPk({ breed: 'merino' })
+      }
+    )
   ).toEqual({
     items: [shaunTheSheep, bobTheSheep]
   })
-})
-
-test('queryOnePageByPkWithLimitOverridingAllPages', async () => {
-  const { wrapper, store } = wrapperAndStore()
-  wrapper.stubOnePageQueries.addResponse(
-    {
-      TableName: UNIT_TEST_TABLE,
-      Limit: 5,
-      KeyConditionExpression: 'PK = :pk',
-      ExpressionAttributeValues: { ':pk': 'SHEEP#BREED#merino' }
-    },
-    {
-      Items: [shaunRecord, bobRecord],
-      ...METADATA
-    }
-  )
-  expect(await store.for(SHEEP_ENTITY).query({ allPages: true, limit: 5 }).byPk({ breed: 'merino' })).toEqual(
-    {
-      items: [shaunTheSheep, bobTheSheep]
-    }
-  )
 })
 
 test('queryBySkRange', async () => {
@@ -303,18 +283,15 @@ test('queryBySkRange', async () => {
     }
   )
   expect(
-    await store
-      .for(SHEEP_ENTITY)
-      .query({})
-      .byPkAndSk(
-        { breed: 'merino' },
-        {
-          skConditionExpressionClause: 'SK > :sk',
-          expressionAttributeValues: {
-            ':sk': 'NAME#charlie'
-          }
+    await store.for(SHEEP_ENTITY).queryOnePageByPkAndSk(
+      { breed: 'merino' },
+      {
+        skConditionExpressionClause: 'SK > :sk',
+        expressionAttributeValues: {
+          ':sk': 'NAME#charlie'
         }
-      )
+      }
+    )
   ).toEqual({
     items: [shaunTheSheep]
   })
@@ -322,7 +299,7 @@ test('queryBySkRange', async () => {
 
 test('dontAllowScansIfDisabled', async () => {
   const { store } = wrapperAndStore()
-  expect(async () => await store.for(SHEEP_ENTITY).scan()).rejects.toThrowError(
+  expect(async () => await store.for(SHEEP_ENTITY).scanOnePage()).rejects.toThrowError(
     'Scan operations are disabled for this store'
   )
 })
@@ -339,24 +316,7 @@ test('scanOnePage', async () => {
     }
   )
 
-  expect(await store.for(SHEEP_ENTITY).scan()).toEqual({ items: [shaunTheSheep, bobTheSheep] })
-})
-
-test('scanOnePageBySpecifyingAllPagesFalse', async () => {
-  const { wrapper, store } = wrapperAndStore({ allowScans: true })
-  wrapper.stubOnePageScans.addResponse(
-    {
-      TableName: UNIT_TEST_TABLE
-    },
-    {
-      Items: [shaunRecord, bobRecord],
-      ...METADATA
-    }
-  )
-
-  expect(await store.for(SHEEP_ENTITY).scan({ allPages: false })).toEqual({
-    items: [shaunTheSheep, bobTheSheep]
-  })
+  expect(await store.for(SHEEP_ENTITY).scanOnePage()).toEqual({ items: [shaunTheSheep, bobTheSheep] })
 })
 
 test('scanAll', async () => {
@@ -373,9 +333,7 @@ test('scanAll', async () => {
     ]
   )
 
-  expect(await store.for(SHEEP_ENTITY).scan({ allPages: true })).toEqual({
-    items: [shaunTheSheep, bobTheSheep]
-  })
+  expect(await store.for(SHEEP_ENTITY).scanAll()).toEqual([shaunTheSheep, bobTheSheep])
 })
 
 test('scanWithLimit', async () => {
@@ -391,7 +349,7 @@ test('scanWithLimit', async () => {
     }
   )
 
-  expect(await store.for(SHEEP_ENTITY).scan({ limit: 5 })).toEqual({
+  expect(await store.for(SHEEP_ENTITY).scanOnePage({ limit: 5 })).toEqual({
     items: [shaunTheSheep, bobTheSheep]
   })
 })
@@ -413,7 +371,7 @@ test('scanWithExclusiveStartKey', async () => {
   )
 
   expect(
-    await store.for(SHEEP_ENTITY).scan({
+    await store.for(SHEEP_ENTITY).scanOnePage({
       exclusiveStartKey: {
         PK: 'SHEEP#BREED#merino',
         SK: 'NAME#shaun'
@@ -442,7 +400,7 @@ test('scanWithExclusiveStartKeyAndLimit', async () => {
   )
 
   expect(
-    await store.for(SHEEP_ENTITY).scan({
+    await store.for(SHEEP_ENTITY).scanOnePage({
       exclusiveStartKey: {
         PK: 'SHEEP#BREED#merino',
         SK: 'NAME#shaun'
@@ -450,24 +408,6 @@ test('scanWithExclusiveStartKeyAndLimit', async () => {
       limit: 5
     })
   ).toEqual({
-    items: [shaunTheSheep, bobTheSheep]
-  })
-})
-
-test('scanWithLimitOverridingAllPAges', async () => {
-  const { wrapper, store } = wrapperAndStore({ allowScans: true })
-  wrapper.stubOnePageScans.addResponse(
-    {
-      Limit: 5,
-      TableName: UNIT_TEST_TABLE
-    },
-    {
-      Items: [shaunRecord, bobRecord],
-      ...METADATA
-    }
-  )
-
-  expect(await store.for(SHEEP_ENTITY).scan({ limit: 5, allPages: true })).toEqual({
     items: [shaunTheSheep, bobTheSheep]
   })
 })

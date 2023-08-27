@@ -1,14 +1,11 @@
 import { DynamoDBValues, Entity } from './entities'
-import { Mandatory } from './util/types'
 import {
-  Conditional,
   ReturnConsumedCapacityOption,
   ReturnItemCollectionMetricsOption,
-  ReturnValuesOnConditionCheckFailureOption,
-  UpdateExpressionClause,
-  WithTTL
-} from './operationOptions'
+  ReturnValuesOnConditionCheckFailureOption
+} from './advanced'
 import { ConsumedCapacity } from '@aws-sdk/client-dynamodb'
+import { DeleteOptions, PutOptions, UpdateOptions } from './singleEntityOperations'
 
 // TOMAYBE - consider non builder versions
 export interface TransactionOperations {
@@ -58,13 +55,15 @@ export interface GetTransactionBuilder<TItem extends TPKSource & TSKSource, TPKS
   execute(options?: GetTransactionOptions): Promise<GetTransactionResponse>
 }
 
-export type TransactionPutOptions = Conditional & WithTTL & ReturnValuesOnConditionCheckFailureOption
-export type TransactionUpdateOptions = Conditional &
-  UpdateExpressionClause &
-  WithTTL &
-  ReturnValuesOnConditionCheckFailureOption
-export type TransactionDeleteOptions = Conditional & ReturnValuesOnConditionCheckFailureOption
-export type TransactionConditionCheckOptions = Mandatory<Conditional, 'conditionExpression'>
+export type TransactionPutOptions = PutOptions & ReturnValuesOnConditionCheckFailureOption
+export type TransactionUpdateOptions = UpdateOptions & ReturnValuesOnConditionCheckFailureOption
+export type TransactionDeleteOptions = DeleteOptions & ReturnValuesOnConditionCheckFailureOption
+
+export interface TransactionConditionCheckOptions {
+  conditionExpression: string
+  expressionAttributeValues?: DynamoDBValues
+  expressionAttributeNames?: Record<string, string>
+}
 
 export interface WriteTransactionOptions
   extends ReturnConsumedCapacityOption,

@@ -1,15 +1,26 @@
 import { DynamoDBValues } from '../entities'
 import { EntityContext } from './entityContext'
 import { Clock, secondsTimestampInFutureDays } from '../util/dateAndTime'
+import { DeleteItemOutput } from '@aws-sdk/client-dynamodb'
 import {
-  Conditional,
   ReturnConsumedCapacityOption,
   ReturnItemCollectionMetricsOption,
-  ReturnValuesOptions,
-  WithExpression,
-  WithTTL
-} from '../operationOptions'
-import { DeleteItemOutput } from '@aws-sdk/client-dynamodb'
+  ReturnValuesOptions
+} from '../advanced/advancedOperationOptions'
+
+export interface WithExpression {
+  expressionAttributeValues?: DynamoDBValues
+  expressionAttributeNames?: Record<string, string>
+}
+
+export interface Conditional extends WithExpression {
+  conditionExpression?: string
+}
+
+export interface WithTTL {
+  ttl?: number
+  ttlInFutureDays?: number
+}
 
 // **** PARAMS
 
@@ -100,15 +111,6 @@ export function parseItem<TItem extends TPKSource & TSKSource, TPKSource, TSKSou
   item: DynamoDBValues
 ): TItem {
   return context.entity.parse(item, context.allMetaAttributeNames, context.metaAttributeNames)
-}
-
-export function parseAttributesCapacityAndMetrics(
-  result: Pick<DeleteItemOutput, 'Attributes' | 'ConsumedCapacity' | 'ItemCollectionMetrics'>
-) {
-  return {
-    ...parseUnparsedReturnedAttributes(result),
-    ...parseConsumedCapacityAndItemCollectionMetrics(result)
-  }
 }
 
 export function parseUnparsedReturnedAttributes(result: { Attributes?: DynamoDBValues }) {

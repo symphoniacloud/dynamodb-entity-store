@@ -1,17 +1,17 @@
 import { ConsumedCapacity, ItemCollectionMetrics } from '@aws-sdk/client-dynamodb'
-import { Mandatory } from './util/types'
-import { DynamoDBValues } from './entities'
+import { DynamoDBValues } from '../entities'
+import { Mandatory } from '../util'
 
-export type PutResponse = WithUnparsedReturnedAttributes &
+export type AdvancedPutResponse = WithUnparsedReturnedAttributes &
   WithConsumedCapacityAndItemCollectionMetricsMetadata
 
-export type DeleteResponse = WithUnparsedReturnedAttributes &
+export type AdvancedDeleteResponse = WithUnparsedReturnedAttributes &
   WithConsumedCapacityAndItemCollectionMetricsMetadata
 
-export type UpdateResponse = WithUnparsedReturnedAttributes &
+export type AdvancedUpdateResponse = WithUnparsedReturnedAttributes &
   WithConsumedCapacityAndItemCollectionMetricsMetadata
 
-export interface GetResponse<TItem extends TPKSource & TSKSource, TPKSource, TSKSource> {
+export interface AdvancedGetResponse<TItem extends TPKSource & TSKSource, TPKSource, TSKSource> {
   /**
    * Set if item existed in table
    */
@@ -25,50 +25,10 @@ export interface GetResponse<TItem extends TPKSource & TSKSource, TPKSource, TSK
 /**
  * item field always included, since if it didn't exist on table then error thrown instead
  */
-export type GetOrThrowResponse<TItem extends TPKSource & TSKSource, TPKSource, TSKSource> = Mandatory<
-  GetResponse<TItem, TPKSource, TSKSource>,
+export type AdvancedGetOrThrowResponse<TItem extends TPKSource & TSKSource, TPKSource, TSKSource> = Mandatory<
+  AdvancedGetResponse<TItem, TPKSource, TSKSource>,
   'item'
 >
-
-export interface CollectionResponse<TItem> {
-  items: TItem[]
-  unparsedItems?: DynamoDBValues[]
-  lastEvaluatedKey?: DynamoDBValues
-  /**
-   * Only set if consumedCapacities sub property has a value
-   */
-  metadata?: ConsumedCapacitiesMetadata
-}
-
-export type BatchWriteResponse = {
-  /**
-   * Only set if DynamoDB returned any unprocessed items
-   */
-  unprocessedItems?: {
-    PutRequest?: {
-      Item: DynamoDBValues | undefined
-    }
-    DeleteRequest?: {
-      Key: DynamoDBValues | undefined
-    }
-  }[]
-  /**
-   * Only set if any sub properties are set
-   */
-  metadata?: ConsumedCapacitiesMetadata & ItemCollectionMetricsCollectionMetadata
-}
-
-export type BatchGetResponse<TItem extends TPKSource & TSKSource, TPKSource, TSKSource> = {
-  items: TItem[]
-  /**
-   * Only set if DynamoDB returned any unprocessed keys
-   */
-  unprocessedKeys?: DynamoDBValues[]
-  /**
-   * Only set if any sub properties are set
-   */
-  metadata?: ConsumedCapacitiesMetadata
-}
 
 export interface WithUnparsedReturnedAttributes {
   /**
@@ -119,4 +79,43 @@ export interface ItemCollectionMetricsCollectionMetadata {
    * @see https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_ItemCollectionMetrics.html
    */
   itemCollectionMetricsCollection?: ItemCollectionMetrics[]
+}
+
+export interface AdvancedCollectionResponse<TItem> {
+  items: TItem[]
+  unparsedItems?: DynamoDBValues[]
+  lastEvaluatedKey?: DynamoDBValues
+  /**
+   * Only set if consumedCapacities sub property has a value
+   */
+  metadata?: ConsumedCapacitiesMetadata
+}
+
+export type AdvancedBatchWriteResponse = {
+  /**
+   * Only set if DynamoDB returned any unprocessed items
+   */
+  unprocessedItems?: {
+    PutRequest?: {
+      Item: DynamoDBValues | undefined
+    }
+    DeleteRequest?: {
+      Key: DynamoDBValues | undefined
+    }
+  }[]
+  /**
+   * Only set if any sub properties are set
+   */
+  metadata?: ConsumedCapacitiesMetadata & ItemCollectionMetricsCollectionMetadata
+}
+export type AdvancedBatchGetResponse<TItem extends TPKSource & TSKSource, TPKSource, TSKSource> = {
+  items: TItem[]
+  /**
+   * Only set if DynamoDB returned any unprocessed keys
+   */
+  unprocessedKeys?: DynamoDBValues[]
+  /**
+   * Only set if any sub properties are set
+   */
+  metadata?: ConsumedCapacitiesMetadata
 }

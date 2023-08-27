@@ -27,16 +27,16 @@ describe('basic operations', () => {
       ...shaunTheSheep
     })
 
-    expect(await sheepStore.getOrUndefined(shaunIdentifier)).toEqual({ item: shaunTheSheep })
-    expect(await sheepStore.getOrUndefined(bobIdentifier)).toEqual({})
+    expect(await sheepStore.getOrUndefined(shaunIdentifier)).toEqual(shaunTheSheep)
+    expect(await sheepStore.getOrUndefined(bobIdentifier)).toEqual(undefined)
 
-    expect(await sheepStore.getOrThrow(shaunIdentifier)).toEqual({ item: shaunTheSheep })
+    expect(await sheepStore.getOrThrow(shaunIdentifier)).toEqual(shaunTheSheep)
     expect(async () => await sheepStore.getOrThrow(bobIdentifier)).rejects.toThrowError(
       'Unable to find item for entity [sheep] with key source {"breed":"merino","name":"bob"}'
     )
 
     await sheepStore.delete(shaunTheSheep)
-    expect((await sheepStore.getOrUndefined({ breed: 'merino', name: 'shaun' })).item).toBeUndefined()
+    expect(await sheepStore.getOrUndefined({ breed: 'merino', name: 'shaun' })).toBeUndefined()
   })
 
   test('update', async () => {
@@ -54,10 +54,8 @@ describe('basic operations', () => {
     })
 
     expect(await sheepStore.getOrUndefined(shaunIdentifier)).toEqual({
-      item: {
-        ...shaunTheSheep,
-        ageInYears: 4
-      }
+      ...shaunTheSheep,
+      ageInYears: 4
     })
     const items = await dynamoDbScanTable(testTableName, docClient)
     expect(items.length).toEqual(1)
@@ -123,9 +121,9 @@ describe('with table customizations', () => {
       ...shaunTheSheep
     })
 
-    expect(await sheepStore.getOrUndefined(shaunIdentifier)).toEqual({ item: shaunTheSheep })
+    expect(await sheepStore.getOrUndefined(shaunIdentifier)).toEqual(shaunTheSheep)
     await sheepStore.delete(shaunTheSheep)
-    expect((await sheepStore.getOrUndefined({ breed: 'merino', name: 'shaun' })).item).toBeUndefined()
+    expect(await sheepStore.getOrUndefined({ breed: 'merino', name: 'shaun' })).toBeUndefined()
   })
 
   test('update without lastUpdated and other customization', async () => {
@@ -157,10 +155,13 @@ describe('batch operations', () => {
   test('batch puts, gets, deletes', async () => {
     const sheepStore = (await initialize({ allowScans: true })).for(SHEEP_ENTITY)
 
-    const putResult = await sheepStore.batchPut([shaunTheSheep, bobTheSheep, alisonTheAlpaca], {
-      batchSize: 2,
-      ttl: 1234
-    })
+    const putResult = await sheepStore.advancedOperations.batchPut(
+      [shaunTheSheep, bobTheSheep, alisonTheAlpaca],
+      {
+        batchSize: 2,
+        ttl: 1234
+      }
+    )
     expect(putResult).toEqual({})
     const items = await dynamoDbScanTable(testTableName, docClient)
     expect(items.length).toEqual(3)
@@ -173,9 +174,12 @@ describe('batch operations', () => {
       ...alisonTheAlpaca
     })
 
-    const getResult = await sheepStore.batchGet([shaunIdentifier, bobIdentifier, alisonIdentifier], {
-      batchSize: 2
-    })
+    const getResult = await sheepStore.advancedOperations.batchGet(
+      [shaunIdentifier, bobIdentifier, alisonIdentifier],
+      {
+        batchSize: 2
+      }
+    )
     const batchGetResultItems = getResult.items
     expect(batchGetResultItems).toContainEqual(shaunTheSheep)
     expect(batchGetResultItems).toContainEqual(bobTheSheep)
@@ -183,36 +187,48 @@ describe('batch operations', () => {
     expect(batchGetResultItems.length).toEqual(3)
     expect(getResult.metadata).toBeUndefined()
 
-    const deleteResult = await sheepStore.batchDelete([shaunIdentifier, bobIdentifier, alisonIdentifier], {
-      batchSize: 2
-    })
+    const deleteResult = await sheepStore.advancedOperations.batchDelete(
+      [shaunIdentifier, bobIdentifier, alisonIdentifier],
+      {
+        batchSize: 2
+      }
+    )
     expect(deleteResult).toEqual({})
-    expect((await sheepStore.scan()).items.length).toEqual(0)
+    expect((await sheepStore.scanOnePage()).items.length).toEqual(0)
   })
 
   test('batch operations with metadata', async () => {
     const sheepStore = (await initialize({ allowScans: true })).for(SHEEP_ENTITY)
 
-    const putResult = await sheepStore.batchPut([shaunTheSheep, bobTheSheep, alisonTheAlpaca], {
-      batchSize: 2,
-      ttl: 1234,
-      returnConsumedCapacity: 'TOTAL',
-      returnItemCollectionMetrics: 'SIZE'
-    })
+    const putResult = await sheepStore.advancedOperations.batchPut(
+      [shaunTheSheep, bobTheSheep, alisonTheAlpaca],
+      {
+        batchSize: 2,
+        ttl: 1234,
+        returnConsumedCapacity: 'TOTAL',
+        returnItemCollectionMetrics: 'SIZE'
+      }
+    )
     expect(putResult.metadata?.consumedCapacities).toBeDefined()
     expect(putResult.metadata?.itemCollectionMetricsCollection).toBeDefined()
 
-    const getResult = await sheepStore.batchGet([shaunIdentifier, bobIdentifier, alisonIdentifier], {
-      batchSize: 2,
-      returnConsumedCapacity: 'TOTAL'
-    })
+    const getResult = await sheepStore.advancedOperations.batchGet(
+      [shaunIdentifier, bobIdentifier, alisonIdentifier],
+      {
+        batchSize: 2,
+        returnConsumedCapacity: 'TOTAL'
+      }
+    )
     expect(getResult.metadata?.consumedCapacities).toBeDefined()
 
-    const deleteResult = await sheepStore.batchDelete([shaunIdentifier, bobIdentifier, alisonIdentifier], {
-      batchSize: 2,
-      returnConsumedCapacity: 'TOTAL',
-      returnItemCollectionMetrics: 'SIZE'
-    })
+    const deleteResult = await sheepStore.advancedOperations.batchDelete(
+      [shaunIdentifier, bobIdentifier, alisonIdentifier],
+      {
+        batchSize: 2,
+        returnConsumedCapacity: 'TOTAL',
+        returnItemCollectionMetrics: 'SIZE'
+      }
+    )
     expect(deleteResult.metadata?.consumedCapacities).toBeDefined()
     expect(deleteResult.metadata?.itemCollectionMetricsCollection).toBeDefined()
   })
@@ -302,46 +318,53 @@ describe('queries-and-scans', () => {
 
   describe('queries', () => {
     test('query', async () => {
-      const result = await sheepStore.query().byPk({ breed: 'merino' })
+      const result = await sheepStore.queryOnePageByPk({ breed: 'merino' })
       expect(result.items).toEqual([bobTheSheep, shaunTheSheep])
       expect(result.lastEvaluatedKey).toBeUndefined()
-      expect(result.metadata).toBeUndefined()
+      // TODO - move to advanced
+      // expect(result.metadata).toBeUndefined()
     })
 
-    test('query-with-metadata', async () => {
-      const result = await sheepStore.query({ returnConsumedCapacity: 'TOTAL' }).byPk({ breed: 'merino' })
-      expect(result.items).toEqual([bobTheSheep, shaunTheSheep])
-      expect(result.lastEvaluatedKey).toBeUndefined()
-      expect(result.metadata?.consumedCapacities?.length).toBeGreaterThan(0)
-    })
+    // TODO - move to advanced
+    // test('query-with-metadata', async () => {
+    //   const result = await sheepStore
+    //     .query({ returnConsumedCapacity: 'TOTAL' })
+    //     .onePageByPk({ breed: 'merino' })
+    //   expect(result.items).toEqual([bobTheSheep, shaunTheSheep])
+    //   expect(result.lastEvaluatedKey).toBeUndefined()
+    //   expect(result.metadata?.consumedCapacities?.length).toBeGreaterThan(0)
+    // })
 
     test('query all pages', async () => {
-      const result = await sheepStore.query({ allPages: true }).byPk({ breed: 'merino' })
-      expect(result.items).toEqual([bobTheSheep, shaunTheSheep])
-      expect(result.lastEvaluatedKey).toBeUndefined()
-      expect(result.metadata).toBeUndefined()
+      const result = await sheepStore.queryAllByPk({ breed: 'merino' })
+      expect(result).toEqual([bobTheSheep, shaunTheSheep])
+
+      const resultBackwards = await sheepStore.queryAllByPk({ breed: 'merino' }, { scanIndexForward: false })
+      expect(resultBackwards).toEqual([shaunTheSheep, bobTheSheep])
     })
 
-    test('query all pages with metadata', async () => {
-      const result = await sheepStore
-        .query({ allPages: true, returnConsumedCapacity: 'TOTAL' })
-        .byPk({ breed: 'merino' })
-      expect(result.items).toEqual([bobTheSheep, shaunTheSheep])
-      expect(result.lastEvaluatedKey).toBeUndefined()
-      expect(result.metadata?.consumedCapacities?.length).toBeGreaterThan(0)
-    })
+    // TODO - move to advanced
+    // test('query all pages with metadata', async () => {
+    //   const result = await sheepStore
+    //     .query({ returnConsumedCapacity: 'TOTAL' })
+    //     .allByPk({ breed: 'merino' })
+    //   expect(result.items).toEqual([bobTheSheep, shaunTheSheep])
+    //   expect(result.lastEvaluatedKey).toBeUndefined()
+    //   expect(result.metadata?.consumedCapacities?.length).toBeGreaterThan(0)
+    // })
 
     test('query with limit', async () => {
-      const result = await sheepStore.query({ limit: 1 }).byPk({ breed: 'merino' })
+      const result = await sheepStore.queryOnePageByPk({ breed: 'merino' }, { limit: 1 })
       // We set limit to 1, so we should only get 1 item - which one is defined by the SK, and "bob" comes before, "shaun"
       expect(result.items).toEqual([bobTheSheep])
       expect(result.lastEvaluatedKey).toEqual({
         PK: 'SHEEP#BREED#merino',
         SK: 'NAME#bob'
       })
-      const secondResult = await sheepStore
-        .query({ limit: 1, exclusiveStartKey: result.lastEvaluatedKey })
-        .byPk({ breed: 'merino' })
+      const secondResult = await sheepStore.queryOnePageByPk(
+        { breed: 'merino' },
+        { limit: 1, exclusiveStartKey: result.lastEvaluatedKey }
+      )
       expect(secondResult.items).toEqual([shaunTheSheep])
     })
 
@@ -352,14 +375,15 @@ describe('queries-and-scans', () => {
       await sheepStore.put(alisonTheAlpaca)
       // scanIndexForward is false, so we get the LAST result, according to DynamoDB ordering
       expect(
-        (await sheepStore.query({ limit: 1, scanIndexForward: false }).byPk({ breed: 'merino' })).items
+        (await sheepStore.queryOnePageByPk({ breed: 'merino' }, { limit: 1, scanIndexForward: false })).items
       ).toEqual([shaunTheSheep])
     })
 
     test('querySkRange', async () => {
-      const result = await sheepStore
-        .query({})
-        .byPkAndSk({ breed: 'merino' }, rangeWhereNameBetween('charlie', 'terry'))
+      const result = await sheepStore.queryOnePageByPkAndSk(
+        { breed: 'merino' },
+        rangeWhereNameBetween('charlie', 'terry')
+      )
       expect(result.items).toEqual([shaunTheSheep])
       expect(result.lastEvaluatedKey).toBeUndefined()
     })
@@ -368,58 +392,60 @@ describe('queries-and-scans', () => {
   describe('scans', () => {
     test('scan disabled by default', async () => {
       const sheepStoreWithNoScans = (await initialize({ emptyTable: false })).for(SHEEP_ENTITY)
-      expect(async () => await sheepStoreWithNoScans.scan()).rejects.toThrowError(
+      expect(async () => await sheepStoreWithNoScans.scanOnePage()).rejects.toThrowError(
         'Scan operations are disabled for this store'
       )
     })
 
     test('scan', async () => {
-      const result = await sheepStore.scan()
+      const result = await sheepStore.scanOnePage()
       expect(result.items).toEqual([alisonTheAlpaca, bobTheSheep, shaunTheSheep])
-      expect(result.unparsedItems).toBeUndefined()
       expect(result.lastEvaluatedKey).toBeUndefined()
-      expect(result.metadata).toBeUndefined()
+      // expect(result.unparsedItems).toBeUndefined()
+      // expect(result.metadata).toBeUndefined()
     })
 
-    test('scan with metadata', async () => {
-      const result = await sheepStore.scan({ returnConsumedCapacity: 'TOTAL' })
-      expect(result.items).toEqual([alisonTheAlpaca, bobTheSheep, shaunTheSheep])
-      expect(result.unparsedItems).toBeUndefined()
-      expect(result.lastEvaluatedKey).toBeUndefined()
-      expect(result.metadata?.consumedCapacities?.length).toBeGreaterThan(0)
-    })
+    // TODO - move to advanced
+    // test('scan with metadata', async () => {
+    //   const result = await sheepStore.scanOnePage({ returnConsumedCapacity: 'TOTAL' })
+    //   expect(result.items).toEqual([alisonTheAlpaca, bobTheSheep, shaunTheSheep])
+    //   expect(result.lastEvaluatedKey).toBeUndefined()
+    //   // expect(result.unparsedItems).toBeUndefined()
+    //   // expect(result.metadata?.consumedCapacities?.length).toBeGreaterThan(0)
+    // })
 
     test('scan all pages', async () => {
-      const result = await sheepStore.scan({ allPages: true })
-      expect(result.items).toEqual([alisonTheAlpaca, bobTheSheep, shaunTheSheep])
-      expect(result.unparsedItems).toBeUndefined()
-      expect(result.lastEvaluatedKey).toBeUndefined()
-      expect(result.metadata).toBeUndefined()
+      const result = await sheepStore.scanAll()
+      expect(result).toEqual([alisonTheAlpaca, bobTheSheep, shaunTheSheep])
     })
 
-    test('scan all pages with metadata', async () => {
-      const result = await sheepStore.scan({ allPages: true, returnConsumedCapacity: 'TOTAL' })
-      expect(result.items).toEqual([alisonTheAlpaca, bobTheSheep, shaunTheSheep])
-      expect(result.unparsedItems).toBeUndefined()
-      expect(result.lastEvaluatedKey).toBeUndefined()
-      expect(result.metadata?.consumedCapacities?.length).toBeGreaterThan(0)
-    })
+    // TODO - move to advanced
+    // test('scan all pages with metadata', async () => {
+    //   const result = await sheepStore.scanAll({ returnConsumedCapacity: 'TOTAL' })
+    //   expect(result.items).toEqual([alisonTheAlpaca, bobTheSheep, shaunTheSheep])
+    //   expect(result.unparsedItems).toBeUndefined()
+    //   expect(result.lastEvaluatedKey).toBeUndefined()
+    //   expect(result.metadata?.consumedCapacities?.length).toBeGreaterThan(0)
+    // })
 
     test('scan with limit', async () => {
-      const result = await sheepStore.scan({ limit: 2 })
+      const result = await sheepStore.scanOnePage({ limit: 2 })
       // expect(sheep).toContainEqual(shaunTheSheep)
       // We set limit to 2, so we should only get 2 items - which ones are defined by dynamodb ordering
       expect(result.items).toEqual([alisonTheAlpaca, bobTheSheep])
-      expect(result.metadata).toBeUndefined()
+      // expect(result.metadata).toBeUndefined()
       expect(result.lastEvaluatedKey).toEqual({
         PK: 'SHEEP#BREED#merino',
         SK: 'NAME#bob'
       })
 
-      const secondResult = await sheepStore.scan({ limit: 2, exclusiveStartKey: result.lastEvaluatedKey })
+      const secondResult = await sheepStore.scanOnePage({
+        limit: 2,
+        exclusiveStartKey: result.lastEvaluatedKey
+      })
       expect(secondResult.items).toEqual([shaunTheSheep])
       expect(secondResult.lastEvaluatedKey).toBeUndefined()
-      expect(secondResult.metadata).toBeUndefined()
+      // expect(secondResult.metadata).toBeUndefined()
     })
   })
 })
@@ -428,26 +454,28 @@ describe('metadata', () => {
   test('put, get, delete', async () => {
     const sheepStore = (await initialize()).for(SHEEP_ENTITY)
 
-    const putResponse = await sheepStore.put(shaunTheSheep, {
+    const putResponse = await sheepStore.advancedOperations.put(shaunTheSheep, {
       returnConsumedCapacity: 'TOTAL',
       returnItemCollectionMetrics: 'SIZE'
     })
     expect(putResponse.metadata?.consumedCapacity?.CapacityUnits).toBeDefined()
     // TODO eventually - test putResponse.metadata?.itemCollectionMetrics - requires an example with a collection in item
 
-    const getOrUndefined = await sheepStore.getOrUndefined(shaunIdentifier, {
+    const getOrUndefined = await sheepStore.advancedOperations.getOrUndefined(shaunIdentifier, {
       returnConsumedCapacity: 'TOTAL'
     })
     expect(getOrUndefined.metadata?.consumedCapacity?.CapacityUnits).toBeDefined()
     expect(getOrUndefined.metadata?.consumedCapacity?.TableName).toBeDefined()
 
-    const getOrThrow = await sheepStore.getOrThrow(shaunIdentifier, {
+    const getOrThrow = await sheepStore.advancedOperations.getOrThrow(shaunIdentifier, {
       returnConsumedCapacity: 'TOTAL'
     })
     expect(getOrThrow.metadata?.consumedCapacity?.CapacityUnits).toBeDefined()
     expect(getOrThrow.metadata?.consumedCapacity?.TableName).toBeDefined()
 
-    const result = await sheepStore.delete(shaunTheSheep, { returnConsumedCapacity: 'TOTAL' })
+    const result = await sheepStore.advancedOperations.delete(shaunTheSheep, {
+      returnConsumedCapacity: 'TOTAL'
+    })
     expect(result.metadata?.consumedCapacity?.CapacityUnits).toBeDefined()
   })
 })
@@ -457,7 +485,10 @@ describe('unparsedReturnedAttributes', () => {
     const sheepStore = (await initialize()).for(SHEEP_ENTITY)
     await sheepStore.put(shaunTheSheep)
 
-    const secondPut = await sheepStore.put({ ...shaunTheSheep, ageInYears: 11 }, { returnValues: 'ALL_OLD' })
+    const secondPut = await sheepStore.advancedOperations.put(
+      { ...shaunTheSheep, ageInYears: 11 },
+      { returnValues: 'ALL_OLD' }
+    )
     expect(secondPut.unparsedReturnedAttributes).toEqual({
       PK: 'SHEEP#BREED#merino',
       SK: 'NAME#shaun',
@@ -469,7 +500,7 @@ describe('unparsedReturnedAttributes', () => {
     })
 
     const thirdPut = await sheepStore.put({ ...shaunTheSheep, ageInYears: 21 })
-    expect(thirdPut).toEqual({})
+    expect(thirdPut).toEqual({ ...shaunTheSheep, ageInYears: 21 })
 
     expect(
       async () =>
@@ -483,7 +514,7 @@ describe('unparsedReturnedAttributes', () => {
     // This is just the error generated in the AWS SDK
     expect(
       async () =>
-        await sheepStore.put(
+        await sheepStore.advancedOperations.put(
           { ...shaunTheSheep, ageInYears: 31 },
           { conditionExpression: 'attribute_not_exists(PK)', returnValuesOnConditionCheckFailure: 'ALL_OLD' }
         )

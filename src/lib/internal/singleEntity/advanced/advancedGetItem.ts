@@ -1,11 +1,17 @@
-import { keyParamFromSource, parseItem, tableNameParam } from '../operationsCommon'
-import { EntityContext } from '../entityContext'
-import { isDebugLoggingEnabled } from '../../util/logger'
+import {
+  keyParamFromSource,
+  parseItem,
+  returnConsumedCapacityParam,
+  tableNameParam
+} from '../../operationsCommon'
+import { EntityContext } from '../../entityContext'
+import { isDebugLoggingEnabled } from '../../../util/logger'
 import { GetCommandInput, GetCommandOutput } from '@aws-sdk/lib-dynamodb'
 
-import { GetOptions } from '../../singleEntityOperations'
+import { AdvancedGetResponse } from '../../../advanced/advancedOperationResponses'
+import { AdvancedGetOptions } from '../../../advanced/advancedOperationOptions'
 
-export async function getItem<
+export async function advancedGetItem<
   TItem extends TPKSource & TSKSource,
   TKeySource extends TPKSource & TSKSource,
   TPKSource,
@@ -13,8 +19,8 @@ export async function getItem<
 >(
   context: EntityContext<TItem, TPKSource, TSKSource>,
   keySource: TKeySource,
-  options?: GetOptions
-): Promise<TItem | undefined> {
+  options?: AdvancedGetOptions
+): Promise<AdvancedGetResponse<TItem, TPKSource, TSKSource>> {
   const params = createGetItemParams(context, keySource, options)
   const result = await executeRequest(context, params)
   return parseResult(context, result)
@@ -28,11 +34,12 @@ export function createGetItemParams<
 >(
   context: EntityContext<TItem, TPKSource, TSKSource>,
   keySource: TKeySource,
-  options?: GetOptions
+  options?: AdvancedGetOptions
 ): GetCommandInput {
   return {
     ...tableNameParam(context),
     ...keyParamFromSource(context, keySource),
+    ...returnConsumedCapacityParam(options),
     ...(options?.consistentRead !== undefined ? { ConsistentRead: options.consistentRead } : {})
   }
 }
@@ -56,5 +63,8 @@ export function parseResult<TItem extends TPKSource & TSKSource, TPKSource, TSKS
   result: GetCommandOutput
 ) {
   const unparsedItem = result.Item
-  return unparsedItem ? parseItem(context, unparsedItem) : unparsedItem
+  return {
+    item: unparsedItem ? parseItem(context, unparsedItem) : unparsedItem,
+    ...(result.ConsumedCapacity ? { metadata: { consumedCapacity: result.ConsumedCapacity } } : {})
+  }
 }

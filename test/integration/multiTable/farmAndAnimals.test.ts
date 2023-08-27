@@ -55,7 +55,7 @@ async function initializeStoreAndTable(options: { emptyTable?: boolean } = {}) {
   if (options.emptyTable === undefined || options.emptyTable) {
     await dynamoDbEmptyTable(testTableName, docClient)
     expect((await dynamoDbScanTable(testTableName, docClient)).length).toEqual(0)
-    const allRecords = (await store.for(FARM_ENTITY).scan({ allPages: true })).items
+    const allRecords = await store.for(FARM_ENTITY).scanAll()
     for (const item of allRecords) {
       await docClient.send(
         new DeleteCommand({
@@ -80,8 +80,8 @@ describe('farm and dog', () => {
       await store.for(FARM_ENTITY).put(sunflowerFarm)
       await store.for(DOG_ENTITY).put(chesterDog)
 
-      expect(await store.for(FARM_ENTITY).getOrThrow(sunflowerFarm)).toEqual({ item: sunflowerFarm })
-      expect(await store.for(DOG_ENTITY).getOrThrow(chesterDog)).toEqual({ item: chesterDog })
+      expect(await store.for(FARM_ENTITY).getOrThrow(sunflowerFarm)).toEqual(sunflowerFarm)
+      expect(await store.for(DOG_ENTITY).getOrThrow(chesterDog)).toEqual(chesterDog)
     })
   })
 
@@ -114,9 +114,9 @@ describe('farm and dog', () => {
         .execute()
 
       const retrievedFarm = await store.for(FARM_ENTITY).getOrThrow(sunflowerFarm)
-      expect(retrievedFarm).toEqual({ item: sunflowerFarm })
+      expect(retrievedFarm).toEqual(sunflowerFarm)
       const retrievedDog = await store.for(DOG_ENTITY).getOrThrow(chesterDog)
-      expect(retrievedDog).toEqual({ item: chesterDog })
+      expect(retrievedDog).toEqual(chesterDog)
 
       const getTransactionResults = await store.transactions
         .buildGetTransaction(FARM_ENTITY)

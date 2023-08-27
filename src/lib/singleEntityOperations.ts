@@ -1,71 +1,287 @@
-import {
-  BatchDeleteOptions,
-  BatchGetOptions,
-  BatchPutOptions,
-  DeleteOptions,
-  GetOptions,
-  GsiQueryOptions,
-  PutOptions,
-  QueryAndScanOptions,
-  QueryOptions,
-  SkQueryRange,
-  UpdateOptions
-} from './operationOptions'
-import {
-  BatchGetResponse,
-  BatchWriteResponse,
-  CollectionResponse,
-  DeleteResponse,
-  GetOrThrowResponse,
-  GetResponse,
-  PutResponse,
-  UpdateResponse
-} from './operationResponses'
+import { SingleEntityAdvancedOperations } from './advanced'
+import { DynamoDBValues } from './entities'
 
 export interface SingleEntityOperations<TItem extends TPKSource & TSKSource, TPKSource, TSKSource> {
-  put(item: TItem, options?: PutOptions): Promise<PutResponse>
+  advancedOperations: SingleEntityAdvancedOperations<TItem, TPKSource, TSKSource>
+
+  put(item: TItem, options?: PutOptions): Promise<TItem>
 
   update<TKeySource extends TPKSource & TSKSource>(
     keySource: TKeySource,
     options: UpdateOptions
-  ): Promise<UpdateResponse>
+  ): Promise<void>
 
   getOrUndefined<TKeySource extends TPKSource & TSKSource>(
     keySource: TKeySource,
     options?: GetOptions
-  ): Promise<GetResponse<TItem, TPKSource, TSKSource>>
+  ): Promise<TItem | undefined>
 
   getOrThrow<TKeySource extends TPKSource & TSKSource>(
     keySource: TKeySource,
     options?: GetOptions
-  ): Promise<GetOrThrowResponse<TItem, TPKSource, TSKSource>>
+  ): Promise<TItem>
 
   delete<TKeySource extends TPKSource & TSKSource>(
     keySource: TKeySource,
     options?: DeleteOptions
-  ): Promise<DeleteResponse>
+  ): Promise<void>
 
-  query(options?: QueryOptions): QueryBy<TItem, TPKSource>
+  queryAllByPk(pkSource: TPKSource, options?: QueryAllOptions): Promise<TItem[]>
 
-  queryWithGsi<TGSIPKSource>(options?: GsiQueryOptions): QueryBy<TItem, TGSIPKSource>
+  queryOnePageByPk(pkSource: TPKSource, options?: QueryOnePageOptions): Promise<OnePageResponse<TItem>>
 
-  scan(options?: QueryAndScanOptions): Promise<CollectionResponse<TItem>>
+  queryAllByPkAndSk(
+    pkSource: TPKSource,
+    queryRange: SkQueryRange,
+    options?: QueryAllOptions
+  ): Promise<TItem[]>
 
-  batchPut(item: TItem[], options?: BatchPutOptions): Promise<BatchWriteResponse>
+  queryOnePageByPkAndSk(
+    pkSource: TPKSource,
+    queryRange: SkQueryRange,
+    options?: QueryOnePageOptions
+  ): Promise<OnePageResponse<TItem>>
 
-  batchDelete<TKeySource extends TPKSource & TSKSource>(
-    keySources: TKeySource[],
-    options?: BatchDeleteOptions
-  ): Promise<BatchWriteResponse>
+  queryAllWithGsiByPk<TGSIPKSource>(pkSource: TGSIPKSource, options?: GsiQueryAllOptions): Promise<TItem[]>
 
-  batchGet<TKeySource extends TPKSource & TSKSource>(
-    keySources: TKeySource[],
-    options?: BatchGetOptions
-  ): Promise<BatchGetResponse<TItem, TPKSource, TSKSource>>
+  queryOnePageWithGsiPageByPk<TGSIPKSource>(
+    pkSource: TGSIPKSource,
+    options?: GsiQueryOnePageOptions
+  ): Promise<OnePageResponse<TItem>>
+
+  queryAllWithGsiByPkAndSk<TGSIPKSource>(
+    pkSource: TGSIPKSource,
+    queryRange: SkQueryRange,
+    options?: GsiQueryAllOptions
+  ): Promise<TItem[]>
+
+  queryOnePageWithGsiPageByPkAndSk<TGSIPKSource>(
+    pkSource: TGSIPKSource,
+    queryRange: SkQueryRange,
+    options?: GsiQueryOnePageOptions
+  ): Promise<OnePageResponse<TItem>>
+
+  scanAll(): Promise<TItem[]>
+
+  scanOnePage(options?: ScanOnePageOptions): Promise<OnePageResponse<TItem>>
 }
 
-export interface QueryBy<TItem, TQueryPK> {
-  byPk(source: TQueryPK): Promise<CollectionResponse<TItem>>
+export interface PutOptions {
+  /**
+   * DynamoDB Condition Expression
+   * @see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ConditionExpressions.html
+   * @default No condition set
+   */
+  conditionExpression?: string
 
-  byPkAndSk(source: TQueryPK, queryRange: SkQueryRange): Promise<CollectionResponse<TItem>>
+  /**
+   * DynamoDB Expression Attribute Values for Condition Expression
+   * @see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ExpressionAttributeValues.html
+   * @default No values set
+   */
+  expressionAttributeValues?: DynamoDBValues
+
+  /**
+   * DynamoDB Expression Attribute Names for Condition Expression
+   * @see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ExpressionAttributeNames.html
+   * @default No names set
+   */
+  expressionAttributeNames?: Record<string, string>
+
+  /**
+   * Absolute TTL value on record, if TTL attribute configured for table
+   * @see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/howitworks-ttl.html
+   * @default No TTL set, unless `ttlInFutureDays` is set
+   */
+  ttl?: number
+
+  /**
+   * Sets TTL value on record with a relative value - now + number of days in the future
+   * **If the `ttl` attribute is set then this value is ignored**
+   * DynamoDB only guarantees TTL cleanup precision within a few days, so more precision here is unnecessary
+   * @see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/howitworks-ttl.html
+   * @default No TTL set, unless `ttl` is set
+   */
+  ttlInFutureDays?: number
+}
+
+export interface UpdateOptions {
+  /**
+   * Update Expression, with each of the 4 possible clauses broken out
+   * @see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.UpdateExpressions.html
+   * @default No update expression set. This is only valid if the update is only used for updating the TTL value
+   */
+  update?: {
+    set?: string
+    remove?: string
+    add?: string
+    delete?: string
+  }
+
+  /**
+   * DynamoDB Condition Expression
+   * @see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ConditionExpressions.html
+   * @default No condition set
+   */
+  conditionExpression?: string
+
+  /**
+   * DynamoDB Expression Attribute Values for Update and/or Condition Expression
+   * @see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ExpressionAttributeValues.html
+   * @default No values set
+   */
+  expressionAttributeValues?: DynamoDBValues
+
+  /**
+   * DynamoDB Expression Attribute Names for Update and/or Condition Expression
+   * @see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ExpressionAttributeNames.html
+   * @default No names set
+   */
+  expressionAttributeNames?: Record<string, string>
+
+  /**
+   * Absolute TTL value on record, if TTL attribute configured for table
+   * @see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/howitworks-ttl.html
+   * @default No TTL set, unless `ttlInFutureDays` is set
+   */
+  ttl?: number
+
+  /**
+   * Sets TTL value on record with a relative value - now + number of days in the future
+   * **If the `ttl` attribute is set then this value is ignored**
+   * DynamoDB only guarantees TTL cleanup precision within a few days, so more precision here is unnecessary
+   * @see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/howitworks-ttl.html
+   * @default No TTL set, unless `ttl` is set
+   */
+  ttlInFutureDays?: number
+}
+
+export interface GetOptions {
+  /**
+   * Whether to use the "consistent read model"
+   * @see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadConsistency.html
+   * @default DynamoDB's default which is `false`, i.e. use Eventually Consistent Reads
+   */
+  consistentRead?: boolean
+}
+
+export interface DeleteOptions {
+  /**
+   * DynamoDB Condition Expression
+   * @see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ConditionExpressions.html
+   * @default No condition set
+   */
+  conditionExpression?: string
+
+  /**
+   * DynamoDB Expression Attribute Values for Condition Expression
+   * @see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ExpressionAttributeValues.html
+   * @default No values set
+   */
+  expressionAttributeValues?: DynamoDBValues
+
+  /**
+   * DynamoDB Expression Attribute Names for Condition Expression
+   * @see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ExpressionAttributeNames.html
+   * @default No names set
+   */
+  expressionAttributeNames?: Record<string, string>
+}
+
+export interface QueryAllOptions {
+  /**
+   * Whether to return results in ascending order
+   * @see _ScanIndexForward_ at https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Query.html
+   * @default DynamoDB's default which is `true`, i.e.
+   */
+  scanIndexForward?: boolean
+}
+
+export interface QueryOnePageOptions {
+  /**
+   * Max number of items to read
+   * @see _Limit_ at https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Query.html
+   * @default DynamoDB's default which is no limit set, but a maximum of 1MB of data
+   */
+  limit?: number
+
+  /**
+   * The key of the first item to read
+   * @see `ExclusiveStartKey` at https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Query.html
+   * @default DynamoDB's default, which is start at first item
+   */
+  exclusiveStartKey?: DynamoDBValues
+
+  /**
+   * Whether to return results in ascending order
+   * @see _ScanIndexForward_ at https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Query.html
+   * @default DynamoDB's default which is `true`, i.e.
+   */
+  scanIndexForward?: boolean
+}
+
+export interface GsiQueryAllOptions extends QueryAllOptions {
+  /**
+   * If an entity has multiple GSIs then this property must be used to specify which GSI to use
+   * @default use the only GSI on the entity
+   */
+  gsiId?: string
+}
+
+export interface GsiQueryOnePageOptions extends QueryOnePageOptions {
+  /**
+   * If an entity has multiple GSIs then this property must be used to specify which GSI to use
+   * @default use the only GSI on the entity
+   */
+  gsiId?: string
+}
+
+export interface SkQueryRange {
+  /**
+   * The sort-key part of the query expression (the PK part will be generated on your behalf)
+   * @see support/querySupport.ts
+   * @see _KeyConditionExpression_ at https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Query.html
+   */
+  skConditionExpressionClause: string
+  /**
+   * DynamoDB Expression Attribute Values for _skConditionExpressionClause_
+   * @see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ExpressionAttributeValues.html
+   * @default No values set
+   */
+  expressionAttributeValues?: DynamoDBValues
+  /**
+   * DynamoDB Expression Attribute Names for _skConditionExpressionClause_
+   * @see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ExpressionAttributeNames.html
+   * @default No names set
+   */
+  expressionAttributeNames?: Record<string, string>
+}
+
+export interface ScanOnePageOptions {
+  /**
+   * Max number of items to read
+   * @see _Limit_ at https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Scan.html
+   * @default DynamoDB's default which is no limit set, but a maximum of 1MB of data
+   */
+  limit?: number
+
+  /**
+   * The key of the first item to read
+   * @see `ExclusiveStartKey` at https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Scan.html
+   * @default DynamoDB's default, which is start at first item
+   */
+  exclusiveStartKey?: DynamoDBValues
+}
+
+export interface OnePageResponse<TItem> {
+  /**
+   * Result of query
+   */
+  items: TItem[]
+  /**
+   * The "last key" read, which can be used for subsequent queries or scans.
+   * If this property isn't set then no more pages of results are available
+   * @see `LastEvaluatedKey` at https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Query.html
+   */
+  lastEvaluatedKey?: DynamoDBValues
 }

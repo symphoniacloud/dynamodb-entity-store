@@ -1,6 +1,5 @@
 // Also used for generating transaction update items
 import { ContextMetaAttributeNames, EntityContext } from '../entityContext'
-import { UpdateOptions } from '../../operationOptions'
 import { Mandatory } from '../../util/types'
 import {
   conditionExpressionParam,
@@ -11,6 +10,8 @@ import {
   tableNameParam
 } from '../operationsCommon'
 import { UpdateCommandInput } from '@aws-sdk/lib-dynamodb'
+import { AdvancedUpdateOptions } from '../../advanced/advancedOperationOptions'
+import { UpdateOptions } from '../../singleEntityOperations'
 
 export function createUpdateParams<
   TItem extends TPKSource & TSKSource,
@@ -29,7 +30,22 @@ export function createUpdateParams<
     ...conditionExpressionParam(options),
     ...expressionAttributeParamsFromOptions(
       withTTLAttributeIfRelevant(context, withLastUpdatedAttributeIfRelevant(context, options))
-    ),
+    )
+  }
+}
+
+export function createAdvancedUpdateParams<
+  TItem extends TPKSource & TSKSource,
+  TKeySource extends TPKSource & TSKSource,
+  TPKSource,
+  TSKSource
+>(
+  context: EntityContext<TItem, TPKSource, TSKSource>,
+  keySource: TKeySource,
+  options: AdvancedUpdateOptions
+): Mandatory<UpdateCommandInput, 'UpdateExpression'> {
+  return {
+    ...createUpdateParams(context, keySource, options),
     ...returnParamsForCapacityMetricsAndValues(options)
   }
 }

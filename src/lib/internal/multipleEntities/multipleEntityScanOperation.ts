@@ -1,6 +1,5 @@
 import { EntityContext } from '../entityContext'
-import { MultipleEntityCollectionResponse } from '../../multipleEntityOperations'
-import { QueryAndScanOptions } from '../../operationOptions'
+import { MultipleEntityCollectionResponse, QueryAndScanOptions } from '../../multipleEntityOperations'
 import { performMultipleEntityOperationAndParse } from './multipleEntitiesQueryAndScanCommon'
 
 import { configureScanOperation } from '../common/scanCommon'
@@ -11,9 +10,10 @@ export async function multipleEntityScan(
 ): Promise<MultipleEntityCollectionResponse> {
   const defaultEntityContext = Object.values(contextsByEntityType)[0]
 
+  // TODO - need all pages version
   return await performMultipleEntityOperationAndParse(
     contextsByEntityType,
-    configureScanOperation(defaultEntityContext, options),
+    configureScanOperation(defaultEntityContext, options, false),
     defaultEntityContext
   )
 }

@@ -78,16 +78,15 @@ async function run() {
   await chickenStore.put({ breed: 'orpington', name: 'cluck', dateOfBirth: '2022-03-01', coop: 'dakota' })
 
   console.log('Chickens in Dakota:')
-  for (const chicken of (await chickenStore.queryWithGsi().byPk({ coop: 'dakota' })).items) {
+  for (const chicken of await chickenStore.queryAllWithGsiByPk({ coop: 'dakota' })) {
     console.log(chicken.name)
   }
 
   console.log('\nOrpingtons in Dakota:')
-  for (const chicken of (
-    await chickenStore
-      .queryWithGsi()
-      .byPkAndSk({ coop: 'dakota' }, rangeWhereSkBeginsWith('CHICKEN#BREED#orpington'))
-  ).items) {
+  for (const chicken of await chickenStore.queryAllWithGsiByPkAndSk(
+    { coop: 'dakota' },
+    rangeWhereSkBeginsWith('CHICKEN#BREED#orpington')
+  )) {
     console.log(chicken.name)
   }
 }

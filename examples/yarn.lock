@@ -824,9 +824,9 @@
     tslib "^2.5.0"
 
 "@symphoniacloud/dynamodb-entity-store@*":
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/@symphoniacloud/dynamodb-entity-store/-/dynamodb-entity-store-0.0.5.tgz#9fae67f1234e186d2af3dba0809ed38cad88a4ab"
-  integrity sha512-3t2kFJWgkRA+Fws8LUx4EIN5wb1f0kPRdq9xFJiMPkOxdyW9vn9eEUuWgS6n8t1d7zyF8Oykybt9SeqN0Rlulg==
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/@symphoniacloud/dynamodb-entity-store/-/dynamodb-entity-store-0.0.7.tgz#ba02164e7e15e1e1a1ee02fdce8321a3d8bb2f7f"
+  integrity sha512-f4L4iMuikv2Kzh6LJUgAHenoz4pAwLh6gcbs1JrnKQGpX69tSxfqJGIRNCUHYN7GHfmhytWiWxkMhfEbzxP1sQ==
   dependencies:
     "@aws-sdk/client-dynamodb" "3.x"
     "@aws-sdk/lib-dynamodb" "3.x"

@@ -1,8 +1,13 @@
 import { TableResolver } from '../tableBackedConfigurationResolver'
 import { Entity } from '../../entities'
-import { MultipleEntityOperations, QueryMultipleBy } from '../../multipleEntityOperations'
+import {
+  GsiQueryOptions,
+  MultipleEntityOperations,
+  QueryAndScanOptions,
+  QueryMultipleBy,
+  QueryOptions
+} from '../../multipleEntityOperations'
 import { createEntityContext, EntityContext } from '../entityContext'
-import { GsiQueryOptions, QueryAndScanOptions, QueryOptions } from '../../operationOptions'
 import { multipleEntityScan } from './multipleEntityScanOperation'
 import { queryMultipleByTable, queryMultipleByGsi } from './queryMultipleBy'
 
@@ -18,6 +23,7 @@ export function tableBackedMultipleEntityOperations(
       'Several tables would be required for this operation - please select only entities stored in one table'
     )
 
+  // TODO - need all pages options
   return {
     query<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
       keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,

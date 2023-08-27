@@ -1,10 +1,12 @@
-import { EntityContext } from '../entityContext'
-import { isDebugLoggingEnabled } from '../../util/logger'
 import { DeleteCommandInput } from '@aws-sdk/lib-dynamodb'
-import { deleteParams } from '../common/deleteCommon'
-import { DeleteOptions } from '../../singleEntityOperations'
+import { AdvancedDeleteOptions } from '../../../advanced/advancedOperationOptions'
+import { AdvancedDeleteResponse } from '../../../advanced/advancedOperationResponses'
+import { EntityContext } from '../../entityContext'
+import { advancedDeleteParams } from '../../common/deleteCommon'
+import { isDebugLoggingEnabled } from '../../../util'
+import { parseAttributesCapacityAndMetrics } from './advancedCommon'
 
-export async function deleteItem<
+export async function advancedDeleteItem<
   TItem extends TPKSource & TSKSource,
   TKeySource extends TPKSource & TSKSource,
   TPKSource,
@@ -12,10 +14,11 @@ export async function deleteItem<
 >(
   context: EntityContext<TItem, TPKSource, TSKSource>,
   keySource: TKeySource,
-  options?: DeleteOptions
-): Promise<void> {
-  const params = deleteParams(context, keySource, options)
-  await executeRequest(context, params)
+  options?: AdvancedDeleteOptions
+): Promise<AdvancedDeleteResponse> {
+  const params = advancedDeleteParams(context, keySource, options)
+  const result = await executeRequest(context, params)
+  return parseAttributesCapacityAndMetrics(result)
 }
 
 export async function executeRequest<TItem extends TPKSource & TSKSource, TPKSource, TSKSource>(

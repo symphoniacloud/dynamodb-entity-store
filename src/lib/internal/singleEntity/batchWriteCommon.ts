@@ -3,13 +3,13 @@ import { isDebugLoggingEnabled } from '../../util/logger'
 import { BatchWriteCommandInput, BatchWriteCommandOutput } from '@aws-sdk/lib-dynamodb'
 import { chunk, removeNullOrUndefined } from '../../util/collections'
 import { DynamoDBValues } from '../../entities'
-import { BatchDeleteOptions, BatchPutOptions } from '../../operationOptions'
 import { returnConsumedCapacityParam, returnItemCollectionMetricsParam } from '../operationsCommon'
 import {
-  BatchWriteResponse,
+  AdvancedBatchWriteResponse,
   ConsumedCapacitiesMetadata,
   ItemCollectionMetricsCollectionMetadata
-} from '../../operationResponses'
+} from '../../advanced/advancedOperationResponses'
+import { BatchDeleteOptions, BatchPutOptions } from '../../advanced/advancedOperationOptions'
 
 export const DEFAULT_AND_MAX_BATCH_WRITE_SIZE = 25
 export const DEFAULT_AND_MAX_BATCH_READ_SIZE = 100
@@ -38,7 +38,7 @@ export function createWriteParamsBatches<T>(
 export async function batchWrite<TItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
   context: EntityContext<TItem, TPKSource, TSKSource>,
   paramsBatches: BatchWriteCommandInput[]
-): Promise<BatchWriteResponse> {
+): Promise<AdvancedBatchWriteResponse> {
   const results: BatchWriteCommandOutput[] = []
 
   for (const batch of paramsBatches) {

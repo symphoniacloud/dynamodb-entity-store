@@ -1,14 +1,15 @@
 import { EntityContext } from '../entityContext'
-import { QueryAndScanOptions } from '../../operationOptions'
 import { configureOperation, QueryScanOperationConfiguration } from './queryAndScanCommon'
 import { ScanCommandInput, ScanCommandOutput } from '@aws-sdk/lib-dynamodb'
+import { QueryAndScanOptions } from '../../multipleEntityOperations'
 
 export function configureScanOperation(
   { dynamoDB, tableName }: Pick<EntityContext<never, never, never>, 'tableName' | 'dynamoDB'>,
-  options: QueryAndScanOptions
+  options: QueryAndScanOptions,
+  allPages: boolean
 ): QueryScanOperationConfiguration<ScanCommandInput, ScanCommandOutput> {
   return {
-    ...configureOperation(tableName, options),
+    ...configureOperation(tableName, options, allPages, undefined),
     allPageOperation: dynamoDB.scanAllPages,
     onePageOperation: dynamoDB.scanOnePage
   }

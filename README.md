@@ -159,10 +159,7 @@ Entity Store always adds the `_et` and `_lastUpdated` attributes to all records,
 Now let's retrieve Shaun so we can find out how old he is.
 
 ```typescript
-const shaun: Sheep = (await entityStore
-  .for(SHEEP_ENTITY)
-  .getOrThrow({ breed: 'merino', name: 'shaun' }))
-  .item
+const shaun: Sheep = await entityStore.for(SHEEP_ENTITY).getOrThrow({ breed: 'merino', name: 'shaun' })
 console.log(`shaun is ${shaun.ageInYears} years old`)
 ```
 
@@ -182,12 +179,7 @@ We can get all of our _merino_ sheep by running a query against the table's Part
 
 ```typescript
 console.log('\nAll merinos:')
-const merinos: Sheep[] = (
-  await entityStore
-    .for(SHEEP_ENTITY)
-    .query()
-    .byPk({ breed: 'merino' })
-).items
+const merinos: Sheep[] = await entityStore.for(SHEEP_ENTITY).queryAllByPk({ breed: 'merino' })
 for (const sheep of merinos) {
   console.log(`${sheep.name} is ${sheep.ageInYears} years old`)
 }
@@ -202,18 +194,15 @@ shaun is 3 years old
 
 Similar to `get` we need to provide the value for the `PK` field, and again under the covers Entity Store is calling `pk()` on `SHEEP_ENTITY` . Since this query only filters on the `PK` attribute we only need to provide `breed` in our input.
 
-Like `getOrThrow`, the result of the query operation includes a well-typed list of items - again by using the parser / type predicate function on `SHEEP_ENTITY` .
+Like `getOrThrow`, the result of the query operation is a well-typed list of items - again by using the parser / type predicate function on `SHEEP_ENTITY` .
 
 A lot of the power of using DynamoDB comes from using the Sort Key as part of a query. Now let's implement our second access pattern from our specification earlier - find all sheep of a particular breed, where the name is in a particular alphabetic range:
 
 ```typescript
 console.log('\nMerinos with their name starting with the first half of the alphabet:')
-const earlyAlphabetMerinos = (
-  await entityStore
+const earlyAlphabetMerinos = await entityStore
     .for(SHEEP_ENTITY)
-    .query()
-    .byPkAndSk({ breed: 'merino' }, rangeWhereSkBetween(`NAME#a`, `NAME#n`))
-).items
+    .queryAllByPkAndSk({ breed: 'merino' }, rangeWhereNameBetween('a', 'n'))
 
 for (const sheep of earlyAlphabetMerinos) {
   console.log(sheep.name)
@@ -339,7 +328,7 @@ First we can query just on the GSI's PK:
 
 ```typescript
 console.log('Chickens in Dakota:')
-for (const chicken of (await chickenStore.queryWithGsi().byPk({ coop: 'dakota' })).items) {
+for (const chicken of await chickenStore.queryAllWithGsiByPk({ coop: 'dakota' })) {
   console.log(chicken.name)
 }
 ```
@@ -356,11 +345,10 @@ And we can also narrow down using the GSI SK values too:
 
 ```typescript
 console.log('\nOrpingtons in Dakota:')
-for (const chicken of (
-  await chickenStore
-    .queryWithGsi()
-    .byPkAndSk({ coop: 'dakota' }, rangeWhereSkBeginsWith('CHICKEN#BREED#orpington'))
-).items) {
+for (const chicken of await chickenStore.queryAllWithGsiByPkAndSk(
+  { coop: 'dakota' },
+  rangeWhereSkBeginsWith('CHICKEN#BREED#orpington')
+)) {
   console.log(chicken.name)
 }
 ```
@@ -468,7 +456,7 @@ Note that, because of the configuration, there aren't any meta attributes here.
 Similarly we can get a farm:
 
 ```typescript
-const worthyFarm = (await farmStore.getOrThrow({ name: 'Worthy Farm' })).item
+const worthyFarm = await farmStore.getOrThrow({ name: 'Worthy Farm' })
 console.log(`Address of Worthy Farm: ${worthyFarm.address}`)
 ```
 
@@ -482,7 +470,7 @@ Finally it might make sense to use `scan` on this table. Because scanning is usu
 
 ```typescript
 console.log('\nAll farms:')
-for (const farm of (await farmStore.scan()).items) {
+for (const farm of await farmStore.scanAll()) {
   console.log(`Name: ${farm.name}, Address: ${farm.address}`)
 }
 ```

@@ -1,11 +1,11 @@
 import { expressionAttributeParams } from '../operationsCommon'
-import { MultipleEntityCollectionResponse } from '../../multipleEntityOperations'
+import { MultipleEntityCollectionResponse, QueryOptions } from '../../multipleEntityOperations'
 import { EntityContext } from '../entityContext'
 import { QueryCommandInput } from '@aws-sdk/lib-dynamodb'
 import { performMultipleEntityOperationAndParse } from './multipleEntitiesQueryAndScanCommon'
-import { QueryOptions, SkQueryRange } from '../../operationOptions'
 import { configureQueryOperation } from '../common/queryCommon'
 import { GsiDetails } from '../common/gsiQueryCommon'
+import { SkQueryRange } from '../../singleEntityOperations'
 
 export async function queryMultipleByPk<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
   contextsByEntityType: Record<string, EntityContext<unknown, unknown, unknown>>,
@@ -18,7 +18,8 @@ export async function queryMultipleByPk<TKeyItem extends TPKSource & TSKSource, 
     keyItemContext,
     options,
     `${keyItemContext.metaAttributeNames.pk} = :pk`,
-    expressionAttributeParams({ ':pk': keyItemContext.entity.pk(source) })
+    expressionAttributeParams({ ':pk': keyItemContext.entity.pk(source) }),
+    false
   )
 }
 
@@ -43,7 +44,8 @@ export async function queryMultipleBySkRange<TKeyItem extends TPKSource & TSKSou
       {
         '#sk': keyItemContext.metaAttributeNames.sk
       }
-    )
+    ),
+    false
   )
 }
 
@@ -62,7 +64,8 @@ export async function queryMultipleByGsiPk<TKeyItem extends TPKSource & TSKSourc
     {
       IndexName: gsiDetails.tableIndexName,
       ...expressionAttributeParams({ ':pk': gsiDetails.generators.pk(pkSource) })
-    }
+    },
+    false
   )
 }
 
@@ -94,7 +97,8 @@ export async function queryMultipleByGsiSkRange<TKeyItem extends TPKSource & TSK
           ...queryRange.expressionAttributeNames
         }
       )
-    }
+    },
+    false
   )
 }
 
@@ -107,7 +111,8 @@ async function queryMultipleWithCriteria(
   partialCriteria: Omit<
     QueryCommandInput,
     'KeyConditionExpression' | 'TableName' | 'ExclusiveStartKey' | 'Limit' | 'ScanIndexForward'
-  >
+  >,
+  allPages: boolean
 ): Promise<MultipleEntityCollectionResponse> {
   const {
     metaAttributeNames: { entityType: entityTypeAttributeName }
@@ -120,7 +125,7 @@ async function queryMultipleWithCriteria(
 
   return performMultipleEntityOperationAndParse(
     contextsByEntityType,
-    configureQueryOperation(keyItemContext, otherOptions, {
+    configureQueryOperation(keyItemContext, otherOptions, allPages, {
       KeyConditionExpression: keyConditionExpression,
       ...partialCriteria,
       ...(scanIndexForward === false ? { ScanIndexForward: scanIndexForward } : {})

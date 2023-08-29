@@ -2,7 +2,9 @@ import { EntityContext } from '../entityContext'
 import { isDebugLoggingEnabled } from '../../util/logger'
 import { createUpdateParams } from '../common/updateCommon'
 import { UpdateCommandInput } from '@aws-sdk/lib-dynamodb'
-import { UpdateOptions } from '../../singleEntityOperations'
+import { parseAttributesCapacityAndMetrics } from './singleEntityCommon'
+import { AdvancedUpdateOptions, AdvancedUpdateResponse } from '../../singleEntityAdvancedOperations'
+import { returnParamsForCapacityMetricsAndValues } from '../operationsCommon'
 
 export async function updateItem<
   TItem extends TPKSource & TSKSource,
@@ -12,10 +14,14 @@ export async function updateItem<
 >(
   context: EntityContext<TItem, TPKSource, TSKSource>,
   keySource: TKeySource,
-  options: UpdateOptions
-): Promise<void> {
-  const params = createUpdateParams(context, keySource, options)
-  await executeRequest(context, params)
+  options: AdvancedUpdateOptions
+): Promise<AdvancedUpdateResponse> {
+  const params = {
+    ...createUpdateParams(context, keySource, options),
+    ...returnParamsForCapacityMetricsAndValues(options)
+  }
+  const result = await executeRequest(context, params)
+  return parseAttributesCapacityAndMetrics(result)
 }
 
 export async function executeRequest<TItem extends TPKSource & TSKSource, TPKSource, TSKSource>(

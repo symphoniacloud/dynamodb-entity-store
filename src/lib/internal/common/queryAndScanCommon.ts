@@ -1,6 +1,6 @@
 import { parseItem, returnConsumedCapacityParam } from '../operationsCommon'
 import { DynamoDBValues } from '../../entities'
-import { EntityStoreLogger, isDebugLoggingEnabled } from '../../util/logger'
+import { EntityStoreLogger, isDebugLoggingEnabled, removeNullOrUndefined } from '../../util'
 import {
   QueryCommandInput,
   QueryCommandOutput,
@@ -9,11 +9,11 @@ import {
 } from '@aws-sdk/lib-dynamodb'
 import { EntityContext } from '../entityContext'
 import { MultipleEntityCollectionResponse, QueryAndScanOptions } from '../../multipleEntityOperations'
-import { removeNullOrUndefined } from '../../util/collections'
 import {
   AdvancedCollectionResponse,
+  AdvancedScanOnePageOptions,
   ConsumedCapacitiesMetadata
-} from '../../advanced/advancedOperationResponses'
+} from '../../singleEntityAdvancedOperations'
 
 export interface QueryScanOperationConfiguration<
   TCommandInput extends ScanCommandInput & QueryCommandInput,
@@ -23,6 +23,31 @@ export interface QueryScanOperationConfiguration<
   useAllPageOperation: boolean
   allPageOperation: (params: TCommandInput) => Promise<TCommandOutput[]>
   onePageOperation: (params: TCommandInput) => Promise<TCommandOutput>
+}
+
+export function configureScanOperation(
+  { dynamoDB, tableName }: Pick<EntityContext<never, never, never>, 'tableName' | 'dynamoDB'>,
+  options: AdvancedScanOnePageOptions,
+  allPages: boolean
+): QueryScanOperationConfiguration<ScanCommandInput, ScanCommandOutput> {
+  return {
+    ...configureOperation(tableName, options, allPages, undefined),
+    allPageOperation: dynamoDB.scanAllPages,
+    onePageOperation: dynamoDB.scanOnePage
+  }
+}
+
+export function configureQueryOperation(
+  { dynamoDB, tableName }: Pick<EntityContext<never, never, never>, 'tableName' | 'dynamoDB'>,
+  options: QueryAndScanOptions,
+  allPages: boolean,
+  queryParamsParts?: Omit<QueryCommandInput, 'TableName' | 'ExclusiveStartKey' | 'Limit'>
+): QueryScanOperationConfiguration<QueryCommandInput, QueryCommandOutput> {
+  return {
+    ...configureOperation(tableName, options, allPages, queryParamsParts),
+    allPageOperation: dynamoDB.queryAllPages,
+    onePageOperation: dynamoDB.queryOnePage
+  }
 }
 
 export function configureOperation(

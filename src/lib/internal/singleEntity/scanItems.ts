@@ -1,12 +1,14 @@
 import { EntityContext } from '../entityContext'
-import { executeQueryOrScan, parseResultsForEntity } from '../common/queryAndScanCommon'
-import { configureScanOperation } from '../common/scanCommon'
-import { AdvancedCollectionResponse } from '../../advanced/advancedOperationResponses'
-import { ScanOnePageOptions } from '../../singleEntityOperations'
+import {
+  configureScanOperation,
+  executeQueryOrScan,
+  parseResultsForEntity
+} from '../common/queryAndScanCommon'
+import { AdvancedCollectionResponse, AdvancedScanOnePageOptions } from '../../singleEntityAdvancedOperations'
 
 export async function scanItems<TItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
   context: EntityContext<TItem, TPKSource, TSKSource>,
-  options: ScanOnePageOptions,
+  options: AdvancedScanOnePageOptions,
   allPages: boolean
 ): Promise<AdvancedCollectionResponse<TItem>> {
   const scanConfig = configureScanOperation(context, options, allPages)

@@ -1,5 +1,4 @@
 import { expect, test } from 'vitest'
-import { putItem } from '../../../src/lib/internal/singleEntity/putItem'
 import { SHEEP_ENTITY } from '../../examples/sheepTypeAndEntity'
 import { Chicken, CHICKEN_ENTITY } from '../../examples/chickenTypeAndEntity'
 import { FakeClock } from '../fakes/fakeClock'
@@ -9,6 +8,7 @@ import { fakeLogger } from '../fakes/fakeLogger'
 import { SingleGSIStandardMetaAttributeNames } from '../../../src/lib/support/configSupport'
 import { bareBonesContext, contextFor, fakeDynamoDBFrom } from '../testSupportCode/entityContextSupport'
 import { gsiAttributes, putParams, ttlAttribute } from '../../../src/lib/internal/common/putCommon'
+import { putItem } from '../../../src/lib/internal/singleEntity/putItem'
 
 const shaunTheSheep = { breed: 'merino', name: 'shaun', ageInYears: 3 }
 const ginger: Chicken = {
@@ -126,10 +126,9 @@ test('should call dynamoDB client and return result', async () => {
   dynamoDB.stubPuts.addResponse(expectedPutParams, putCommandOutput)
 
   // Act
-  const putResult = await putItem(context, { name: 'Sunflower Farm' })
+  await putItem(context, { name: 'Sunflower Farm' })
 
   // Assert
-  expect(putResult).toEqual({ name: 'Sunflower Farm' })
   expect(dynamoDB.puts.length).toEqual(1)
   expect(dynamoDB.puts[0]).toEqual(expectedPutParams)
 })

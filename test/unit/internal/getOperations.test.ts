@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
-import { createGetItemParams } from '../../../src/lib/internal/singleEntity/getItem'
 import { SHEEP_ENTITY } from '../../examples/sheepTypeAndEntity'
 import { contextFor } from '../testSupportCode/entityContextSupport'
+import { createGetItemParams } from '../../../src/lib/internal/singleEntity/getItem'
 
 const shaunIdentifier = { breed: 'merino', name: 'shaun' }
 

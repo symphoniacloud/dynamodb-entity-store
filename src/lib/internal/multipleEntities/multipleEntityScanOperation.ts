@@ -2,7 +2,7 @@ import { EntityContext } from '../entityContext'
 import { MultipleEntityCollectionResponse, QueryAndScanOptions } from '../../multipleEntityOperations'
 import { performMultipleEntityOperationAndParse } from './multipleEntitiesQueryAndScanCommon'
 
-import { configureScanOperation } from '../common/scanCommon'
+import { configureScanOperation } from '../common/queryAndScanCommon'
 
 export async function multipleEntityScan(
   contextsByEntityType: Record<string, EntityContext<unknown, unknown, unknown>>,

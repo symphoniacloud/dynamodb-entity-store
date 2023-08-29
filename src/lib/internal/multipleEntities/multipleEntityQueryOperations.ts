@@ -3,9 +3,9 @@ import { MultipleEntityCollectionResponse, QueryOptions } from '../../multipleEn
 import { EntityContext } from '../entityContext'
 import { QueryCommandInput } from '@aws-sdk/lib-dynamodb'
 import { performMultipleEntityOperationAndParse } from './multipleEntitiesQueryAndScanCommon'
-import { configureQueryOperation } from '../common/queryCommon'
 import { GsiDetails } from '../common/gsiQueryCommon'
 import { SkQueryRange } from '../../singleEntityOperations'
+import { configureQueryOperation } from '../common/queryAndScanCommon'
 
 export async function queryMultipleByPk<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
   contextsByEntityType: Record<string, EntityContext<unknown, unknown, unknown>>,

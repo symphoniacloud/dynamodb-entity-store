@@ -1,5 +1,4 @@
-// Also used for generating transaction put items
-import { Clock } from '../../util/dateAndTime'
+import { Clock } from '../../util'
 import {
   conditionExpressionParam,
   createKeyFromSource,
@@ -9,10 +8,11 @@ import {
 } from '../operationsCommon'
 import { EntityContext } from '../entityContext'
 import { DynamoDBValues, Entity, MetaAttributeNames } from '../../entities'
-import { Mandatory } from '../../util/types'
+import { Mandatory } from '../../util'
 import { PutCommandInput } from '@aws-sdk/lib-dynamodb'
 import { PutOptions } from '../../singleEntityOperations'
 
+// Also used for generating transaction put items
 export function putParams<TItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
   context: EntityContext<TItem, TPKSource, TSKSource>,
   item: TItem,

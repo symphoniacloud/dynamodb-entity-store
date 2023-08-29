@@ -7,7 +7,7 @@ import {
   findYoungerThan,
   gsiBreed
 } from '../../examples/chickenTypeAndEntity'
-import { SingleEntityOperations } from '../../../src/lib/singleEntityOperations'
+import { SingleEntityOperations } from '../../../src/lib'
 import { docClient, initialize } from '../testSupportCode/appEnvironment'
 import { babs, bunty, cluck, ginger, yolko } from '../../examples/testData'
 

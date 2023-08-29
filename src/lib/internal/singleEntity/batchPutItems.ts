@@ -1,9 +1,8 @@
 import { EntityContext } from '../entityContext'
 import { batchWrite, createWriteParamsBatches } from './batchWriteCommon'
 import { BatchWriteCommandInput } from '@aws-sdk/lib-dynamodb'
-
 import { itemParam } from '../common/putCommon'
-import { BatchPutOptions } from '../../advanced/advancedOperationOptions'
+import { BatchPutOptions } from '../../singleEntityAdvancedOperations'
 
 export async function batchPutItems<TItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
   context: EntityContext<TItem, TPKSource, TSKSource>,

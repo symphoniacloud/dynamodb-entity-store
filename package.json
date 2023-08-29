@@ -1,7 +1,7 @@
 {
   "name": "@symphoniacloud/dynamodb-entity-store",
   "description": "A lightly opinionated DynamoDB library for TypeScript & JavaScript applications",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "license": "MIT",
   "author": {
     "email": "mike@symphonia.io",

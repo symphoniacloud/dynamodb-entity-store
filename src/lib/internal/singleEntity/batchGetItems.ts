@@ -1,11 +1,9 @@
 import { EntityContext } from '../entityContext'
-import { isDebugLoggingEnabled } from '../../util/logger'
-import { chunk, removeNullOrUndefined } from '../../util/collections'
+import { chunk, isDebugLoggingEnabled, removeNullOrUndefined } from '../../util'
 import { DEFAULT_AND_MAX_BATCH_READ_SIZE } from './batchWriteCommon'
 import { createKeyFromSource, parseItem, returnConsumedCapacityParam } from '../operationsCommon'
 import { BatchGetCommandInput, BatchGetCommandOutput } from '@aws-sdk/lib-dynamodb'
-import { AdvancedBatchGetResponse } from '../../advanced/advancedOperationResponses'
-import { BatchGetOptions } from '../../advanced/advancedOperationOptions'
+import { AdvancedBatchGetResponse, BatchGetOptions } from '../../singleEntityAdvancedOperations'
 
 export async function getItems<
   TItem extends TPKSource & TSKSource,

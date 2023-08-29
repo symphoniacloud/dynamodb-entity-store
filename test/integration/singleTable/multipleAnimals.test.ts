@@ -43,19 +43,20 @@ describe('query', () => {
     await store.for(DOG_ENTITY).put(chesterDog)
     await store.for(CAT_ENTITY).put(peggyCat)
 
-    const queryResult = await store.for(DOG_ENTITY).queryAllByPk({ farm: 'Sunflower Farm' })
-    expect(queryResult).toEqual([chesterDog])
-    // TODO - move to advanced
-    // expect(queryResult.unparsedItems?.length).toEqual(1)
-    // expect(queryResult.unparsedItems?.[0]).toEqual({
-    //   PK: 'FARM#Sunflower Farm',
-    //   SK: 'CAT#NAME#Peggy',
-    //   _et: 'cat',
-    //   _lastUpdated: '2023-07-01T19:00:00.000Z',
-    //   ageInYears: 7,
-    //   farm: 'Sunflower Farm',
-    //   name: 'Peggy'
-    // })
+    const queryResult = await store
+      .for(DOG_ENTITY)
+      .advancedOperations.queryAllByPk({ farm: 'Sunflower Farm' })
+    expect(queryResult.items).toEqual([chesterDog])
+    expect(queryResult.unparsedItems?.length).toEqual(1)
+    expect(queryResult.unparsedItems?.[0]).toEqual({
+      PK: 'FARM#Sunflower Farm',
+      SK: 'CAT#NAME#Peggy',
+      _et: 'cat',
+      _lastUpdated: '2023-07-01T19:00:00.000Z',
+      ageInYears: 7,
+      farm: 'Sunflower Farm',
+      name: 'Peggy'
+    })
   })
 
   test('query table single entity with multiple entity api where multiple returned from table', async () => {
@@ -86,19 +87,18 @@ describe('query', () => {
     await store.for(DUCK_ENTITY).put(waddles)
     await store.for(CHICKEN_ENTITY).put(ginger)
 
-    const result = await store.for(DUCK_ENTITY).queryAllWithGsiByPk({ coop: 'bristol' })
-    expect(result).toEqual([waddles])
-    // TODO test unparsed in advanced
-    // expect(result.unparsedItems?.length).toEqual(1)
-    // expect(result.unparsedItems?.[0]).toEqual({
-    //   PK: 'CHICKEN#BREED#sussex',
-    //   SK: 'DATEOFBIRTH#2021-07-01#NAME#ginger',
-    //   GSIPK: 'COOP#bristol',
-    //   GSISK: 'CHICKEN#BREED#sussex#DATEOFBIRTH#2021-07-01',
-    //   _et: 'chicken',
-    //   _lastUpdated: '2023-07-01T19:00:00.000Z',
-    //   ...ginger
-    // })
+    const result = await store.for(DUCK_ENTITY).advancedOperations.queryAllWithGsiByPk({ coop: 'bristol' })
+    expect(result.items).toEqual([waddles])
+    expect(result.unparsedItems?.length).toEqual(1)
+    expect(result.unparsedItems?.[0]).toEqual({
+      PK: 'CHICKEN#BREED#sussex',
+      SK: 'DATEOFBIRTH#2021-07-01#NAME#ginger',
+      GSIPK: 'COOP#bristol',
+      GSISK: 'CHICKEN#BREED#sussex#DATEOFBIRTH#2021-07-01',
+      _et: 'chicken',
+      _lastUpdated: '2023-07-01T19:00:00.000Z',
+      ...ginger
+    })
   })
 
   test('query GSI single entity with multiple entity api where multiple returned from table', async () => {
@@ -146,19 +146,19 @@ describe('scan', () => {
     await store.for(SHEEP_ENTITY).put(shaunTheSheep)
     await store.for(CHICKEN_ENTITY).put(ginger)
 
-    const scanResult = await store.for(SHEEP_ENTITY).scanOnePage()
+    const scanResult = await store.for(SHEEP_ENTITY).advancedOperations.scanOnePage()
     expect(scanResult.items.length).toEqual(1)
     expect(scanResult.items[0]).toEqual(shaunTheSheep)
-    // expect(scanResult.unparsedItems?.length).toEqual(1)
-    // expect(scanResult.unparsedItems?.[0]).toEqual({
-    //   PK: 'CHICKEN#BREED#sussex',
-    //   SK: 'DATEOFBIRTH#2021-07-01#NAME#ginger',
-    //   GSIPK: 'COOP#bristol',
-    //   GSISK: 'CHICKEN#BREED#sussex#DATEOFBIRTH#2021-07-01',
-    //   _et: 'chicken',
-    //   _lastUpdated: '2023-07-01T19:00:00.000Z',
-    //   ...ginger
-    // })
+    expect(scanResult.unparsedItems?.length).toEqual(1)
+    expect(scanResult.unparsedItems?.[0]).toEqual({
+      PK: 'CHICKEN#BREED#sussex',
+      SK: 'DATEOFBIRTH#2021-07-01#NAME#ginger',
+      GSIPK: 'COOP#bristol',
+      GSISK: 'CHICKEN#BREED#sussex#DATEOFBIRTH#2021-07-01',
+      _et: 'chicken',
+      _lastUpdated: '2023-07-01T19:00:00.000Z',
+      ...ginger
+    })
   })
 
   test('scan single entity with multiple entity api where multiple returned from table', async () => {
@@ -169,16 +169,16 @@ describe('scan', () => {
     const scanResult = await store.forMultiple([SHEEP_ENTITY]).scan()
     expect(scanResult.itemsByEntityType['sheep'][0]).toEqual(shaunTheSheep)
     expect(scanResult.itemsByEntityType['chickens']).toBeUndefined()
-    // expect(scanResult.unparsedItems?.length).toEqual(1)
-    // expect(scanResult.unparsedItems?.[0]).toEqual({
-    //   PK: 'CHICKEN#BREED#sussex',
-    //   SK: 'DATEOFBIRTH#2021-07-01#NAME#ginger',
-    //   GSIPK: 'COOP#bristol',
-    //   GSISK: 'CHICKEN#BREED#sussex#DATEOFBIRTH#2021-07-01',
-    //   _et: 'chicken',
-    //   _lastUpdated: '2023-07-01T19:00:00.000Z',
-    //   ...ginger
-    // })
+    expect(scanResult.unparsedItems?.length).toEqual(1)
+    expect(scanResult.unparsedItems?.[0]).toEqual({
+      PK: 'CHICKEN#BREED#sussex',
+      SK: 'DATEOFBIRTH#2021-07-01#NAME#ginger',
+      GSIPK: 'COOP#bristol',
+      GSISK: 'CHICKEN#BREED#sussex#DATEOFBIRTH#2021-07-01',
+      _et: 'chicken',
+      _lastUpdated: '2023-07-01T19:00:00.000Z',
+      ...ginger
+    })
   })
 })
 

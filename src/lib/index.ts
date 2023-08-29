@@ -1,12 +1,12 @@
 export * from './support'
 export * from './util'
-export * from './advanced'
 
 export * from './dynamoDBInterface'
 export * from './entities'
 export * from './entityStore'
 export * from './multipleEntityOperations'
 export * from './singleEntityOperations'
+export * from './singleEntityAdvancedOperations'
 export * from './tableBackedStore'
 export * from './tableBackedStoreConfiguration'
 export * from './transactionOperations'

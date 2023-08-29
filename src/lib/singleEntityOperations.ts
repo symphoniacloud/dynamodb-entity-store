@@ -1,5 +1,5 @@
-import { SingleEntityAdvancedOperations } from './advanced'
 import { DynamoDBValues } from './entities'
+import { SingleEntityAdvancedOperations } from './singleEntityAdvancedOperations'
 
 export interface SingleEntityOperations<TItem extends TPKSource & TSKSource, TPKSource, TSKSource> {
   advancedOperations: SingleEntityAdvancedOperations<TItem, TPKSource, TSKSource>
@@ -44,7 +44,7 @@ export interface SingleEntityOperations<TItem extends TPKSource & TSKSource, TPK
 
   queryAllWithGsiByPk<TGSIPKSource>(pkSource: TGSIPKSource, options?: GsiQueryAllOptions): Promise<TItem[]>
 
-  queryOnePageWithGsiPageByPk<TGSIPKSource>(
+  queryOnePageWithGsiByPk<TGSIPKSource>(
     pkSource: TGSIPKSource,
     options?: GsiQueryOnePageOptions
   ): Promise<OnePageResponse<TItem>>
@@ -55,7 +55,7 @@ export interface SingleEntityOperations<TItem extends TPKSource & TSKSource, TPK
     options?: GsiQueryAllOptions
   ): Promise<TItem[]>
 
-  queryOnePageWithGsiPageByPkAndSk<TGSIPKSource>(
+  queryOnePageWithGsiByPkAndSk<TGSIPKSource>(
     pkSource: TGSIPKSource,
     queryRange: SkQueryRange,
     options?: GsiQueryOnePageOptions

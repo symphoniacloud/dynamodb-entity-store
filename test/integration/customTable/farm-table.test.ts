@@ -5,13 +5,13 @@ import {
   farmTableName,
   findFarmTableName
 } from '../testSupportCode/awsEnvironment'
-import { documentClientBackedInterface } from '../../../src/lib/dynamoDBInterface'
+import { documentClientBackedInterface } from '../../../src/lib'
 import { FakeClock } from '../../unit/fakes/fakeClock'
 import { Farm, FARM_ENTITY } from '../../examples/farmTypeAndEntity'
 import { DeleteCommand } from '@aws-sdk/lib-dynamodb'
-import { createStore } from '../../../src/lib/tableBackedStore'
-import { createMinimumTable } from '../../../src/lib/support/configSupport'
-import { consoleLogger } from '../../../src/lib/util/logger'
+import { createStore } from '../../../src/lib'
+import { createMinimumTable } from '../../../src/lib'
+import { consoleLogger } from '../../../src/lib'
 
 const docClient = createDocumentClient()
 

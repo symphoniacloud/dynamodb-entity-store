@@ -1,6 +1,6 @@
 import { GsiGenerators } from '../../entities'
 import { EntityContext } from '../entityContext'
-import { throwError } from '../../util/errors'
+import { throwError } from '../../util'
 import { GsiQueryOptions } from '../../multipleEntityOperations'
 
 export interface GsiDetails {

@@ -3,7 +3,7 @@ import {
   ReturnConsumedCapacityOption,
   ReturnItemCollectionMetricsOption,
   ReturnValuesOnConditionCheckFailureOption
-} from './advanced'
+} from './singleEntityAdvancedOperations'
 import { ConsumedCapacity } from '@aws-sdk/client-dynamodb'
 import { DeleteOptions, PutOptions, UpdateOptions } from './singleEntityOperations'
 

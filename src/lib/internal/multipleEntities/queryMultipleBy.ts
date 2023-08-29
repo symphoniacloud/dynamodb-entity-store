@@ -1,6 +1,6 @@
 import { EntityContext } from '../entityContext'
 import { Entity } from '../../entities'
-import { throwError } from '../../util/errors'
+import { throwError } from '../../util'
 import {
   MultipleEntityCollectionResponse,
   QueryMultipleBy,

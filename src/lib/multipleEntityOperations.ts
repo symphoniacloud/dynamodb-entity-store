@@ -1,5 +1,5 @@
 import { DynamoDBValues, Entity } from './entities'
-import { ConsumedCapacitiesMetadata, ReturnConsumedCapacityOption } from './advanced'
+import { ConsumedCapacitiesMetadata, ReturnConsumedCapacityOption } from './singleEntityAdvancedOperations'
 import { SkQueryRange } from './singleEntityOperations'
 
 export interface QueryAndScanOptions extends ReturnConsumedCapacityOption {

@@ -1,7 +1,8 @@
 {
-  "extends": "./tsconfig-base.json",
+  "extends": "./tsconfig.json",
+  "exclude": ["test/**/*.ts"],
   "compilerOptions": {
-    "declaration": true,
+    "noEmit": false,
     "outDir": "dist/cjs"
   }
 }

@@ -27,8 +27,9 @@
     "all-checks": "npm run local-checks && npm run integration-tests",
     "deploy": "cd test/examples && aws cloudformation deploy --template-file template.yaml --stack-name \"${STACK_NAME-entity-store-test-stack}\" --no-fail-on-empty-changeset",
     "deploy-and-all-checks": "npm run deploy && npm run integration-tests",
-    "build": "rm -rf dist && yarn tsc -p tsconfig-build-esm.json && yarn tsc -p tsconfig-build-cjs.json && echo '{\"type\": \"module\"}' > dist/esm/package.json && echo '{\"type\": \"commonjs\"}' > dist/cjs/package.json",
-    "prepublishOnly": "npm run local-checks && npm run build"
+    "build": "rm -rf dist && npm tsc -p tsconfig-build-esm.json && npm tsc -p tsconfig-build-cjs.json && echo '{\"type\": \"module\"}' > dist/esm/package.json && echo '{\"type\": \"commonjs\"}' > dist/cjs/package.json",
+    "prepublishOnly": "npm run local-checks && npm run build",
+    "check-examples": "cd examples && npm run local-checks"
   },
   "engines": {
     "node": ">=14.21.0"

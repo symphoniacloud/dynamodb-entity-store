@@ -1,13 +1,34 @@
 {
-  // This file is used at development and testing time. No files are emit'ed when running
-  // tsc, and test files are included in type-checking
-  "extends": "./tsconfig-base.json",
-  "include": [
-    "src/**/*.ts",
-    "test/**/*.ts"
-  ],
+  "$schema": "https://json.schemastore.org/tsconfig",
+  // Tests are excluded in build tsconfigs
+  "include": ["src/**/*.ts", "test/**/*.ts"],
+  "exclude": ["node_modules", "dist"],
   "compilerOptions": {
+    // ** Modules **
+    "target": "es2020",
+    // "module"" is overridden in the ESM build config
+    "module": "commonjs",
+    // This is default for commonjs, but not for ES Modules, so be explicit here
+    "moduleResolution": "node",
+
+    // ** Type Checking **
+    "strict": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+
+    // ** Interop **
+    // Set to false - see https://evertpot.com/universal-commonjs-esm-typescript-packages/
+    "esModuleInterop": false,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+
+    // ** Completeness **
+    "skipLibCheck": true,
+
+    // ** Emit **
+    // noEmit overridden in build tsconfigs
     "noEmit": true,
-    "declaration": false
+    "declaration": true,
+    "sourceMap": true,
   }
 }

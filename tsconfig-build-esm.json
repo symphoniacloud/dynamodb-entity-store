@@ -1,8 +1,9 @@
 {
-  "extends": "./tsconfig-base.json",
+  "extends": "./tsconfig.json",
+  "exclude": ["test/**/*.ts"],
   "compilerOptions": {
     "module": "es2022",
-    "declaration": true,
+    "noEmit": false,
     "outDir": "dist/esm"
   }
 }

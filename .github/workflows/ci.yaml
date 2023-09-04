@@ -23,11 +23,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup node
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
-          cache: 'yarn'
+          cache: 'npm'
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -39,4 +38,4 @@ jobs:
         env:
           STACK_NAME: dynamodb-entity-store-ci
         run: >
-          yarn install && cd examples && yarn install && cd .. && yarn deploy-and-run-integration-tests
+          npm install && npm run deploy-and-all-checks && npm run build

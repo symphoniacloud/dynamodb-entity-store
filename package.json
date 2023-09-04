@@ -1,7 +1,6 @@
 {
   "name": "@symphoniacloud/dynamodb-entity-store",
   "description": "A lightly opinionated DynamoDB library for TypeScript & JavaScript applications",
-  "version": "0.0.8",
   "license": "MIT",
   "author": {
     "email": "mike@symphonia.io",
@@ -20,16 +19,16 @@
     "url": "https://github.com/symphoniacloud/dynamodb-entity-store/issues"
   },
   "scripts": {
-    "local-checks": "yarn tsc && yarn lint && yarn unit-tests && cd examples && yarn local-checks",
     "lint": "eslint --max-warnings=0 --fix-dry-run \"{src,test}/**/*.{js,ts}\"",
-    "unit-tests": "yarn vitest run --dir test/unit",
-    "integration-tests": "yarn vitest run --dir test/integration --config ./test/integration/vitest.config.ts",
-    "all-checks": "yarn local-checks && yarn integration-tests",
     "format": "prettier --check \"{src,test}/**/*.{js,ts}\"",
+    "unit-tests": "npx vitest run --dir test/unit",
+    "local-checks": "tsc && npm run lint && npm run unit-tests",
+    "integration-tests": "npx vitest run --dir test/integration --config ./test/integration/vitest.config.ts",
+    "all-checks": "npm run local-checks && npm run integration-tests",
     "deploy": "cd test/examples && aws cloudformation deploy --template-file template.yaml --stack-name \"${STACK_NAME-entity-store-test-stack}\" --no-fail-on-empty-changeset",
-    "deploy-and-run-integration-tests": "yarn local-checks && yarn deploy && yarn integration-tests",
+    "deploy-and-all-checks": "npm run deploy && npm run integration-tests",
     "build": "rm -rf dist && yarn tsc -p tsconfig-build-esm.json && yarn tsc -p tsconfig-build-cjs.json && echo '{\"type\": \"module\"}' > dist/esm/package.json && echo '{\"type\": \"commonjs\"}' > dist/cjs/package.json",
-    "prepublishOnly": "yarn build"
+    "prepublishOnly": "npm run local-checks && npm run build"
   },
   "engines": {
     "node": ">=14.21.0"

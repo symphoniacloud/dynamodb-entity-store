@@ -1,0 +1,26 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      # Capture the name of the published release to an environment variable
+      # See https://stackoverflow.com/questions/58177786/get-the-current-pushed-tag-in-github-actions
+      - run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      # Modify package.json, inserting version attribute
+      - run: npm version $RELEASE_VERSION --no-git-tag-version
+      # Perform publish, which will also run prepublishOnly
+      - run: npm publish --access public
+        env:
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}

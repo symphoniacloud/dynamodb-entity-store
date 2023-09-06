@@ -1,6 +1,12 @@
 import { DynamoDBValues } from './entities'
 import { SingleEntityAdvancedOperations } from './singleEntityAdvancedOperations'
 
+/**
+ * All the operations available when working with one entity at a time.
+ * This interface contains the "simple" versions of equivalent DynamoDB operations,
+ * but if you need more advanced behavior - e.g. for reading DynamoDB metadata - then use
+ * the versions on `advancedOperations`
+ */
 export interface SingleEntityOperations<TItem extends TPKSource & TSKSource, TPKSource, TSKSource> {
   advancedOperations: SingleEntityAdvancedOperations<TItem, TPKSource, TSKSource>
 

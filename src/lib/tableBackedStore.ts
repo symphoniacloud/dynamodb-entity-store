@@ -11,11 +11,9 @@ import { TableBackedGetTransactionBuilder } from './internal/transactions/tableB
 import { GetTransactionBuilder, WriteTransactionBuilder } from './transactionOperations'
 
 /**
- * Entry point to dynamodb-entity-store. Given a configuration, create the entity store interface on
- * top of DynamoDB.
- * A Table Backed Store can use either one DynamoDB backing store, or several; and can be used to persist
- * one entity type, or several.
- * @param config - either using objects created from configSupport.ts, or you can fully customize
+ * Entry point to dynamodb-entity-store. A Table Backed Store can use either one DynamoDB backing table,
+ * or several; and can be used to persist one entity type, or several.
+ * @param config - either using objects created from configSupport.ts, (e.g. `createStandardSingleTableStoreConfig`) or you can fully customize
  */
 export function createStore(config: TableBackedStoreConfiguration): AllEntitiesStore {
   const tableConfigResolver = resolverFor(config)

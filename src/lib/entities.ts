@@ -49,9 +49,9 @@ export type EntityParser<T> = (
 ) => T
 
 /**
- * Every object stored via Entity Store must have a corresponding Entity
- * Each entity must be related to type (TItem) that must at least define the table key fields, and optionally
- * all the other fields of the internal representation of an object
+ * Every object stored via Entity Store must have a corresponding Entity.
+ * Each entity must be related to a type (`TItem`) that must at least define the table key fields, and optionally
+ * the other fields of the internal representation of an object
  */
 export interface Entity<TItem extends TPKSource & TSKSource, TPKSource, TSKSource> {
   /**

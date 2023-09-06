@@ -28,9 +28,9 @@ jobs:
       # Modify package.json, inserting version attribute
       - run: npm version $RELEASE_VERSION --no-git-tag-version
       # Perform publish, which will also run prepublishOnly
-#      - run: npm publish --access public
-#        env:
-#          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - run: npm run generate-docs
 

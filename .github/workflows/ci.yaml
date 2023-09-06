@@ -39,3 +39,6 @@ jobs:
           STACK_NAME: dynamodb-entity-store-ci
         run: >
           npm install && npm run deploy-and-all-checks && npm run build
+
+      # To test that doc generation works
+      - run: npm run generate-docs

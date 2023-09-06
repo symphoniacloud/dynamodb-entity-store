@@ -29,7 +29,8 @@
     "deploy-and-all-checks": "npm run deploy && npm run integration-tests",
     "build": "rm -rf dist && tsc -p tsconfig-build-esm.json && tsc -p tsconfig-build-cjs.json && echo '{\"type\": \"module\"}' > dist/esm/package.json && echo '{\"type\": \"commonjs\"}' > dist/cjs/package.json",
     "prepublishOnly": "npm run local-checks && npm run build",
-    "check-examples": "cd examples && npm run local-checks"
+    "check-examples": "cd examples && npm run local-checks",
+    "generate-docs": "typedoc src/lib/index.ts"
   },
   "engines": {
     "node": ">=16.20.0"
@@ -51,6 +52,7 @@
     "eslint-config-prettier": "8.x",
     "prettier": "2.x",
     "ts-node": "10.x",
+    "typedoc": "^0.25.1",
     "typescript": "4.x",
     "vitest": "0.x"
   },

@@ -33,4 +33,4 @@ jobs:
         with:
           path: 'docs/'
 
-      - uses: actions/deploy-pages
+      - uses: actions/deploy-pages@v2

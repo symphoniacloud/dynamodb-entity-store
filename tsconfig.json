@@ -5,7 +5,7 @@
   "exclude": ["node_modules", "dist"],
   "compilerOptions": {
     // ** Modules **
-    "target": "es2020",
+    "target": "es2021",
     // "module"" is overridden in the ESM build config
     "module": "commonjs",
     // This is default for commonjs, but not for ES Modules, so be explicit here

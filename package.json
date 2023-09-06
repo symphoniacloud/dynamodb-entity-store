@@ -27,12 +27,12 @@
     "all-checks": "npm run local-checks && npm run integration-tests",
     "deploy": "cd test/examples && aws cloudformation deploy --template-file template.yaml --stack-name \"${STACK_NAME-entity-store-test-stack}\" --no-fail-on-empty-changeset",
     "deploy-and-all-checks": "npm run deploy && npm run integration-tests",
-    "build": "rm -rf dist && npm tsc -p tsconfig-build-esm.json && npm tsc -p tsconfig-build-cjs.json && echo '{\"type\": \"module\"}' > dist/esm/package.json && echo '{\"type\": \"commonjs\"}' > dist/cjs/package.json",
+    "build": "rm -rf dist && tsc -p tsconfig-build-esm.json && tsc -p tsconfig-build-cjs.json && echo '{\"type\": \"module\"}' > dist/esm/package.json && echo '{\"type\": \"commonjs\"}' > dist/cjs/package.json",
     "prepublishOnly": "npm run local-checks && npm run build",
     "check-examples": "cd examples && npm run local-checks"
   },
   "engines": {
-    "node": ">=14.21.0"
+    "node": ">=16.20.0"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "3.x",
@@ -43,7 +43,7 @@
     "@aws-sdk/client-cloudformation": "3.x",
     "@aws-sdk/types": "3.x",
     "@types/deep-equal": "1.x",
-    "@types/node": "14.x",
+    "@types/node": "16.x",
     "@typescript-eslint/eslint-plugin": "5.x",
     "@typescript-eslint/parser": "5.x",
     "deep-equal": "2.x",

@@ -13,6 +13,13 @@ export interface QueryAndScanOptions extends ReturnConsumedCapacityOption {
    * See `ExclusiveStartKey` at https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-dynamodb/Interface/QueryInput/
    */
   exclusiveStartKey?: DynamoDBValues
+
+  /**
+   * Determines the read consistency model: If set to true, then the operation uses strongly consistent reads; otherwise, the operation uses eventually consistent reads.
+   * @see https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Query.html#DDB-Query-request-ConsistentRead
+   * @default DynamoDB's default which is `false`
+   */
+  consistentRead?: boolean
 }
 
 export interface QueryOptions extends QueryAndScanOptions {

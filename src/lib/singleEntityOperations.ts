@@ -67,7 +67,7 @@ export interface SingleEntityOperations<TItem extends TPKSource & TSKSource, TPK
     options?: GsiQueryOnePageOptions
   ): Promise<OnePageResponse<TItem>>
 
-  scanAll(): Promise<TItem[]>
+  scanAll(options?: ScanAllOptions): Promise<TItem[]>
 
   scanOnePage(options?: ScanOnePageOptions): Promise<OnePageResponse<TItem>>
 }
@@ -198,9 +198,16 @@ export interface QueryAllOptions {
   /**
    * Whether to return results in ascending order
    * @see _ScanIndexForward_ at https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Query.html
-   * @default DynamoDB's default which is `true`, i.e.
+   * @default DynamoDB's default which is `true`
    */
   scanIndexForward?: boolean
+
+  /**
+   * Determines the read consistency model: If set to true, then the operation uses strongly consistent reads; otherwise, the operation uses eventually consistent reads.
+   * @see https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Query.html#DDB-Query-request-ConsistentRead
+   * @default DynamoDB's default which is `false`
+   */
+  consistentRead?: boolean
 }
 
 export interface QueryOnePageOptions {
@@ -224,9 +231,16 @@ export interface QueryOnePageOptions {
    * @default DynamoDB's default which is `true`, i.e.
    */
   scanIndexForward?: boolean
+
+  /**
+   * Determines the read consistency model: If set to true, then the operation uses strongly consistent reads; otherwise, the operation uses eventually consistent reads.
+   * @see https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Query.html#DDB-Query-request-ConsistentRead
+   * @default DynamoDB's default which is `false`
+   */
+  consistentRead?: boolean
 }
 
-export interface GsiQueryAllOptions extends QueryAllOptions {
+export interface GsiQueryAllOptions extends Omit<QueryAllOptions, 'consistentRead'> {
   /**
    * If an entity has multiple GSIs then this property must be used to specify which GSI to use
    * @default use the only GSI on the entity
@@ -234,7 +248,7 @@ export interface GsiQueryAllOptions extends QueryAllOptions {
   gsiId?: string
 }
 
-export interface GsiQueryOnePageOptions extends QueryOnePageOptions {
+export interface GsiQueryOnePageOptions extends Omit<QueryOnePageOptions, 'consistentRead'> {
   /**
    * If an entity has multiple GSIs then this property must be used to specify which GSI to use
    * @default use the only GSI on the entity
@@ -263,6 +277,15 @@ export interface SkQueryRange {
   expressionAttributeNames?: Record<string, string>
 }
 
+export interface ScanAllOptions {
+  /**
+   * Determines the read consistency model: If set to true, then the operation uses strongly consistent reads; otherwise, the operation uses eventually consistent reads.
+   * @see https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Scan.html#DDB-Scan-request-ConsistentRead
+   * @default DynamoDB's default which is `false`
+   */
+  consistentRead?: boolean
+}
+
 export interface ScanOnePageOptions {
   /**
    * Max number of items to read
@@ -277,6 +300,13 @@ export interface ScanOnePageOptions {
    * @default DynamoDB's default, which is start at first item
    */
   exclusiveStartKey?: DynamoDBValues
+
+  /**
+   * Determines the read consistency model: If set to true, then the operation uses strongly consistent reads; otherwise, the operation uses eventually consistent reads.
+   * @see https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Scan.html#DDB-Scan-request-ConsistentRead
+   * @default DynamoDB's default which is `false`
+   */
+  consistentRead?: boolean
 }
 
 export interface OnePageResponse<TItem> {

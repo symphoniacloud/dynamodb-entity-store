@@ -56,12 +56,13 @@ export function configureOperation(
   allPages: boolean,
   queryParamsParts?: Omit<QueryCommandInput, 'TableName' | 'ExclusiveStartKey' | 'Limit'>
 ): { operationParams: ScanCommandInput & QueryCommandInput; useAllPageOperation: boolean } {
-  const { limit, exclusiveStartKey } = options
+  const { limit, exclusiveStartKey, consistentRead } = options
   return {
     operationParams: {
       TableName: tableName,
       ...(limit ? { Limit: limit } : {}),
       ...(exclusiveStartKey ? { ExclusiveStartKey: exclusiveStartKey } : {}),
+      ...(consistentRead !== undefined ? { ConsistentRead: consistentRead } : {}),
       ...(queryParamsParts ? queryParamsParts : {}),
       ...returnConsumedCapacityParam(options)
     },

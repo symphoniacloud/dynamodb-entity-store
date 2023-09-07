@@ -7,6 +7,7 @@ import {
   PutOptions,
   QueryAllOptions,
   QueryOnePageOptions,
+  ScanAllOptions,
   ScanOnePageOptions,
   SkQueryRange,
   UpdateOptions
@@ -131,7 +132,7 @@ export type AdvancedGsiQueryAllOptions = GsiQueryAllOptions & ReturnConsumedCapa
 
 export type AdvancedGsiQueryOnePageOptions = GsiQueryOnePageOptions & ReturnConsumedCapacityOption
 
-export type AdvancedScanAllOptions = ReturnConsumedCapacityOption
+export type AdvancedScanAllOptions = ScanAllOptions & ReturnConsumedCapacityOption
 
 export type AdvancedScanOnePageOptions = ScanOnePageOptions & ReturnConsumedCapacityOption
 

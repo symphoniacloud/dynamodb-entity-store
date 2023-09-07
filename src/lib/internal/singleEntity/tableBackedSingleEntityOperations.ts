@@ -9,6 +9,7 @@ import {
   PutOptions,
   QueryAllOptions,
   QueryOnePageOptions,
+  ScanAllOptions,
   ScanOnePageOptions,
   SingleEntityOperations,
   SkQueryRange,
@@ -116,8 +117,8 @@ export function tableBackedSingleEntityOperations<TItem extends TPKSource & TSKS
       return await advancedOperations.queryOnePageWithGsiByPkAndSk(pkSource, queryRange, options)
     },
 
-    async scanAll() {
-      return (await advancedOperations.scanAll()).items
+    async scanAll(options: ScanAllOptions = {}) {
+      return (await advancedOperations.scanAll(options)).items
     },
 
     async scanOnePage(options: ScanOnePageOptions = {}) {

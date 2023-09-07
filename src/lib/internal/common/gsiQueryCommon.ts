@@ -1,7 +1,7 @@
 import { GsiGenerators } from '../../entities'
 import { EntityContext } from '../entityContext'
 import { throwError } from '../../util'
-import { AdvancedGsiQueryOnePageOptions } from '../../singleEntityAdvancedOperations'
+import { WithGsiId } from '../../singleEntityOperations'
 
 export interface GsiDetails {
   id: string
@@ -13,9 +13,9 @@ export interface GsiDetails {
 // TODO - needs more testing
 export function findGsiDetails<TItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
   entityContext: EntityContext<TItem, TPKSource, TSKSource>,
-  options: AdvancedGsiQueryOnePageOptions
+  withGsiId: WithGsiId
 ): GsiDetails {
-  const entityGsi = findEntityGsi(entityContext, options)
+  const entityGsi = findEntityGsi(entityContext, withGsiId)
   const tableGsi = findGsiTableDetails(entityContext, entityGsi.gsiId)
   return {
     id: entityGsi.gsiId,
@@ -27,7 +27,7 @@ export function findGsiDetails<TItem extends TPKSource & TSKSource, TPKSource, T
 
 function findEntityGsi<TItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
   { entity: { type, gsis } }: EntityContext<TItem, TPKSource, TSKSource>,
-  options: AdvancedGsiQueryOnePageOptions
+  withGsiId: WithGsiId
 ): { gsiId: string; gsiGenerators: GsiGenerators } {
   const entityGsiCount = Object.keys(gsis ?? {}).length
   if (!gsis || entityGsiCount === 0)
@@ -39,13 +39,13 @@ function findEntityGsi<TItem extends TPKSource & TSKSource, TPKSource, TSKSource
       gsiGenerators: onlyGsi[1]
     }
   }
-  if (!options.gsiId)
+  if (!withGsiId.gsiId)
     throw new Error(
       `Entity type ${type} has multiple GSIs but no GSI ID (.gsiId) was specified on query options`
     )
   return {
-    gsiId: options.gsiId,
-    gsiGenerators: gsis[options.gsiId]
+    gsiId: withGsiId.gsiId,
+    gsiGenerators: gsis[withGsiId.gsiId]
   }
 }
 

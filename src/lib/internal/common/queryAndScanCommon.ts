@@ -15,6 +15,7 @@ import {
   AdvancedScanOnePageOptions,
   ConsumedCapacitiesMetadata
 } from '../../singleEntityAdvancedOperations'
+import { GsiDetails } from './gsiQueryCommon'
 
 export interface QueryScanOperationConfiguration<
   TCommandInput extends ScanCommandInput & QueryCommandInput,
@@ -29,10 +30,16 @@ export interface QueryScanOperationConfiguration<
 export function configureScanOperation(
   { dynamoDB, tableName }: Pick<EntityContext<never, never, never>, 'tableName' | 'dynamoDB'>,
   options: AdvancedScanOnePageOptions,
-  allPages: boolean
+  allPages: boolean,
+  gsiDetails?: GsiDetails
 ): QueryScanOperationConfiguration<ScanCommandInput, ScanCommandOutput> {
   return {
-    ...configureOperation(tableName, options, allPages, undefined),
+    ...configureOperation(
+      tableName,
+      options,
+      allPages,
+      gsiDetails ? { IndexName: gsiDetails.tableIndexName } : undefined
+    ),
     allPageOperation: dynamoDB.scanAllPages,
     onePageOperation: dynamoDB.scanOnePage
   }
@@ -55,7 +62,7 @@ export function configureOperation(
   tableName: string,
   options: AdvancedQueryOnePageOptions,
   allPages: boolean,
-  queryParamsParts?: Omit<QueryCommandInput, 'TableName' | 'ExclusiveStartKey' | 'Limit'>
+  paramsParts?: Omit<QueryCommandInput, 'TableName' | 'ExclusiveStartKey' | 'Limit'>
 ): { operationParams: ScanCommandInput & QueryCommandInput; useAllPageOperation: boolean } {
   const { limit, exclusiveStartKey, consistentRead } = options
   return {
@@ -64,7 +71,7 @@ export function configureOperation(
       ...(limit ? { Limit: limit } : {}),
       ...(exclusiveStartKey ? { ExclusiveStartKey: exclusiveStartKey } : {}),
       ...(consistentRead !== undefined ? { ConsistentRead: consistentRead } : {}),
-      ...(queryParamsParts ? queryParamsParts : {}),
+      ...(paramsParts ? paramsParts : {}),
       ...returnConsumedCapacityParam(options)
     },
     useAllPageOperation: allPages

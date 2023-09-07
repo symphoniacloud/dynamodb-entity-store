@@ -36,6 +36,38 @@ describe('chickens', () => {
     ).toBeUndefined()
   })
 
+  describe('scan', () => {
+    test('scan GSI disabled by default', async () => {
+      const chickenStore = (await initialize()).for(CHICKEN_ENTITY)
+      expect(async () => await chickenStore.scanOnePageWithGsi()).rejects.toThrowError(
+        'Scan operations are disabled for this store'
+      )
+      expect(async () => await chickenStore.scanAllWithGsi()).rejects.toThrowError(
+        'Scan operations are disabled for this store'
+      )
+    })
+
+    test('scan GSI', async () => {
+      const chickenStore = (await initialize({ allowScans: true })).for(CHICKEN_ENTITY)
+      await chickenStore.put(ginger)
+      await chickenStore.put(babs)
+      await chickenStore.put(bunty)
+
+      const scanAllGsiResult = await chickenStore.scanAllWithGsi()
+      expect(scanAllGsiResult).toEqual([ginger, babs, bunty])
+
+      const scanFirstPageGsiResult = await chickenStore.scanOnePageWithGsi({ limit: 2, gsiId: 'gsi' })
+      expect(scanFirstPageGsiResult.items).toEqual([ginger, babs])
+
+      const scanSecondPageGsiResult = await chickenStore.scanOnePageWithGsi({
+        limit: 2,
+        gsiId: 'gsi',
+        exclusiveStartKey: scanFirstPageGsiResult.lastEvaluatedKey
+      })
+      expect(scanSecondPageGsiResult.items).toEqual([bunty])
+    })
+  })
+
   describe('queries', () => {
     let chickenStore: SingleEntityOperations<
       Chicken,

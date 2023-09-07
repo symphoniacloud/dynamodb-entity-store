@@ -9,6 +9,8 @@ import {
   AdvancedGetResponse,
   AdvancedGsiQueryAllOptions,
   AdvancedGsiQueryOnePageOptions,
+  AdvancedGsiScanAllOptions,
+  AdvancedGsiScanOnePageOptions,
   AdvancedPutOptions,
   AdvancedPutResponse,
   AdvancedQueryAllOptions,
@@ -51,6 +53,10 @@ export function tableBackedSingleEntityAdvancedOperations<
   entity: Entity<TItem, TPKSource, TSKSource>,
   entityContext: EntityContext<TItem, TPKSource, TSKSource>
 ): SingleEntityAdvancedOperations<TItem, TPKSource, TSKSource> {
+  function checkAllowScans() {
+    if (!table.allowScans) throw new Error('Scan operations are disabled for this store')
+  }
+
   return {
     async put(item: TItem, options?: AdvancedPutOptions): Promise<AdvancedPutResponse> {
       return await putItem(entityContext, item, options)
@@ -170,13 +176,23 @@ export function tableBackedSingleEntityAdvancedOperations<
     },
 
     async scanAll(options: AdvancedScanAllOptions = {}) {
-      if (!table.allowScans) throw new Error('Scan operations are disabled for this store')
+      checkAllowScans()
       return await scanItems(entityContext, options, true)
     },
 
     async scanOnePage(options: AdvancedScanOnePageOptions = {}) {
-      if (!table.allowScans) throw new Error('Scan operations are disabled for this store')
+      checkAllowScans()
       return await scanItems(entityContext, options, false)
+    },
+
+    async scanAllWithGsi(options: AdvancedGsiScanAllOptions = {}) {
+      checkAllowScans()
+      return await scanItems(entityContext, options, true, findGsiDetails(entityContext, options))
+    },
+
+    async scanOnePageWithGsi(options: AdvancedGsiScanOnePageOptions = {}) {
+      checkAllowScans()
+      return await scanItems(entityContext, options, false, findGsiDetails(entityContext, options))
     },
 
     async batchPut(items: TItem[], options?: BatchPutOptions): Promise<AdvancedBatchWriteResponse> {

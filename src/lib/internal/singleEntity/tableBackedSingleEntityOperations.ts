@@ -5,6 +5,8 @@ import {
   GetOptions,
   GsiQueryAllOptions,
   GsiQueryOnePageOptions,
+  GsiScanAllOptions,
+  GsiScanOnePageOptions,
   OnePageResponse,
   PutOptions,
   QueryAllOptions,
@@ -123,6 +125,14 @@ export function tableBackedSingleEntityOperations<TItem extends TPKSource & TSKS
 
     async scanOnePage(options: ScanOnePageOptions = {}) {
       return await advancedOperations.scanOnePage(options)
+    },
+
+    async scanAllWithGsi(options: GsiScanAllOptions = {}) {
+      return (await advancedOperations.scanAllWithGsi(options)).items
+    },
+
+    async scanOnePageWithGsi(options: GsiScanOnePageOptions = {}) {
+      return await advancedOperations.scanOnePageWithGsi(options)
     }
   }
 }

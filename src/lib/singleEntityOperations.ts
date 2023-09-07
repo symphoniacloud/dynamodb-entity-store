@@ -70,6 +70,10 @@ export interface SingleEntityOperations<TItem extends TPKSource & TSKSource, TPK
   scanAll(options?: ScanAllOptions): Promise<TItem[]>
 
   scanOnePage(options?: ScanOnePageOptions): Promise<OnePageResponse<TItem>>
+
+  scanAllWithGsi(options?: GsiScanAllOptions): Promise<TItem[]>
+
+  scanOnePageWithGsi(options?: GsiScanOnePageOptions): Promise<OnePageResponse<TItem>>
 }
 
 export interface PutOptions {
@@ -240,7 +244,7 @@ export interface QueryOnePageOptions {
   consistentRead?: boolean
 }
 
-export interface GsiQueryAllOptions extends Omit<QueryAllOptions, 'consistentRead'> {
+export interface WithGsiId {
   /**
    * If an entity has multiple GSIs then this property must be used to specify which GSI to use
    * @default use the only GSI on the entity
@@ -248,13 +252,9 @@ export interface GsiQueryAllOptions extends Omit<QueryAllOptions, 'consistentRea
   gsiId?: string
 }
 
-export interface GsiQueryOnePageOptions extends Omit<QueryOnePageOptions, 'consistentRead'> {
-  /**
-   * If an entity has multiple GSIs then this property must be used to specify which GSI to use
-   * @default use the only GSI on the entity
-   */
-  gsiId?: string
-}
+export type GsiQueryAllOptions = Omit<QueryAllOptions, 'consistentRead'> & WithGsiId
+
+export type GsiQueryOnePageOptions = Omit<QueryOnePageOptions, 'consistentRead'> & WithGsiId
 
 export interface SkQueryRange {
   /**
@@ -308,6 +308,10 @@ export interface ScanOnePageOptions {
    */
   consistentRead?: boolean
 }
+
+export type GsiScanAllOptions = WithGsiId
+
+export type GsiScanOnePageOptions = Omit<ScanOnePageOptions, 'consistentRead'> & WithGsiId
 
 export interface OnePageResponse<TItem> {
   /**

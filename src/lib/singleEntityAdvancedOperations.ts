@@ -3,6 +3,8 @@ import {
   GetOptions,
   GsiQueryAllOptions,
   GsiQueryOnePageOptions,
+  GsiScanAllOptions,
+  GsiScanOnePageOptions,
   OnePageResponse,
   PutOptions,
   QueryAllOptions,
@@ -94,6 +96,10 @@ export interface SingleEntityAdvancedOperations<TItem extends TPKSource & TSKSou
 
   scanOnePage(options?: AdvancedScanOnePageOptions): Promise<AdvancedCollectionResponse<TItem>>
 
+  scanAllWithGsi(options?: AdvancedGsiScanAllOptions): Promise<AdvancedCollectionResponse<TItem>>
+
+  scanOnePageWithGsi(options?: AdvancedGsiScanOnePageOptions): Promise<AdvancedCollectionResponse<TItem>>
+
   batchPut(item: TItem[], options?: BatchPutOptions): Promise<AdvancedBatchWriteResponse>
 
   batchDelete<TKeySource extends TPKSource & TSKSource>(
@@ -135,6 +141,10 @@ export type AdvancedGsiQueryOnePageOptions = GsiQueryOnePageOptions & ReturnCons
 export type AdvancedScanAllOptions = ScanAllOptions & ReturnConsumedCapacityOption
 
 export type AdvancedScanOnePageOptions = ScanOnePageOptions & ReturnConsumedCapacityOption
+
+export type AdvancedGsiScanAllOptions = GsiScanAllOptions & ReturnConsumedCapacityOption
+
+export type AdvancedGsiScanOnePageOptions = GsiScanOnePageOptions & ReturnConsumedCapacityOption
 
 export type BatchPutOptions = BatchOptions &
   ReturnConsumedCapacityOption &

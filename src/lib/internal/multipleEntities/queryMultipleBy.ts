@@ -1,11 +1,7 @@
 import { EntityContext } from '../entityContext'
 import { Entity } from '../../entities'
 import { throwError } from '../../util'
-import {
-  MultipleEntityCollectionResponse,
-  QueryMultipleBy,
-  QueryOptions
-} from '../../multipleEntityOperations'
+import { MultipleEntityCollectionResponse, QueryMultipleBy } from '../../multipleEntityOperations'
 import {
   queryMultipleByGsiPk,
   queryMultipleByGsiSkRange,
@@ -14,6 +10,10 @@ import {
 } from './multipleEntityQueryOperations'
 import { findGsiDetails } from '../common/gsiQueryCommon'
 import { SkQueryRange } from '../../singleEntityOperations'
+import {
+  AdvancedGsiQueryOnePageOptions,
+  AdvancedQueryOnePageOptions
+} from '../../singleEntityAdvancedOperations'
 
 function findKeyEntityContext<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
   contextsByEntityType: Record<string, EntityContext<unknown, unknown, unknown>>,
@@ -28,7 +28,7 @@ function findKeyEntityContext<TKeyItem extends TPKSource & TSKSource, TPKSource,
 export function queryMultipleByTable<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
   contextsByEntityType: Record<string, EntityContext<unknown, unknown, unknown>>,
   keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
-  options: QueryOptions
+  options: AdvancedQueryOnePageOptions
 ): QueryMultipleBy<TPKSource> {
   const queryContext = { ...findKeyEntityContext(contextsByEntityType, keyEntity), options }
 
@@ -53,7 +53,7 @@ export function queryMultipleByGsi<
 >(
   contextsByEntityType: Record<string, EntityContext<unknown, unknown, unknown>>,
   keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
-  options: QueryOptions
+  options: AdvancedGsiQueryOnePageOptions
 ): QueryMultipleBy<TKeyEntityGSIPKSource> {
   const keyEntityContext = findKeyEntityContext(contextsByEntityType, keyEntity)
   const gsiDetails = findGsiDetails(keyEntityContext, options)

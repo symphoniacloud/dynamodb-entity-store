@@ -8,9 +8,10 @@ import {
   ScanCommandOutput
 } from '@aws-sdk/lib-dynamodb'
 import { EntityContext } from '../entityContext'
-import { MultipleEntityCollectionResponse, QueryAndScanOptions } from '../../multipleEntityOperations'
+import { MultipleEntityCollectionResponse } from '../../multipleEntityOperations'
 import {
   AdvancedCollectionResponse,
+  AdvancedQueryOnePageOptions,
   AdvancedScanOnePageOptions,
   ConsumedCapacitiesMetadata
 } from '../../singleEntityAdvancedOperations'
@@ -39,7 +40,7 @@ export function configureScanOperation(
 
 export function configureQueryOperation(
   { dynamoDB, tableName }: Pick<EntityContext<never, never, never>, 'tableName' | 'dynamoDB'>,
-  options: QueryAndScanOptions,
+  options: AdvancedQueryOnePageOptions,
   allPages: boolean,
   queryParamsParts?: Omit<QueryCommandInput, 'TableName' | 'ExclusiveStartKey' | 'Limit'>
 ): QueryScanOperationConfiguration<QueryCommandInput, QueryCommandOutput> {
@@ -52,7 +53,7 @@ export function configureQueryOperation(
 
 export function configureOperation(
   tableName: string,
-  options: QueryAndScanOptions,
+  options: AdvancedQueryOnePageOptions,
   allPages: boolean,
   queryParamsParts?: Omit<QueryCommandInput, 'TableName' | 'ExclusiveStartKey' | 'Limit'>
 ): { operationParams: ScanCommandInput & QueryCommandInput; useAllPageOperation: boolean } {

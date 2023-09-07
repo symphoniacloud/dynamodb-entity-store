@@ -1,15 +1,14 @@
 import { TableResolver } from '../tableBackedConfigurationResolver'
 import { Entity } from '../../entities'
-import {
-  GsiQueryOptions,
-  MultipleEntityOperations,
-  QueryAndScanOptions,
-  QueryMultipleBy,
-  QueryOptions
-} from '../../multipleEntityOperations'
+import { MultipleEntityOperations, QueryMultipleBy } from '../../multipleEntityOperations'
 import { createEntityContext, EntityContext } from '../entityContext'
 import { multipleEntityScan } from './multipleEntityScanOperation'
-import { queryMultipleByTable, queryMultipleByGsi } from './queryMultipleBy'
+import { queryMultipleByGsi, queryMultipleByTable } from './queryMultipleBy'
+import {
+  AdvancedGsiQueryOnePageOptions,
+  AdvancedQueryOnePageOptions,
+  AdvancedScanOnePageOptions
+} from '../../singleEntityAdvancedOperations'
 
 export function tableBackedMultipleEntityOperations(
   tableConfigResolver: TableResolver,
@@ -27,17 +26,17 @@ export function tableBackedMultipleEntityOperations(
   return {
     query<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
       keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
-      options?: QueryOptions
+      options?: AdvancedQueryOnePageOptions
     ): QueryMultipleBy<TPKSource> {
       return queryMultipleByTable(contextsByEntityType, keyEntity, options ?? {})
     },
     queryWithGsi<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource, TGSIPKSource>(
       keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
-      options?: GsiQueryOptions
+      options?: AdvancedGsiQueryOnePageOptions
     ): QueryMultipleBy<TGSIPKSource> {
       return queryMultipleByGsi(contextsByEntityType, keyEntity, options ?? {})
     },
-    async scan(options?: QueryAndScanOptions) {
+    async scan(options?: AdvancedScanOnePageOptions) {
       return await multipleEntityScan(contextsByEntityType, options ?? {})
     }
   }

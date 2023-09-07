@@ -1,7 +1,7 @@
 import { GsiGenerators } from '../../entities'
 import { EntityContext } from '../entityContext'
 import { throwError } from '../../util'
-import { GsiQueryOptions } from '../../multipleEntityOperations'
+import { AdvancedGsiQueryOnePageOptions } from '../../singleEntityAdvancedOperations'
 
 export interface GsiDetails {
   id: string
@@ -13,7 +13,7 @@ export interface GsiDetails {
 // TODO - needs more testing
 export function findGsiDetails<TItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
   entityContext: EntityContext<TItem, TPKSource, TSKSource>,
-  options: GsiQueryOptions
+  options: AdvancedGsiQueryOnePageOptions
 ): GsiDetails {
   const entityGsi = findEntityGsi(entityContext, options)
   const tableGsi = findGsiTableDetails(entityContext, entityGsi.gsiId)
@@ -27,7 +27,7 @@ export function findGsiDetails<TItem extends TPKSource & TSKSource, TPKSource, T
 
 function findEntityGsi<TItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
   { entity: { type, gsis } }: EntityContext<TItem, TPKSource, TSKSource>,
-  options: GsiQueryOptions
+  options: AdvancedGsiQueryOnePageOptions
 ): { gsiId: string; gsiGenerators: GsiGenerators } {
   const entityGsiCount = Object.keys(gsis ?? {}).length
   if (!gsis || entityGsiCount === 0)

@@ -1,16 +1,20 @@
 import { expressionAttributeParams } from '../operationsCommon'
-import { MultipleEntityCollectionResponse, QueryOptions } from '../../multipleEntityOperations'
+import { MultipleEntityCollectionResponse } from '../../multipleEntityOperations'
 import { EntityContext } from '../entityContext'
 import { QueryCommandInput } from '@aws-sdk/lib-dynamodb'
 import { performMultipleEntityOperationAndParse } from './multipleEntitiesQueryAndScanCommon'
 import { GsiDetails } from '../common/gsiQueryCommon'
 import { SkQueryRange } from '../../singleEntityOperations'
 import { configureQueryOperation } from '../common/queryAndScanCommon'
+import {
+  AdvancedGsiQueryOnePageOptions,
+  AdvancedQueryOnePageOptions
+} from '../../singleEntityAdvancedOperations'
 
 export async function queryMultipleByPk<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
   contextsByEntityType: Record<string, EntityContext<unknown, unknown, unknown>>,
   keyItemContext: EntityContext<TKeyItem, TPKSource, TSKSource>,
-  options: QueryOptions,
+  options: AdvancedQueryOnePageOptions,
   source: TPKSource
 ): Promise<MultipleEntityCollectionResponse> {
   return await queryMultipleWithCriteria(
@@ -26,7 +30,7 @@ export async function queryMultipleByPk<TKeyItem extends TPKSource & TSKSource, 
 export async function queryMultipleBySkRange<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
   contextsByEntityType: Record<string, EntityContext<unknown, unknown, unknown>>,
   keyItemContext: EntityContext<TKeyItem, TPKSource, TSKSource>,
-  options: QueryOptions,
+  options: AdvancedQueryOnePageOptions,
   source: TPKSource,
   queryRange: SkQueryRange
 ) {
@@ -52,7 +56,7 @@ export async function queryMultipleBySkRange<TKeyItem extends TPKSource & TSKSou
 export async function queryMultipleByGsiPk<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
   contextsByEntityType: Record<string, EntityContext<unknown, unknown, unknown>>,
   keyItemContext: EntityContext<TKeyItem, TPKSource, TSKSource>,
-  options: QueryOptions,
+  options: AdvancedGsiQueryOnePageOptions,
   gsiDetails: GsiDetails,
   pkSource: unknown
 ): Promise<MultipleEntityCollectionResponse> {
@@ -72,7 +76,7 @@ export async function queryMultipleByGsiPk<TKeyItem extends TPKSource & TSKSourc
 export async function queryMultipleByGsiSkRange<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
   contextsByEntityType: Record<string, EntityContext<unknown, unknown, unknown>>,
   keyItemContext: EntityContext<TKeyItem, TPKSource, TSKSource>,
-  options: QueryOptions,
+  options: AdvancedGsiQueryOnePageOptions,
   gsiDetails: GsiDetails,
   pkSource: unknown,
   queryRange: SkQueryRange
@@ -106,7 +110,7 @@ async function queryMultipleWithCriteria(
   contextsByEntityType: Record<string, EntityContext<unknown, unknown, unknown>>,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   keyItemContext: EntityContext<any, any, any>,
-  { scanIndexForward, ...otherOptions }: QueryOptions,
+  { scanIndexForward, ...otherOptions }: AdvancedQueryOnePageOptions,
   keyConditionExpression: string,
   partialCriteria: Omit<
     QueryCommandInput,

@@ -26,8 +26,7 @@ Entity Store provides the following:
   and setting metadata attributes
 * A typed interface for read operations (get, scans, and queries)
 * A common API for querying / scanning one page of results at a time, or all available results
-* Simple setup when using "
-  standard" ["Single Table Design"](https://www.alexdebrie.com/posts/dynamodb-single-table/#what-is-single-table-design) ...
+* Simple setup when using ["Single Table Design"](https://www.alexdebrie.com/posts/dynamodb-single-table/#what-is-single-table-design) ...
 * ... but also allows non-standard and/or multi-table designs
 * A pretty-much-complete coverage of the entire DynamoDB API / SDK, including operations for batch and transaction
   operations, and options for diagnostic metadata (e.g. "consumed capacity")
@@ -89,7 +88,7 @@ const entityStore = createStore(createStandardSingleTableStoreConfig('AnimalsTab
 
 `entityStore` is an object that implements
 the [`AllEntitiesStore`](https://symphoniacloud.github.io/dynamodb-entity-store/interfaces/AllEntitiesStore.html) type.
-We want to use the [`for(entity)`](https://symphoniacloud.github.io/dynamodb-entity-store/interfaces/AllEntitiesStore.html#for) method on this type, but it requires that we pass an [`Entity`](https://symphoniacloud.github.io/dynamodb-entity-store/interfaces/Entity.html) object. Here's the `Entity` implementation for `Sheep` :
+We want to use the [`for(entity)`](https://symphoniacloud.github.io/dynamodb-entity-store/interfaces/AllEntitiesStore.html#for) method on this type, but it requires that we pass an [`Entity`](https://symphoniacloud.github.io/dynamodb-entity-store/interfaces/Entity.html) object. Here's the `Entity` implementation for `Sheep`:
 
 ```typescript
 export const SHEEP_ENTITY = createEntity(
@@ -108,7 +107,7 @@ export const SHEEP_ENTITY = createEntity(
   ({ name }: Pick<Sheep, 'name'>) => `NAME#${name}`
 )
 ```
-We only need to create this object once per type of entity in our application, and so you might want to define each of them as a global constant. Each entity object is responsible for:
+We only need to create this object **once per type** of entity in our application, and so you might want to define each of them as a global constant. Each entity object is responsible for:
 
 * Defining the name of the entity type
 * Expressing how to convert a DynamoDB record to a well-typed object ("parsing")
@@ -160,14 +159,12 @@ The underlying call to DynamoDB's `get` API needs to include both PK and SK fiel
 generator functions as we did for `put` to calculate these, but based on just the `breed` and `name` _identifier_ values for
 a sheep.
 
-Note that unlike the AWS SDK's 'get' operation here we get a **well-typed result**. This is possible because of the
+Note that unlike the AWS SDK's `get` operation here we get a **well-typed result**. This is possible because of the
 [**type-predicate function**](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates) that we included when creating `SHEEP_ENTITY` . Note that in this basic example we assume that the underlying DynamoDB record
 attributes include all the properties on a sheep object, but it's possible to customize parsing and/or derive values
 from the PK and SK fields if you want to optimize your DynamoDB table - I'll show that a little later.
 
-### Queries
-
-We can get all of our _merino_ sheep by running a query against the table's Partition Key:
+We can get all of our _merino_-breed sheep by running a query against the table's Partition Key:
 
 ```typescript
 const merinos: Sheep[] = await sheepOperations.queryAllByPk({ breed: 'merino' })
@@ -185,14 +182,12 @@ shaun is 3 years old
 
 Similar to `get` we need to provide the value for the `PK` field, and again under the covers Entity Store is
 calling `pk()` on `SHEEP_ENTITY` . Since this query only filters on the `PK` attribute we only need to provide `breed`
-in our input.
+when we call `queryAllByPk()`.
 
 Like `getOrThrow`, the result of the query operation is a well-typed list of items - again by using the parser / type
 predicate function on `SHEEP_ENTITY` .
 
-A lot of the power of using DynamoDB comes from using the Sort Key as part of a query. Now let's implement our second
-access pattern from our specification earlier - find all sheep of a particular breed, where `name` is in a particular
-alphabetic range:
+A lot of the power of using DynamoDB comes from using the Sort Key as part of a query. Now let's find all sheep of a particular breed, but also where `name` is in a particular alphabetic range:
 
 ```typescript
 function rangeWhereNameBetween(nameRangeStart: string, nameRangeEnd: string) {
@@ -216,7 +211,7 @@ bob
 ```
 
 To query with a Sort Key we must first specify the partition key - which here is the same as our first example - and
-then must specify a sort key query range.
+then must specify a sort key _query range_.
 There are a few helpers in Entity Store for this - in our case we use the [`rangeWhereSkBetween`](https://symphoniacloud.github.io/dynamodb-entity-store/functions/rangeWhereSkBetween.html) helper which ends up generating the condition
 expression `PK = :pk and #sk BETWEEN :from AND :to` .
 
@@ -377,10 +372,10 @@ putting all actual data on non-key attributes.
 Entity Store supports other modes of usage though. Let's say we also want to store Farms, in a separate table named
 FarmTable, which looks as follows:
 
-| Attribute: | `Name`           | `FarmAddress`                      |
-|------------|------------------|------------------------------------|
-|            | `Sunflower Farm` | `Green Shoots Road, Honesdale, PA` |      
-|            | `Worthy Farm`    | `Glastonbury, England`             |
+| `Name`           | `FarmAddress`                      |
+|------------------|------------------------------------|
+| `Sunflower Farm` | `Green Shoots Road, Honesdale, PA` |      
+| `Worthy Farm`    | `Glastonbury, England`             |
 
 For this table the Partition Key is `Name` and there is no Sort Key. Also note in this case we've chosen **not** to
 store the entity type
@@ -488,7 +483,6 @@ Finally it might make sense to use `scan` on this table. Because scanning is usu
 single-table designs, by default Entity Store will throw an error if you try! E.g.:
 
 ```typescript
-console.log('\nAll farms:')
 for (const farm of await farmStore.scanAll()) {
   console.log(`Name: ${farm.name}, Address: ${farm.address}`)
 }

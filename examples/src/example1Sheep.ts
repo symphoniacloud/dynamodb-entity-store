@@ -26,33 +26,35 @@ export const SHEEP_ENTITY = createEntity(
   ({ name }: Pick<Sheep, 'name'>) => `NAME#${name}`
 )
 
-export function rangeWhereNameBetween(nameRangeStart: string, nameRangeEnd: string) {
-  return rangeWhereSkBetween(`NAME#${nameRangeStart}`, `NAME#${nameRangeEnd}`)
-}
-
 async function run() {
   // Create entity store using default configuration
   const config = createStandardSingleTableStoreConfig('AnimalsTable')
   // config.store.logger = consoleLogger
   const entityStore = createStore(config)
 
-  await entityStore.for(SHEEP_ENTITY).put({ breed: 'merino', name: 'shaun', ageInYears: 3 })
-  await entityStore.for(SHEEP_ENTITY).put({ breed: 'merino', name: 'bob', ageInYears: 4 })
-  await entityStore.for(SHEEP_ENTITY).put({ breed: 'suffolk', name: 'alison', ageInYears: 2 })
+  const sheepOperations = entityStore.for(SHEEP_ENTITY)
+  await sheepOperations.put({ breed: 'merino', name: 'shaun', ageInYears: 3 })
+  await sheepOperations.put({ breed: 'merino', name: 'bob', ageInYears: 4 })
+  await sheepOperations.put({ breed: 'suffolk', name: 'alison', ageInYears: 2 })
 
-  const shaun: Sheep = await entityStore.for(SHEEP_ENTITY).getOrThrow({ breed: 'merino', name: 'shaun' })
+  const shaun: Sheep = await sheepOperations.getOrThrow({ breed: 'merino', name: 'shaun' })
   console.log(`shaun is ${shaun.ageInYears} years old`)
 
   console.log('\nAll merinos:')
-  const merinos: Sheep[] = await entityStore.for(SHEEP_ENTITY).queryAllByPk({ breed: 'merino' })
+  const merinos: Sheep[] = await sheepOperations.queryAllByPk({ breed: 'merino' })
   for (const sheep of merinos) {
     console.log(`${sheep.name} is ${sheep.ageInYears} years old`)
   }
 
+  function rangeWhereNameBetween(nameRangeStart: string, nameRangeEnd: string) {
+    return rangeWhereSkBetween(`NAME#${nameRangeStart}`, `NAME#${nameRangeEnd}`)
+  }
+
   console.log('\nMerinos with their name starting with the first half of the alphabet:')
-  const earlyAlphabetMerinos = await entityStore
-    .for(SHEEP_ENTITY)
-    .queryAllByPkAndSk({ breed: 'merino' }, rangeWhereNameBetween('a', 'n'))
+  const earlyAlphabetMerinos = await sheepOperations.queryAllByPkAndSk(
+    { breed: 'merino' },
+    rangeWhereNameBetween('a', 'n')
+  )
 
   for (const sheep of earlyAlphabetMerinos) {
     console.log(sheep.name)

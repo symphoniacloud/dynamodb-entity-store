@@ -2,9 +2,9 @@
 
 _A lightly opinionated DynamoDB library for TypeScript & JavaScript applications_
 
-[DynamoDB](https://aws.amazon.com/dynamodb/) is a popular, cloud-hosted, NoSQL database from AWS (Amazon Web Services).
+[DynamoDB](https://aws.amazon.com/dynamodb/) is a cloud-hosted NoSQL database from AWS (Amazon Web Services).
 AWS [provides an SDK](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-lib-dynamodb/) for using
-DynamoDB from TypeScript and JavaScript applications but, like most AWS libraries,
+DynamoDB from TypeScript and JavaScript applications but
 it doesn't provide a particularly rich abstraction on top of
 the [basic AWS HTTPS API](https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Operations_Amazon_DynamoDB.html).
 
@@ -14,30 +14,25 @@ It definitely **is not** an "ORM library", and nor does it try to hide DynamoDB'
 Because of this you'll still need to understand how to use DynamoDB from a modeling point of view - I strongly recommend
 Alex DeBrie's [book on the subject](https://www.dynamodbbook.com/).
 
-**WARNING!! THIS IS AN "ALPHA" VERSION!!**
-
-**I'm releasing an early version of this library to get feedback, but the API may well change in breaking ways over the
+**WARNING!! THIS IS AN "ALPHA" VERSION!! I'm releasing an early version of this library to get feedback, but the API may well change in breaking ways over the
 next weeks / months WITHOUT A CORRESPONDING MAJOR RELEASE. I hope to create a stable release by the end of October.**
-
-**FEEDBACK REQUESTED**
 
 **And since this is an early version I would STRONGLY APPRECIATE FEEDBACK! 😀 Please drop me an email at
 mike@symphonia.io, or use the issues in this project**
 
-What Entity Store provides is the following:
+Entity Store provides the following:
 
 * Assistance for write operations, handling repetitive aspects like configuration of table names, key attribute names,
   and setting metadata attributes
 * A typed interface for read operations (get, scans, and queries)
 * A common API for querying / scanning one page of results at a time, or all available results
 * Simple setup when using "
-  standard" [Single Table design](https://www.alexdebrie.com/posts/dynamodb-single-table/#what-is-single-table-design) ...
+  standard" ["Single Table Design"](https://www.alexdebrie.com/posts/dynamodb-single-table/#what-is-single-table-design) ...
 * ... but also allows non-standard and/or multi-table designs
 * A pretty-much-complete coverage of the entire DynamoDB API / SDK, including operations for batch and transaction
   operations, and options for diagnostic metadata (e.g. "consumed capacity")
 
-This library is named _Entity Store_ since it's based on the idea that your DynamoDB tables don't just store collections
-of arbitrarily structured records, rather each table stores one or many collections of related records, and each
+This library is named _Entity Store_ since it's based on the idea that your DynamoDB tables store one or many collections of related records, and each
 collection has the same persisted structure.
 Each of these collections is an _Entity_, which also corresponds to a _Domain Type_ within your application's code.
 
@@ -55,10 +50,6 @@ code](/src/lib), or [Type Docs](https://symphoniacloud.github.io/dynamodb-entity
 
 ## Example 1: Single Table Design, without indexes
 
-### Type and Table Design
-
-I'll start with a simple "single table" example.
-
 Let's say we have the following _Domain Type_
 
 ```typescript
@@ -69,37 +60,22 @@ export interface Sheep {
 }
 ```
 
-In this particular example it's sufficient to say that there will never be two different sheep with the same name and
-breed, and therefore we can use the combination of `breed` and `name` to uniquely identify any one sheep.
+And let's say we want to store these Sheep in DynamoDB like this:
 
-We want to store sheep records in DynamoDB, and we have the following access patterns:
+| `PK`                  | `SK`          | `breed`   | `name`   | `ageInYears` |
+|-----------------------|---------------|-----------|----------|--------------|
+| `SHEEP#BREED#merino`  | `NAME#shaun`  | `merino`  | `shaun`  | 3            |
+| `SHEEP#BREED#merino`  | `NAME#bob`    | `merino`  | `bob`    | 4            |
+| `SHEEP#BREED#suffolk` | `NAME#alison` | `suffolk` | `alison` | 2            |
 
-* Find all sheep of a particular breed
-* Find all sheep of a particular breed, where the name is in a particular alphabetic range
+We are using a ["Single Table Design"](https://www.alexdebrie.com/posts/dynamodb-single-table/#what-is-single-table-design) configuration here as follows:
 
-Given the knowledge of record uniqueness criteria, and these access patterns, we can choose to model Sheep entities in
-DynamoDB as follows:
+* The table _Partition Key_ is named `PK`
+* The table _Sort Key_ is named `SK`
 
-| Attribute: | `PK`                  | `SK`          | `breed`   | `name`   | `ageInYears` |
-|------------|-----------------------|---------------|-----------|----------|--------------|
-|            | `SHEEP#BREED#merino`  | `NAME#shaun`  | `merino`  | `shaun`  | 3            |
-|            | `SHEEP#BREED#merino`  | `NAME#bob`    | `merino`  | `bob`    | 4            |
-|            | `SHEEP#BREED#suffolk` | `NAME#alison` | `suffolk` | `alison` | 2            |
-
-Note that we are using a "standard single table" configuration here as follows:
-
-* The table _Partition Key_ is named `PK` and is of type string
-* The table _Sort Key_ is named `SK` and is also of type string
-
-With that preamble out of the way, let's start using Entity Store.
-
-### Installing Entity Store
-
-You can install / add Entity Store in the usual way, e.g.
+Now we add / install Entity Store in the usual way [from NPM](https://www.npmjs.com/package/@symphoniacloud/dynamodb-entity-store) , e.g.
 
 ```% npm install @symphoniacloud/dynamodb-entity-store```
-
-### Entity Store creation
 
 Let's assume that our DynamoDB Table is named `AnimalsTable`.
 
@@ -108,33 +84,14 @@ the [`createStore`](https://symphoniacloud.github.io/dynamodb-entity-store/funct
 and  [`createStandardSingleTableStoreConfig`](https://symphoniacloud.github.io/dynamodb-entity-store/functions/createStandardSingleTableStoreConfig.html) functions:
 
 ```typescript
-import { createStore, createStandardSingleTableStoreConfig } from '@symphoniacloud/dynamodb-entity-store'
-
 const entityStore = createStore(createStandardSingleTableStoreConfig('AnimalsTable'))
 ```
 
-The `entityStore` constant is an object that implements
+`entityStore` is an object that implements
 the [`AllEntitiesStore`](https://symphoniacloud.github.io/dynamodb-entity-store/interfaces/AllEntitiesStore.html) type.
-We want to use the [`for(entity)`](https://symphoniacloud.github.io/dynamodb-entity-store/interfaces/AllEntitiesStore.html#for) method on this type, but it requires that we pass an `Entity` object, so let's look at
-that next.
-
-### Defining an Entity
-
-For each type of _Entity_ in our application we need to define an [`Entity`](https://symphoniacloud.github.io/dynamodb-entity-store/interfaces/Entity.html) object. We only need to create this object
-once per type of entity in our application, and so you might want to define each of them as a global constant. This
-object is responsible for the following:
-
-* Defining the name of the entity type
-* Expressing how to convert a DynamoDB record to a well-typed object ("parsing")
-* Creating partition key and sort key values
-* Optionally, expressing how to convert an object to a DynamoDB record ("formatting")
-* Optionally, create Global Secondary Index (GSI) key values
-
-For Sheep, the entity looks as follows:
+We want to use the [`for(entity)`](https://symphoniacloud.github.io/dynamodb-entity-store/interfaces/AllEntitiesStore.html#for) method on this type, but it requires that we pass an [`Entity`](https://symphoniacloud.github.io/dynamodb-entity-store/interfaces/Entity.html) object. Here's the `Entity` implementation for `Sheep` :
 
 ```typescript
-import { Entity } from '@symphoniacloud/dynamodb-entity-store'
-
 export const SHEEP_ENTITY = createEntity(
   // Type name
   'sheep',
@@ -151,20 +108,27 @@ export const SHEEP_ENTITY = createEntity(
   ({ name }: Pick<Sheep, 'name'>) => `NAME#${name}`
 )
 ```
+We only need to create this object once per type of entity in our application, and so you might want to define each of them as a global constant. Each entity object is responsible for:
 
-### Put and Get
+* Defining the name of the entity type
+* Expressing how to convert a DynamoDB record to a well-typed object ("parsing")
+* Creating partition key and sort key values
+* **Optional:** express how to convert an object to a DynamoDB record ("formatting")
+* **Optional:** Create Global Secondary Index (GSI) key values
+
 
 We can now call `.for(...)` on our entity store. This returns an object that implements [`SingleEntityOperations`](https://symphoniacloud.github.io/dynamodb-entity-store/interfaces/SingleEntityOperations.html) - **this is the object that you'll likely work with most when using this library**.
 
 For example, let's store some sheep by using [`SingleEntityOperations.put`](https://symphoniacloud.github.io/dynamodb-entity-store/interfaces/SingleEntityOperations.html#put):
 
 ```typescript
-await entityStore.for(SHEEP_ENTITY).put({ breed: 'merino', name: 'shaun', ageInYears: 3 })
-await entityStore.for(SHEEP_ENTITY).put({ breed: 'merino', name: 'bob', ageInYears: 4 })
-await entityStore.for(SHEEP_ENTITY).put({ breed: 'suffolk', name: 'alison', ageInYears: 2 })
+const sheepOperations = entityStore.for(SHEEP_ENTITY)
+await sheepOperations.put({ breed: 'merino', name: 'shaun', ageInYears: 3 })
+await sheepOperations.put({ breed: 'merino', name: 'bob', ageInYears: 4 })
+await sheepOperations.put({ breed: 'suffolk', name: 'alison', ageInYears: 2 })
 ```
 
-Now our table contains the following items:
+Now our DynamoDB table contains the following records:
 
 | `PK`                  | `SK`          | `breed`   | `name`   | `ageInYears` | `_et`   | `_lastUpdated`             |
 |-----------------------|---------------|-----------|----------|--------------|---------|----------------------------|
@@ -172,21 +136,17 @@ Now our table contains the following items:
 | `SHEEP#BREED#merino`  | `NAME#bob`    | `merino`  | `bob`    | 4            | `sheep` | `2023-08-21T15:41:53.956Z` |
 | `SHEEP#BREED#suffolk` | `NAME#alison` | `suffolk` | `alison` | 2            | `sheep` | `2023-08-21T15:41:53.982Z` |
 
-What's going on here is that EntityStore is calling `put` on the underlying DynamoDB table, but it's not just including
-the 3 fields on each sheep object. It's also including the following additional attributes:
+What's going on here is that Entity Store is calling `put` on the underlying DynamoDB table for each sheep. Each DynamoDB record includes all the fields on `Sheep` (don't worry, that's overridable), **along with the following extra fields**:
 
-* `PK` - generated by calling `SHEEP_ENTITY.pk(...)`, passing each item as the argument
-* `SK` - generated by calling `SHEEP_ENTITY.sk(...)`, passing each item as the argument
+* `PK` - generated by calling `SHEEP_ENTITY.pk(...)` for each sheep
+* `SK` - generated by calling `SHEEP_ENTITY.sk(...)` for each sheep
 * `_et` - the value of `SHEEP_ENTITY.type`
 * `_lastUpdated` - the current date-time
-
-Entity Store always adds the `_et` and `_lastUpdated` attributes to all records, unless you configure it not to do so (
-on a per-table basis), or configure different names for those attributes.
 
 Now let's retrieve Shaun so we can find out how old he is.
 
 ```typescript
-const shaun: Sheep = await entityStore.for(SHEEP_ENTITY).getOrThrow({ breed: 'merino', name: 'shaun' })
+const shaun: Sheep = await sheepOperations.getOrThrow({ breed: 'merino', name: 'shaun' })
 console.log(`shaun is ${shaun.ageInYears} years old`)
 ```
 
@@ -196,13 +156,12 @@ Output:
 shaun is 3 years old
 ```
 
-The underlying call to DynamoDB's 'get' API needs to include both PK and SK fields. We use the same `pk()` and `sk()`
-generator functions as we did for `put` to calculate these, based on just the `breed` and `name` _identifier_ values for
+The underlying call to DynamoDB's `get` API needs to include both PK and SK fields. We use the same `pk()` and `sk()`
+generator functions as we did for `put` to calculate these, but based on just the `breed` and `name` _identifier_ values for
 a sheep.
 
-Note that unlike the AWS SDK's 'get' operation here we get a **well-typed result**. This is possible because of the [*
-*type-predicate function**](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates) that we
-included when creating `SHEEP_ENTITY` . Note that in this basic example we assume that the underlying DynamoDB record
+Note that unlike the AWS SDK's 'get' operation here we get a **well-typed result**. This is possible because of the
+[**type-predicate function**](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates) that we included when creating `SHEEP_ENTITY` . Note that in this basic example we assume that the underlying DynamoDB record
 attributes include all the properties on a sheep object, but it's possible to customize parsing and/or derive values
 from the PK and SK fields if you want to optimize your DynamoDB table - I'll show that a little later.
 
@@ -211,8 +170,7 @@ from the PK and SK fields if you want to optimize your DynamoDB table - I'll sho
 We can get all of our _merino_ sheep by running a query against the table's Partition Key:
 
 ```typescript
-console.log('\nAll merinos:')
-const merinos: Sheep[] = await entityStore.for(SHEEP_ENTITY).queryAllByPk({ breed: 'merino' })
+const merinos: Sheep[] = await sheepOperations.queryAllByPk({ breed: 'merino' })
 for (const sheep of merinos) {
   console.log(`${sheep.name} is ${sheep.ageInYears} years old`)
 }
@@ -221,7 +179,6 @@ for (const sheep of merinos) {
 Output:
 
 ```
-All merinos:
 bob is 4 years old
 shaun is 3 years old
 ```
@@ -234,14 +191,18 @@ Like `getOrThrow`, the result of the query operation is a well-typed list of ite
 predicate function on `SHEEP_ENTITY` .
 
 A lot of the power of using DynamoDB comes from using the Sort Key as part of a query. Now let's implement our second
-access pattern from our specification earlier - find all sheep of a particular breed, where the name is in a particular
+access pattern from our specification earlier - find all sheep of a particular breed, where `name` is in a particular
 alphabetic range:
 
 ```typescript
-console.log('\nMerinos with their name starting with the first half of the alphabet:')
-const earlyAlphabetMerinos = await entityStore
-  .for(SHEEP_ENTITY)
-  .queryAllByPkAndSk({ breed: 'merino' }, rangeWhereNameBetween('a', 'n'))
+function rangeWhereNameBetween(nameRangeStart: string, nameRangeEnd: string) {
+  return rangeWhereSkBetween(`NAME#${nameRangeStart}`, `NAME#${nameRangeEnd}`)
+}
+
+const earlyAlphabetMerinos = await sheepOperations.queryAllByPkAndSk(
+  { breed: 'merino' },
+  rangeWhereNameBetween('a', 'n')
+)
 
 for (const sheep of earlyAlphabetMerinos) {
   console.log(sheep.name)
@@ -251,19 +212,18 @@ for (const sheep of earlyAlphabetMerinos) {
 Output:
 
 ```
-Merinos with their name starting with the first half of the alphabet:
 bob
 ```
 
 To query with a Sort Key we must first specify the partition key - which here is the same as our first example - and
 then must specify a sort key query range.
-There are a few helpers in Entity Store for this - in our case we use a helper which ends up generating the condition
-expression `PK = :pk and #sk BETWEEN :from AND :to`
+There are a few helpers in Entity Store for this - in our case we use the [`rangeWhereSkBetween`](https://symphoniacloud.github.io/dynamodb-entity-store/functions/rangeWhereSkBetween.html) helper which ends up generating the condition
+expression `PK = :pk and #sk BETWEEN :from AND :to` .
 
 ## Turning on logging
 
 When you're working on setting up your entities and queries you'll often want to see what Entity Store is actually
-doing. You can do this by turning on logging when you initially setup your entity store, e.g.:
+doing. You can do this by turning on logging:
 
 ```typescript
 const config = createStandardSingleTableStoreConfig('AnimalsTable')
@@ -282,8 +242,8 @@ DynamoDB Entity Store DEBUG - Query or scan result [{"result":{"$metadata":{"htt
 The store's `logger` can actually be anything that satisifies
 the [`EntityStoreLogger`](https://github.com/symphoniacloud/dynamodb-entity-store/blob/main/src/lib/util/logger.ts)
 type.
-The library provides a silent "No-op" logger that it uses by default, as well as the console logger shown here, but you
-can easily implement your own - there's an example in the source code comments of implementing a logger
+The library provides a silent "No-op" logger that it uses by default, as well as the [`consoleLogger`](https://symphoniacloud.github.io/dynamodb-entity-store/variables/consoleLogger.html) shown here, but you
+can easily implement your own - there's an example in the [source code comments](https://github.com/symphoniacloud/dynamodb-entity-store/blob/94a622f/src/lib/util/logger.ts) of implementing a logger
 for [AWS PowerTools](https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger/).
 
 ## Example 2: Adding a Global Secondary Index

@@ -1,5 +1,6 @@
 import { createEntity } from '../../src/lib/support/entitySupport'
 import { rangeWhereSkBetween } from '../../src/lib/support/querySupport'
+import { DynamoDBValues } from '../../src/lib'
 
 export interface Sheep {
   breed: string
@@ -7,7 +8,7 @@ export interface Sheep {
   ageInYears: number
 }
 
-export function isSheep(x: unknown): x is Sheep {
+export function isSheep(x: DynamoDBValues): x is Sheep {
   const candidate = x as Sheep
   return candidate.breed !== undefined && candidate.name !== undefined && candidate.ageInYears !== undefined
 }

@@ -18,7 +18,7 @@ Alex DeBrie's [book on the subject](https://www.dynamodbbook.com/).
 next weeks / months WITHOUT A CORRESPONDING MAJOR RELEASE. I hope to create a stable release by the end of October.**
 
 **And since this is an early version I would STRONGLY APPRECIATE FEEDBACK! 😀 Please drop me an email at
-mike@symphonia.io, or use the issues in this project**
+mike@symphonia.io, or use the issues in this project**.
 
 Entity Store provides the following:
 
@@ -42,10 +42,11 @@ If you're deciding on what DynamoDB library to choose you may want to also consi
   my own work. When I was looking in 2022 DynamoDB Toolbox didn't support AWS SDK V3, but it does now.
 * [One Table](https://github.com/sensedeep/dynamodb-onetable)
 
-The rest of this README includes some examples, but it does **NOT** include full coverage of capabilities. I plan on
-writing more documentation later, but until then take a look at
-the [integration tests](https://github.com/symphoniacloud/dynamodb-entity-store/tree/main/test/integration), [source
-code](/src/lib), or [Type Docs](https://symphoniacloud.github.io/dynamodb-entity-store/).
+The rest of this README provides an overview of how to use the library. For more details see:
+* [The manual](./documentation/manual.md)
+* [integration tests](https://github.com/symphoniacloud/dynamodb-entity-store/tree/main/test/integration)
+* [source code](/src/lib)
+* [Type Docs](https://symphoniacloud.github.io/dynamodb-entity-store/)
 
 ## Example 1: Single Table Design, without indexes
 
@@ -95,7 +96,7 @@ export const SHEEP_ENTITY = createEntity(
   // Type name
   'sheep',
   // Type predicate, used in standard parser
-  function(x: unknown): x is Sheep {
+  function(x: DynamoDBValues): x is Sheep {
     const candidate = x as Sheep
     return candidate.breed !== undefined &&
       candidate.name !== undefined &&
@@ -115,6 +116,7 @@ We only need to create this object **once per type** of entity in our applicatio
 * **Optional:** express how to convert an object to a DynamoDB record ("formatting")
 * **Optional:** Create Global Secondary Index (GSI) key values
 
+> A complete discussion of _Entities_ is available in [the manual, here](./documentation/1-Entities.md).
 
 We can now call `.for(...)` on our entity store. This returns an object that implements [`SingleEntityOperations`](https://symphoniacloud.github.io/dynamodb-entity-store/interfaces/SingleEntityOperations.html) - **this is the object that you'll likely work with most when using this library**.
 

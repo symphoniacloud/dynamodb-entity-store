@@ -2,6 +2,7 @@ import {
   createEntity,
   createStandardSingleTableStoreConfig,
   createStore,
+  DynamoDBValues,
   rangeWhereSkBetween
 } from '@symphoniacloud/dynamodb-entity-store'
 
@@ -13,7 +14,7 @@ export interface Sheep {
 }
 
 // Type predicate for Sheep type
-const isSheep = function (x: unknown): x is Sheep {
+const isSheep = function (x: DynamoDBValues): x is Sheep {
   const candidate = x as Sheep
   return candidate.breed !== undefined && candidate.name !== undefined && candidate.ageInYears !== undefined
 }

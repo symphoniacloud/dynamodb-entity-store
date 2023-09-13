@@ -9,7 +9,7 @@ import {
 import { isDebugLoggingEnabled } from '../../util/logger'
 import { Mandatory } from '../../util/types'
 import { ConditionCheckParams, createTransactionConditionCheckItem } from './conditionCheckOperation'
-import { returnConsumedCapacityParam, returnItemCollectionMetricsParam } from '../operationsCommon'
+import { returnConsumedCapacityParam, returnItemCollectionMetricsParam } from '../common/operationsCommon'
 import {
   TransactionConditionCheckOptions,
   TransactionDeleteOptions,

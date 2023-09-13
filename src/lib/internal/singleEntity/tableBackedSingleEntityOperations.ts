@@ -1,4 +1,4 @@
-import { CompleteTableParams, createEntityContext, EntityContext } from '../entityContext'
+import { createEntityContext, EntityContext } from '../entityContext'
 import { Entity } from '../../entities'
 import {
   DeleteOptions,
@@ -18,13 +18,15 @@ import {
   UpdateOptions
 } from '../../singleEntityOperations'
 import { tableBackedSingleEntityAdvancedOperations } from './tableBackedSingleEntityAdvancedOperations'
+import { TableResolver } from '../tableBackedConfigurationResolver'
 
 export function tableBackedSingleEntityOperations<TItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
-  table: CompleteTableParams,
+  tableConfigResolver: TableResolver,
   entity: Entity<TItem, TPKSource, TSKSource>
 ): SingleEntityOperations<TItem, TPKSource, TSKSource> {
-  const entityContext: EntityContext<TItem, TPKSource, TSKSource> = createEntityContext(table, entity)
-  const advancedOperations = tableBackedSingleEntityAdvancedOperations(table, entity, entityContext)
+  const table = tableConfigResolver(entity.type),
+    entityContext: EntityContext<TItem, TPKSource, TSKSource> = createEntityContext(table, entity),
+    advancedOperations = tableBackedSingleEntityAdvancedOperations(table, entity, entityContext)
 
   return {
     advancedOperations,

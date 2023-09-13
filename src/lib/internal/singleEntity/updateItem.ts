@@ -4,7 +4,7 @@ import { createUpdateParams } from '../common/updateCommon'
 import { UpdateCommandInput } from '@aws-sdk/lib-dynamodb'
 import { parseAttributesCapacityAndMetrics } from './singleEntityCommon'
 import { AdvancedUpdateOptions, AdvancedUpdateResponse } from '../../singleEntityAdvancedOperations'
-import { returnParamsForCapacityMetricsAndValues } from '../operationsCommon'
+import { returnParamsForCapacityMetricsAndValues } from '../common/operationsCommon'
 
 export async function updateItem<
   TItem extends TPKSource & TSKSource,

@@ -4,7 +4,7 @@ import { deleteParams } from '../common/deleteCommon'
 import { isDebugLoggingEnabled } from '../../util'
 import { parseAttributesCapacityAndMetrics } from './singleEntityCommon'
 import { AdvancedDeleteOptions, AdvancedDeleteResponse } from '../../singleEntityAdvancedOperations'
-import { returnParamsForCapacityMetricsAndValues } from '../operationsCommon'
+import { returnParamsForCapacityMetricsAndValues } from '../common/operationsCommon'
 
 export async function deleteItem<
   TItem extends TPKSource & TSKSource,

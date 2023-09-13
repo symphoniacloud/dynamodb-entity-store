@@ -4,7 +4,7 @@ import {
   expressionAttributeParamsFromOptions,
   keyParamFromSource,
   tableNameParam
-} from '../operationsCommon'
+} from './operationsCommon'
 import { DeleteOptions } from '../../singleEntityOperations'
 
 // Also used for generating transaction delete items

@@ -6,7 +6,7 @@ import {
 } from '../common/queryAndScanCommon'
 import { QueryCommandInput } from '@aws-sdk/lib-dynamodb'
 import { AdvancedCollectionResponse, AdvancedQueryOnePageOptions } from '../../singleEntityAdvancedOperations'
-import { expressionAttributeParams } from '../operationsCommon'
+import { expressionAttributeParams } from '../common/operationsCommon'
 import { GsiDetails } from '../common/gsiQueryCommon'
 import { SkQueryRange } from '../../singleEntityOperations'
 

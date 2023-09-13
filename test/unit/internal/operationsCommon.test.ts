@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 import { FakeClock } from '../fakes/fakeClock'
-import { determineTTL } from '../../../src/lib/internal/operationsCommon'
+import { determineTTL } from '../../../src/lib/internal/common/operationsCommon'
 
 test('determineTTL', () => {
   const clock = new FakeClock()

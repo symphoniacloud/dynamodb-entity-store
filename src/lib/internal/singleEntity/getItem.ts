@@ -3,7 +3,7 @@ import {
   parseItem,
   returnConsumedCapacityParam,
   tableNameParam
-} from '../operationsCommon'
+} from '../common/operationsCommon'
 import { EntityContext } from '../entityContext'
 import { isDebugLoggingEnabled } from '../../util'
 import { GetCommandInput, GetCommandOutput } from '@aws-sdk/lib-dynamodb'

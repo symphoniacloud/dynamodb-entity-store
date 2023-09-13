@@ -1,4 +1,4 @@
-import { expressionAttributeParams } from '../operationsCommon'
+import { expressionAttributeParams } from '../common/operationsCommon'
 import { MultipleEntityCollectionResponse } from '../../multipleEntityOperations'
 import { EntityContext } from '../entityContext'
 import { QueryCommandInput } from '@aws-sdk/lib-dynamodb'

@@ -1,7 +1,7 @@
 import { EntityContext } from '../entityContext'
 import { chunk, isDebugLoggingEnabled, removeNullOrUndefined } from '../../util'
 import { DEFAULT_AND_MAX_BATCH_READ_SIZE } from './batchWriteCommon'
-import { createKeyFromSource, parseItem, returnConsumedCapacityParam } from '../operationsCommon'
+import { createKeyFromSource, parseItem, returnConsumedCapacityParam } from '../common/operationsCommon'
 import { BatchGetCommandInput, BatchGetCommandOutput } from '@aws-sdk/lib-dynamodb'
 import { AdvancedBatchGetResponse, BatchGetOptions } from '../../singleEntityAdvancedOperations'
 

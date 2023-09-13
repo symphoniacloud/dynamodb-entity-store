@@ -1,6 +1,6 @@
 import { EntityContext } from '../entityContext'
 import { MultipleEntityCollectionResponse } from '../../multipleEntityOperations'
-import { parseItem } from '../operationsCommon'
+import { parseItem } from '../common/operationsCommon'
 import {
   commonCollectionResponseElements,
   executeQueryOrScan,

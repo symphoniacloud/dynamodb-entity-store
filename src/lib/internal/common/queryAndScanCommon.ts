@@ -1,4 +1,4 @@
-import { parseItem, returnConsumedCapacityParam } from '../operationsCommon'
+import { parseItem, returnConsumedCapacityParam } from './operationsCommon'
 import { DynamoDBValues } from '../../entities'
 import { EntityStoreLogger, isDebugLoggingEnabled, removeNullOrUndefined } from '../../util'
 import {

@@ -1,5 +1,5 @@
 import { EntityContext } from '../entityContext'
-import { keyParamFromSource } from '../operationsCommon'
+import { keyParamFromSource } from '../common/operationsCommon'
 import { batchWrite, createWriteParamsBatches } from './batchWriteCommon'
 import { BatchWriteCommandInput } from '@aws-sdk/lib-dynamodb'
 import { BatchDeleteOptions } from '../../singleEntityAdvancedOperations'

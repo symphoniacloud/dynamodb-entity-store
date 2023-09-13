@@ -5,7 +5,7 @@ import {
   parseItem,
   returnConsumedCapacityParam,
   tableNameParam
-} from '../operationsCommon'
+} from '../common/operationsCommon'
 import { TransactGetCommandInput, TransactGetCommandOutput } from '@aws-sdk/lib-dynamodb'
 import { isDebugLoggingEnabled } from '../../util/logger'
 

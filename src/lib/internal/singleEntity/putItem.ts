@@ -4,7 +4,7 @@ import { isDebugLoggingEnabled } from '../../util'
 import { parseAttributesCapacityAndMetrics } from './singleEntityCommon'
 import { AdvancedPutOptions, AdvancedPutResponse } from '../../singleEntityAdvancedOperations'
 import { putParams } from '../common/putCommon'
-import { returnParamsForCapacityMetricsAndValues } from '../operationsCommon'
+import { returnParamsForCapacityMetricsAndValues } from '../common/operationsCommon'
 
 export async function putItem<TItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
   context: EntityContext<TItem, TPKSource, TSKSource>,

@@ -7,7 +7,7 @@ import {
   expressionAttributeParamsFromOptions,
   keyParamFromSource,
   tableNameParam
-} from '../operationsCommon'
+} from './operationsCommon'
 import { UpdateCommandInput } from '@aws-sdk/lib-dynamodb'
 import { UpdateOptions } from '../../singleEntityOperations'
 

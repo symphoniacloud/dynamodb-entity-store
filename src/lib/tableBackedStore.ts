@@ -21,7 +21,7 @@ export function createStore(config: TableBackedStoreConfiguration): AllEntitiesS
     for<TItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
       entity: Entity<TItem, TPKSource, TSKSource>
     ): SingleEntityOperations<TItem, TPKSource, TSKSource> {
-      return tableBackedSingleEntityOperations(tableConfigResolver(entity.type), entity)
+      return tableBackedSingleEntityOperations(tableConfigResolver, entity)
     },
     forMultiple(entities: Entity<unknown, unknown, unknown>[]): MultipleEntityOperations {
       return tableBackedMultipleEntityOperations(tableConfigResolver, entities)

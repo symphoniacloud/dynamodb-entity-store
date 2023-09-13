@@ -1,4 +1,8 @@
-import { expressionAttributeParamsFromOptions, keyParamFromSource, tableNameParam } from '../operationsCommon'
+import {
+  expressionAttributeParamsFromOptions,
+  keyParamFromSource,
+  tableNameParam
+} from '../common/operationsCommon'
 import { EntityContext } from '../entityContext'
 import { DynamoDBValues } from '../../entities'
 import { TransactionConditionCheckOptions } from '../../transactionOperations'

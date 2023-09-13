@@ -2,7 +2,7 @@ import { EntityContext } from '../entityContext'
 import { chunk, isDebugLoggingEnabled, removeNullOrUndefined } from '../../util'
 import { BatchWriteCommandInput, BatchWriteCommandOutput } from '@aws-sdk/lib-dynamodb'
 import { DynamoDBValues } from '../../entities'
-import { returnConsumedCapacityParam, returnItemCollectionMetricsParam } from '../operationsCommon'
+import { returnConsumedCapacityParam, returnItemCollectionMetricsParam } from '../common/operationsCommon'
 import {
   AdvancedBatchWriteResponse,
   BatchDeleteOptions,

@@ -5,7 +5,7 @@ import {
   determineTTL,
   expressionAttributeParamsFromOptions,
   tableNameParam
-} from '../operationsCommon'
+} from './operationsCommon'
 import { EntityContext } from '../entityContext'
 import { DynamoDBValues, Entity, MetaAttributeNames } from '../../entities'
 import { Mandatory } from '../../util'

@@ -8,7 +8,7 @@ export type DynamoDBValues = Record<string, NativeAttributeValue>
  * These values can change for multi-table stores. E.g. one table may be a multi-entity "standard" configuration, and another
  * might be more customized for one specific entity
  * This type is included in this file since MetaAttributeNames are parsed to an Entity's parser function
- * "Standard" configuration for a multi-entity / single-table configuration, is defined in configSupport.ts, but in brief is:
+ * "Standard" configuration for a multi-entity / single-table configuration, is defined in setupSupport.ts, but in brief is:
  * pk: 'PK'
  * sk: 'SK'
  * gsisById: { gsi: { pk: 'GSIPK', sk: 'GSISK' } }

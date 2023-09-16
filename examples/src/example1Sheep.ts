@@ -1,6 +1,6 @@
 import {
   createEntity,
-  createStandardSingleTableStoreConfig,
+  createStandardSingleTableConfig,
   createStore,
   DynamoDBValues,
   rangeWhereSkBetween
@@ -29,7 +29,7 @@ export const SHEEP_ENTITY = createEntity(
 
 async function run() {
   // Create entity store using default configuration
-  const config = createStandardSingleTableStoreConfig('AnimalsTable')
+  const config = createStandardSingleTableConfig('AnimalsTable')
   // config.store.logger = consoleLogger
   const entityStore = createStore(config)
 

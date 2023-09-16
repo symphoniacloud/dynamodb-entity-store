@@ -1,12 +1,7 @@
-import { Entity, MetaAttributeNames } from '../../../src/lib/entities'
+import { createStandardSingleTableConfig, Entity, MetaAttributeNames, noopLogger } from '../../../src/lib'
 import { createEntityContext, EntityContext } from '../../../src/lib/internal/entityContext'
-import {
-  createStandardTable,
-  MinimumMetaAttributeNamesWithStandardPK
-} from '../../../src/lib/support/configSupport'
-import { FakeDynamoDBInterface, fakeDynamoDBInterface } from '../fakes/fakeDynamoDBInterface'
-import { FakeClock } from '../fakes/fakeClock'
-import { noopLogger } from '../../../src/lib/util/logger'
+import { FakeDynamoDBInterface, fakeDynamoDBInterface } from './fakes/fakeDynamoDBInterface'
+import { FakeClock } from './fakes/fakeClock'
 
 export function contextFor<TItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
   entity: Entity<TItem, TPKSource, TSKSource>,
@@ -14,12 +9,16 @@ export function contextFor<TItem extends TPKSource & TSKSource, TPKSource, TSKSo
 ): EntityContext<TItem, TPKSource, TSKSource> {
   return createEntityContext(
     {
-      ...createStandardTable('testTable'),
-      dynamoDB: fakeDynamoDBInterface(),
-      clock: new FakeClock(),
-      logger: noopLogger,
-      allowScans: false,
-      ...(customMetaAttributeNames ? { metaAttributeNames: customMetaAttributeNames } : {})
+      storeContext: {
+        dynamoDB: fakeDynamoDBInterface(),
+        clock: new FakeClock(),
+        logger: noopLogger
+      },
+      table: {
+        ...createStandardSingleTableConfig('testTable'),
+        allowScans: false,
+        ...(customMetaAttributeNames ? { metaAttributeNames: customMetaAttributeNames } : {})
+      }
     },
     entity
   )
@@ -35,5 +34,5 @@ export function fakeDynamoDBFrom(context: EntityContext<any, any, any>) {
 export function bareBonesContext<TItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
   entity: Entity<TItem, TPKSource, TSKSource>
 ): EntityContext<TItem, TPKSource, TSKSource> {
-  return contextFor(entity, MinimumMetaAttributeNamesWithStandardPK)
+  return contextFor(entity, { pk: 'PK' })
 }

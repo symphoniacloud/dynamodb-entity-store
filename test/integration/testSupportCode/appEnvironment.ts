@@ -1,57 +1,62 @@
 import { expect } from 'vitest'
-import {
-  StoreConfiguration,
-  TableBackedStoreConfiguration,
-  TableConfiguration
-} from '../../../src/lib/tableBackedStoreConfiguration'
-import { FakeClock } from '../../unit/fakes/fakeClock'
+import { FakeClock } from '../../unit/testSupportCode/fakes/fakeClock'
 import {
   createDocumentClient,
+  customTableName,
   dynamoDbEmptyTable,
   dynamoDbScanTable,
   findCustomTableName,
   findTestTableName,
   testTableName
 } from './awsEnvironment'
-import { documentClientBackedInterface } from '../../../src/lib/dynamoDBInterface'
-import { noopLogger } from '../../../src/lib/util/logger'
-import { createStandardSingleTableStoreConfig } from '../../../src/lib/support/configSupport'
-import { createStore } from '../../../src/lib/tableBackedStore'
+import {
+  createStandardSingleTableConfig,
+  createStore,
+  createStoreContext,
+  noopLogger
+} from '../../../src/lib'
 
 export const docClient = createDocumentClient()
 export const clock = new FakeClock()
+export const logger = noopLogger
 
-export async function initialize(
-  options: { emptyTable?: boolean; allowScans?: boolean } = {},
-  customTableConfig?: TableConfiguration & { tableName?: string }
-) {
-  await findTestTableName()
-  await findCustomTableName()
+export async function initialize({
+  allowScans,
+  emptyTable,
+  useCustomTable
+}: {
+  emptyTable?: boolean
+  allowScans?: boolean
+  useCustomTable?: boolean
+} = {}) {
+  if (useCustomTable) {
+    await findCustomTableName()
+  } else {
+    await findTestTableName()
+  }
+  const tableName = useCustomTable ? customTableName : testTableName
+  if (emptyTable === undefined || emptyTable) {
+    if (useCustomTable) {
+      await dynamoDbEmptyTable(tableName, docClient, 'CustomPK', 'CustomSK')
+    } else {
+      await dynamoDbEmptyTable(tableName, docClient)
+    }
+    await dynamoDbEmptyTable(tableName, docClient)
+    expect((await dynamoDbScanTable(tableName, docClient)).length).toEqual(0)
+  }
 
-  expect(testTableName).toBeDefined()
+  const config = {
+    ...createStandardSingleTableConfig(tableName),
+    allowScans
+  }
+  if (useCustomTable) {
+    config.metaAttributeNames = {
+      pk: 'CustomPK',
+      sk: 'CustomSK'
+    }
+  }
+
   clock.fakeNowIso = '2023-07-01T19:00:00.000Z'
 
-  if (options.emptyTable === undefined || options.emptyTable) {
-    await dynamoDbEmptyTable(testTableName, docClient)
-    expect((await dynamoDbScanTable(testTableName, docClient)).length).toEqual(0)
-  }
-
-  const storeConfig: StoreConfiguration = {
-    globalDynamoDB: documentClientBackedInterface({ documentClient: docClient }),
-    clock: clock,
-    logger: noopLogger
-  }
-
-  const config: TableBackedStoreConfiguration = customTableConfig
-    ? {
-        store: storeConfig,
-        tables: {
-          table: { tableName: testTableName, ...customTableConfig }
-        }
-      }
-    : createStandardSingleTableStoreConfig(testTableName, storeConfig, {
-        allowScans: options.allowScans
-      })
-
-  return createStore(config)
+  return createStore(config, createStoreContext({ clock, logger }, docClient))
 }

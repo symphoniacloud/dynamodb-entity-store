@@ -94,17 +94,10 @@ describe('basic operations', () => {
 describe('with table customizations', () => {
   async function customSheepStore() {
     return (
-      await initialize(
-        {},
-        {
-          tableName: customTableName,
-          allowScans: true,
-          metaAttributeNames: {
-            pk: 'CustomPK',
-            sk: 'CustomSK'
-          }
-        }
-      )
+      await initialize({
+        allowScans: true,
+        useCustomTable: true
+      })
     ).for(SHEEP_ENTITY)
   }
 

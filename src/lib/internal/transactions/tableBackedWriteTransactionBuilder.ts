@@ -1,5 +1,5 @@
 import { Entity } from '../../entities'
-import { CompleteTableParams, createEntityContext, EntityContext } from '../entityContext'
+import { EntityContextParams, createEntityContext, EntityContext } from '../entityContext'
 import {
   DeleteCommandInput,
   PutCommandInput,
@@ -41,11 +41,11 @@ export class TableBackedWriteTransactionBuilder<TItem extends TPKSource & TSKSou
   implements WriteTransactionBuilder<TItem, TPKSource, TSKSource>
 {
   private readonly requests: WriteTransactionRequest[]
-  private readonly tableConfigResolver: (entityType: string) => CompleteTableParams
+  private readonly tableConfigResolver: (entityType: string) => EntityContextParams
   private readonly context: EntityContext<TItem, TPKSource, TSKSource>
 
   constructor(
-    tableConfigResolver: (entityType: string) => CompleteTableParams,
+    tableConfigResolver: (entityType: string) => EntityContextParams,
     currentEntity: Entity<TItem, TPKSource, TSKSource>,
     requests?: WriteTransactionRequest[]
   ) {

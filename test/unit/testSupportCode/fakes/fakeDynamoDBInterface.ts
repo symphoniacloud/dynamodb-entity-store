@@ -17,7 +17,7 @@ import {
   UpdateCommandInput,
   UpdateCommandOutput
 } from '@aws-sdk/lib-dynamodb'
-import { DynamoDBInterface } from '../../../src/lib/dynamoDBInterface'
+import { DynamoDBInterface } from '../../../../src/lib/dynamoDBInterface'
 import { arrayStubResponse } from './fakeSupport'
 
 export const METADATA = { $metadata: {} }

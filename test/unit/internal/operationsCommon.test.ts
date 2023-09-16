@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { FakeClock } from '../fakes/fakeClock'
+import { FakeClock } from '../testSupportCode/fakes/fakeClock'
 import { determineTTL } from '../../../src/lib/internal/common/operationsCommon'
 
 test('determineTTL', () => {

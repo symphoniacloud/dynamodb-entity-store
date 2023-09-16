@@ -8,14 +8,17 @@ import {
   testTableName
 } from '../testSupportCode/awsEnvironment'
 import { describe, expect, test } from 'vitest'
-import { noopLogger } from '../../../src/lib'
-import { createStore } from '../../../src/lib'
-import { documentClientBackedInterface } from '../../../src/lib'
-import { FakeClock } from '../../unit/fakes/fakeClock'
-import { createMinimumTable, createStandardTable } from '../../../src/lib'
+import {
+  createMinimumSingleTableConfig,
+  createStandardSingleTableConfig,
+  createStore,
+  createStoreContext,
+  noopLogger,
+  TablesConfig
+} from '../../../src/lib'
+import { FakeClock } from '../../unit/testSupportCode/fakes/fakeClock'
 import { Farm, FARM_ENTITY } from '../../examples/farmTypeAndEntity'
 import { DeleteCommand } from '@aws-sdk/lib-dynamodb'
-import { TableBackedStoreConfiguration } from '../../../src/lib'
 import { DOG_ENTITY } from '../../examples/dogTypeAndEntity'
 import { chesterDog, peggyCat } from '../../examples/testData'
 import { CAT_ENTITY } from '../../examples/catTypeAndEntity'
@@ -28,29 +31,22 @@ async function initializeStoreAndTable(options: { emptyTable?: boolean } = {}) {
   expect(farmTableName).toBeDefined()
   const logger = noopLogger
 
-  const config: TableBackedStoreConfiguration = {
-    store: {
-      globalDynamoDB: documentClientBackedInterface({ documentClient: docClient, logger }),
-      clock: new FakeClock(),
-      logger
-    },
-    tables: {
-      defaultTableName: testTableName,
-      entityTables: [
-        {
-          ...createStandardTable(testTableName),
-          allowScans: true
-        },
-        {
-          ...createMinimumTable(farmTableName, 'Name'),
-          allowScans: true,
-          entityTypes: [FARM_ENTITY.type]
-        }
-      ]
-    }
+  const config: TablesConfig = {
+    defaultTableName: testTableName,
+    entityTables: [
+      {
+        ...createStandardSingleTableConfig(testTableName),
+        allowScans: true
+      },
+      {
+        ...createMinimumSingleTableConfig(farmTableName, { pk: 'Name' }),
+        allowScans: true,
+        entityTypes: [FARM_ENTITY.type]
+      }
+    ]
   }
 
-  const store = createStore(config)
+  const store = createStore(config, createStoreContext({ clock: new FakeClock(), logger }, docClient))
 
   if (options.emptyTable === undefined || options.emptyTable) {
     await dynamoDbEmptyTable(testTableName, docClient)

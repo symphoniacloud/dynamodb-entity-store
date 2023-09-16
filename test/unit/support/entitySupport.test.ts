@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
-import { typePredicateParser } from '../../src/lib/support/entitySupport'
-import { isSheep } from '../examples/sheepTypeAndEntity'
+import { typePredicateParser } from '../../../src/lib/support/entitySupport'
+import { isSheep } from '../../examples/sheepTypeAndEntity'
 
 test('typePredicateParser', () => {
   const parser = typePredicateParser(isSheep, 'sheep')

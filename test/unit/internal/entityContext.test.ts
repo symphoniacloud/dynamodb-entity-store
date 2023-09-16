@@ -4,46 +4,39 @@ import {
   createEntityContext,
   EntityContext
 } from '../../../src/lib/internal/entityContext'
-import { FakeClock } from '../fakes/fakeClock'
-import { fakeDynamoDBInterface } from '../fakes/fakeDynamoDBInterface'
+import { FakeClock } from '../testSupportCode/fakes/fakeClock'
+import { fakeDynamoDBInterface } from '../testSupportCode/fakes/fakeDynamoDBInterface'
 import { Sheep, SHEEP_ENTITY } from '../../examples/sheepTypeAndEntity'
-import { noopLogger } from '../../../src/lib/util/logger'
 import {
   NoGSIStandardMetaAttributeNames,
-  PKOnlyStandardMetaAttributeNames,
+  noopLogger,
   SingleGSIStandardMetaAttributeNames,
   TwoGSIStandardMetaAttributeNames
-} from '../../../src/lib/support/configSupport'
+} from '../../../src/lib'
 
 test('calcAllMetaDataAttributeNames', () => {
-  expect(calcAllMetaAttributeNames(PKOnlyStandardMetaAttributeNames)).toEqual([
+  expect(calcAllMetaAttributeNames(NoGSIStandardMetaAttributeNames)).toEqual([
     'PK',
+    'SK',
     'ttl',
     '_et',
     '_lastUpdated'
   ])
-  expect(calcAllMetaAttributeNames(NoGSIStandardMetaAttributeNames)).toEqual([
-    'PK',
-    'ttl',
-    '_et',
-    '_lastUpdated',
-    'SK'
-  ])
   expect(calcAllMetaAttributeNames(SingleGSIStandardMetaAttributeNames)).toEqual([
     'PK',
+    'SK',
     'ttl',
     '_et',
     '_lastUpdated',
-    'SK',
     'GSIPK',
     'GSISK'
   ])
   expect(calcAllMetaAttributeNames(TwoGSIStandardMetaAttributeNames)).toEqual([
     'PK',
+    'SK',
     'ttl',
     '_et',
     '_lastUpdated',
-    'SK',
     'GSIPK',
     'GSISK',
     'GSI2PK',
@@ -59,13 +52,12 @@ const entity = SHEEP_ENTITY
 test('createContextForStandardEntity', () => {
   const actual = createEntityContext(
     {
-      tableName: 'testTable',
-      clock,
-      logger,
-      dynamoDB,
-      allowScans: false,
-      metaAttributeNames: SingleGSIStandardMetaAttributeNames,
-      gsiNames: { gsi: 'GSI' }
+      storeContext: { clock, logger, dynamoDB },
+      table: {
+        tableName: 'testTable',
+        metaAttributeNames: SingleGSIStandardMetaAttributeNames,
+        gsiNames: { gsi: 'GSI' }
+      }
     },
     entity
   )
@@ -79,7 +71,7 @@ test('createContextForStandardEntity', () => {
       gsi: 'GSI'
     },
     metaAttributeNames: SingleGSIStandardMetaAttributeNames,
-    allMetaAttributeNames: ['PK', 'ttl', '_et', '_lastUpdated', 'SK', 'GSIPK', 'GSISK']
+    allMetaAttributeNames: ['PK', 'SK', 'ttl', '_et', '_lastUpdated', 'GSIPK', 'GSISK']
   }
   expect(actual).toEqual(expected)
 })
@@ -90,6 +82,7 @@ test('createContextForCustomEntity', () => {
     clock,
     logger,
     entity,
+    allowScans: true,
     tableName: 'testTable',
     tableGsiNames: {},
     metaAttributeNames: {
@@ -102,12 +95,16 @@ test('createContextForCustomEntity', () => {
   expect(
     createEntityContext(
       {
-        tableName: 'testTable',
-        clock,
-        logger,
-        dynamoDB: dynamoDB,
-        allowScans: false,
-        metaAttributeNames: { pk: 'PK', lastUpdated: '_lastUpdated' }
+        storeContext: {
+          clock,
+          logger,
+          dynamoDB
+        },
+        table: {
+          tableName: 'testTable',
+          allowScans: true,
+          metaAttributeNames: { pk: 'PK', lastUpdated: '_lastUpdated' }
+        }
       },
       entity
     )

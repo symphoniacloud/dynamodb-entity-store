@@ -34,7 +34,7 @@ import {
   UpdateCommandOutput
 } from '@aws-sdk/lib-dynamodb'
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
-import { EntityStoreLogger, isDebugLoggingEnabled, noopLogger } from './util'
+import { EntityStoreLogger, isDebugLoggingEnabled } from './util'
 
 export interface DynamoDBInterface {
   put(params: PutCommandInput): Promise<PutCommandOutput>
@@ -65,13 +65,10 @@ export interface DynamoDBInterface {
 }
 
 export function documentClientBackedInterface(
-  options: {
-    documentClient?: DynamoDBDocumentClient
-    logger?: EntityStoreLogger
-  } = {}
+  logger: EntityStoreLogger,
+  documentClient?: DynamoDBDocumentClient
 ): DynamoDBInterface {
-  const docClient = options.documentClient ?? DynamoDBDocumentClient.from(new DynamoDBClient({}))
-  const logger = options.logger ?? noopLogger
+  const docClient = documentClient ?? DynamoDBDocumentClient.from(new DynamoDBClient({}))
 
   return {
     async put(params: PutCommandInput) {

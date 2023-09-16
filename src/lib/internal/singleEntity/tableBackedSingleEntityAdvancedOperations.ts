@@ -24,7 +24,7 @@ import {
   BatchPutOptions,
   SingleEntityAdvancedOperations
 } from '../../singleEntityAdvancedOperations'
-import { CompleteTableParams, EntityContext } from '../entityContext'
+import { EntityContextParams, EntityContext } from '../entityContext'
 import { Entity } from '../../entities'
 import { putItem } from './putItem'
 import { getItem } from './getItem'
@@ -49,12 +49,13 @@ export function tableBackedSingleEntityAdvancedOperations<
   TPKSource,
   TSKSource
 >(
-  table: CompleteTableParams,
+  context: EntityContextParams,
   entity: Entity<TItem, TPKSource, TSKSource>,
   entityContext: EntityContext<TItem, TPKSource, TSKSource>
 ): SingleEntityAdvancedOperations<TItem, TPKSource, TSKSource> {
   function checkAllowScans() {
-    if (!table.allowScans) throw new Error('Scan operations are disabled for this store')
+    if (context.table.allowScans === undefined || !context.table.allowScans)
+      throw new Error('Scan operations are disabled for this store')
   }
 
   return {

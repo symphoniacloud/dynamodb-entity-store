@@ -1,28 +1,25 @@
 import { Entity, MetaAttributeNames } from '../entities'
-import { DynamoDBInterface } from '../dynamoDBInterface'
-import { Clock } from '../util/dateAndTime'
 import { Mandatory } from '../util/types'
-import { StoreConfiguration, Table } from '../tableBackedStoreConfiguration'
-import { EntityStoreLogger } from '../util/logger'
+import { TableBackedStoreContext, TableConfig } from '../tableBackedStoreConfiguration'
 
 export type ContextMetaAttributeNames = Mandatory<MetaAttributeNames, 'gsisById'>
 
-export interface EntityContext<TItem extends TPKSource & TSKSource, TPKSource, TSKSource> {
-  dynamoDB: DynamoDBInterface
-  clock: Clock
-  logger: EntityStoreLogger
+export interface EntityContext<TItem extends TPKSource & TSKSource, TPKSource, TSKSource>
+  extends TableBackedStoreContext,
+    Pick<TableConfig, 'tableName' | 'allowScans'> {
   entity: Entity<TItem, TPKSource, TSKSource>
-  tableName: string
   tableGsiNames: Record<string, string>
   metaAttributeNames: ContextMetaAttributeNames
   allMetaAttributeNames: string[]
 }
 
-export type CompleteTableParams = Mandatory<Table, 'allowScans' | 'dynamoDB'> &
-  Required<Pick<StoreConfiguration, 'clock' | 'logger'>>
+export interface EntityContextParams {
+  table: TableConfig
+  storeContext: TableBackedStoreContext
+}
 
 export function createEntityContext<TItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
-  table: CompleteTableParams,
+  { storeContext, table }: EntityContextParams,
   entity: Entity<TItem, TPKSource, TSKSource>
 ): EntityContext<TItem, TPKSource, TSKSource> {
   const metaAttributeNames = {
@@ -30,12 +27,11 @@ export function createEntityContext<TItem extends TPKSource & TSKSource, TPKSour
     gsisById: table.metaAttributeNames.gsisById ?? {}
   }
   return {
-    dynamoDB: table.dynamoDB,
-    clock: table.clock,
-    logger: table.logger,
-    entity,
+    ...storeContext,
     tableName: table.tableName,
     tableGsiNames: table.gsiNames ?? {},
+    ...(table.allowScans !== undefined ? { allowScans: table.allowScans } : {}),
+    entity,
     metaAttributeNames,
     allMetaAttributeNames: calcAllMetaAttributeNames(metaAttributeNames)
   }

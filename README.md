@@ -75,16 +75,18 @@ We are using a ["Single Table Design"](https://www.alexdebrie.com/posts/dynamodb
 
 Now we add / install Entity Store in the usual way [from NPM](https://www.npmjs.com/package/@symphoniacloud/dynamodb-entity-store) , e.g.
 
-```% npm install @symphoniacloud/dynamodb-entity-store```
+```
+% npm install @symphoniacloud/dynamodb-entity-store
+```
 
 Let's assume that our DynamoDB Table is named `AnimalsTable`.
 
 We can create an entity store by using
 the [`createStore`](https://symphoniacloud.github.io/dynamodb-entity-store/functions/createStore.html)
-and  [`createStandardSingleTableStoreConfig`](https://symphoniacloud.github.io/dynamodb-entity-store/functions/createStandardSingleTableStoreConfig.html) functions:
+and  [`createStandardSingleTableConfig`](https://symphoniacloud.github.io/dynamodb-entity-store/functions/createStandardSingleTableConfig.html) functions:
 
 ```typescript
-const entityStore = createStore(createStandardSingleTableStoreConfig('AnimalsTable'))
+const entityStore = createStore(createStandardSingleTableConfig('AnimalsTable'))
 ```
 
 `entityStore` is an object that implements
@@ -116,7 +118,7 @@ We only need to create this object **once per type** of entity in our applicatio
 * **Optional:** express how to convert an object to a DynamoDB record ("formatting")
 * **Optional:** Create Global Secondary Index (GSI) key values
 
-> A complete discussion of _Entities_ is available in [the manual, here](./documentation/1-Entities.md).
+> A complete discussion of _Entities_ is available in [the manual, here](./documentation/Entities.md).
 
 We can now call `.for(...)` on our entity store. This returns an object that implements [`SingleEntityOperations`](https://symphoniacloud.github.io/dynamodb-entity-store/interfaces/SingleEntityOperations.html) - **this is the object that you'll likely work with most when using this library**.
 
@@ -223,9 +225,8 @@ When you're working on setting up your entities and queries you'll often want to
 doing. You can do this by turning on logging:
 
 ```typescript
-const config = createStandardSingleTableStoreConfig('AnimalsTable')
-config.store.logger = consoleLogger
-const entityStore = createStore(config)
+const config = createStandardSingleTableConfig('AnimalsTable')
+const entityStore = createStore(createStandardSingleTableConfig('AnimalsTable'), { logger: consoleLogger })
 ```
 
 With this turned on we can see the output from our last query:
@@ -313,7 +314,7 @@ Write operations are no different than before - Entity Store handles generating 
 generator functions. So if we have the following...
 
 ```typescript
-const entityStore = createStore(createStandardSingleTableStoreConfig('AnimalsTable'))
+const entityStore = createStore(createStandardSingleTableConfig('AnimalsTable'))
 const chickenStore = entityStore.for(CHICKEN_ENTITY)
 
 await chickenStore.put({ breed: 'sussex', name: 'ginger', dateOfBirth: '2021-07-01', coop: 'bristol' })
@@ -403,16 +404,11 @@ We create the entity store using a custom configuration:
 
 ```typescript
 const entityStore = createStore(
-  createSingleTableConfiguration({
-    tableName: 'FarmTable',
-    metaAttributeNames: { pk: 'Name' }
-  })
+  createMinimumSingleTableConfig('FarmTable', { pk: 'Name' })
 )
 ```
 
-We're only using one table (here "single table" just means one table, rather than the "standard" configuration), and we
-override
-the `metaAttributeNames` settings to only store the partition key, with the correct attribute name.
+> See [_Setup_ in the manual](documentation/Setup.md) for more on custom table configuration.
 
 The `Entity` this time is a bit more complicated:
 
@@ -496,16 +492,13 @@ results in:
 Error: Scan operations are disabled for this store
 ```
 
-However, we can change our store configuration to be the following:
+However, we can change our table configuration to be the following:
 
 ```typescript
-const entityStore = createStore(
-  createSingleTableConfiguration({
-    tableName: 'FarmTable',
-    metaAttributeNames: { pk: 'Name' },
-    allowScans: true
-  })
-)
+const entityStore = createStore({
+  ...createMinimumSingleTableConfig('FarmTable', { pk: 'Name' }),
+  allowScans: true
+})
 ```
 
 and now we can run our scan:

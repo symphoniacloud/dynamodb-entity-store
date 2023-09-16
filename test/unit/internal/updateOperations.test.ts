@@ -1,7 +1,7 @@
 import { expect, test, describe } from 'vitest'
 import { SHEEP_ENTITY } from '../../examples/sheepTypeAndEntity'
 import { excludeKeys } from '../../../src/lib/util/collections'
-import { SingleGSIStandardMetaAttributeNames } from '../../../src/lib/support/configSupport'
+import { SingleGSIStandardMetaAttributeNames } from '../../../src/lib/support/setupSupport'
 import { contextFor } from '../testSupportCode/entityContextSupport'
 import { createUpdateParams } from '../../../src/lib/internal/common/updateCommon'
 

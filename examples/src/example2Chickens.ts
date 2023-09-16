@@ -1,5 +1,5 @@
 import {
-  createStandardSingleTableStoreConfig,
+  createStandardSingleTableConfig,
   createStore,
   Entity,
   rangeWhereSkBeginsWith,
@@ -68,7 +68,7 @@ export function gsiBreed(breed: string) {
 
 async function run() {
   // Create entity store using default configuration
-  const entityStore = createStore(createStandardSingleTableStoreConfig('AnimalsTable'))
+  const entityStore = createStore(createStandardSingleTableConfig('AnimalsTable'))
   const chickenStore = entityStore.for(CHICKEN_ENTITY)
 
   await chickenStore.put({ breed: 'sussex', name: 'ginger', dateOfBirth: '2021-07-01', coop: 'bristol' })

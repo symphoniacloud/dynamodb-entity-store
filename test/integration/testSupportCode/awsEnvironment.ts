@@ -55,7 +55,12 @@ export function createDocumentClient() {
   return DynamoDBDocumentClient.from(new DynamoDBClient({}))
 }
 
-export async function dynamoDbEmptyTable(tableName: string, dynamoDbDocumentClient?: DynamoDBDocumentClient) {
+export async function dynamoDbEmptyTable(
+  tableName: string,
+  dynamoDbDocumentClient?: DynamoDBDocumentClient,
+  pk = 'PK',
+  sk = 'SK'
+) {
   const docClient = dynamoDbDocumentClient ?? createDocumentClient()
   const items = await dynamoDbScanTable(tableName, docClient)
   for (const item of items) {
@@ -63,8 +68,8 @@ export async function dynamoDbEmptyTable(tableName: string, dynamoDbDocumentClie
       new DeleteCommand({
         TableName: tableName,
         Key: {
-          PK: item.PK,
-          SK: item.SK
+          [pk]: item[pk],
+          [sk]: item[sk]
         }
       })
     )

@@ -1,67 +1,50 @@
 import {
   isSingleTableConfig,
-  StoreConfiguration,
-  Table,
-  TableBackedStoreConfiguration
+  MultiEntityTableConfig,
+  TableBackedStoreContext,
+  TableConfig,
+  TablesConfig
 } from '../tableBackedStoreConfiguration'
-import { CompleteTableParams } from './entityContext'
+import { EntityContextParams } from './entityContext'
 import { throwError } from '../util/errors'
 
-export type TableResolver = (entityType: string) => CompleteTableParams
+export type EntityContextResolver = (entityType: string) => EntityContextParams
 
-export function resolverFor(config: TableBackedStoreConfiguration): TableResolver {
-  if (isSingleTableConfig(config.tables)) {
-    return singleTableResolver(completeConfiguration(config.store, config.tables.table))
-  }
-  // Else MultiTable
-  const { entityTables, defaultTableName } = config.tables
-
-  const completeConfigsByEntityType: Record<string, CompleteTableParams> = Object.fromEntries(
-    entityTables
-      .map((table) => {
-        const completeConfig = completeConfiguration(config.store, table)
-        return (table.entityTypes ?? []).map((entityType) => [entityType, completeConfig])
-      })
-      .flat()
-  )
-
-  const completeDefaultTableConfig = defaultTableName
-    ? completeConfiguration(
-        config.store,
-        config.tables.entityTables.find((t) => t.tableName === defaultTableName) ??
-          throwError(`Unable to find table configuration for default table name ${defaultTableName}`)()
-      )
-    : undefined
-
-  return multiTableResolver(completeConfigsByEntityType, completeDefaultTableConfig)
+export function resolverFor(
+  storeContext: TableBackedStoreContext,
+  config: TablesConfig
+): EntityContextResolver {
+  return isSingleTableConfig(config)
+    ? singleTableResolver(storeContext, config)
+    : multiTableResolver(storeContext, config.entityTables, config.defaultTableName)
 }
 
-function singleTableResolver(config: CompleteTableParams): TableResolver {
-  return () => config
+function singleTableResolver(storeContext: TableBackedStoreContext, table: TableConfig) {
+  const entityContext = { storeContext, table }
+  return () => entityContext
 }
 
 function multiTableResolver(
-  completeConfigsByEntityType: Record<string, CompleteTableParams>,
-  completeDefaultTableConfig?: CompleteTableParams
-): TableResolver {
-  return (entityType: string) => {
-    return (
-      completeConfigsByEntityType[entityType] ??
-      completeDefaultTableConfig ??
-      throwError(`Unable to locate table that supports entity type ${entityType}`)()
-    )
-  }
-}
+  storeContext: TableBackedStoreContext,
+  entityTables: MultiEntityTableConfig[],
+  defaultTableName: string | undefined
+) {
+  const tablesByEt: Record<string, TableConfig> = Object.fromEntries(
+    entityTables.map((table) => (table.entityTypes ?? []).map((entityType) => [entityType, table])).flat()
+  )
 
-function completeConfiguration(store: StoreConfiguration, table: Table): CompleteTableParams {
-  return {
-    clock: store.clock,
-    logger: store.logger,
-    allowScans: table.allowScans !== undefined && table.allowScans,
-    dynamoDB:
-      table.dynamoDB ??
-      store.globalDynamoDB ??
-      throwError(`DynamoDB wrapper is not available at either the table or global scope`)(),
-    ...table
+  const defaultTable = defaultTableName
+    ? entityTables.find((t) => t.tableName === defaultTableName) ??
+      throwError(`Unable to find table configuration for default table name ${defaultTableName}`)()
+    : undefined
+
+  return (entityType: string) => {
+    return {
+      storeContext,
+      table:
+        tablesByEt[entityType] ??
+        defaultTable ??
+        throwError(`Unable to locate table that supports entity type ${entityType}`)()
+    }
   }
 }

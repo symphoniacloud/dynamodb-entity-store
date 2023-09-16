@@ -1,44 +1,33 @@
-import { Clock } from './util'
+import { Clock, EntityStoreLogger } from './util'
 import { DynamoDBInterface } from './dynamoDBInterface'
-import { EntityStoreLogger } from './util'
 import { MetaAttributeNames } from './entities'
 
-export interface TableBackedStoreConfiguration {
-  store: StoreConfiguration
-  tables: SingleTableConfiguration | MultiTableConfiguration
-}
+// See functions in _setupSupport.ts_ for assistance in creating these objects
 
-export interface StoreConfiguration {
-  clock: Clock // Defaults to clock based off system time. Overridable for testing
-  globalDynamoDB?: DynamoDBInterface // TODO - test this - not used in standard config
+export interface TableBackedStoreContext {
   logger: EntityStoreLogger
+  dynamoDB: DynamoDBInterface
+  clock: Clock
 }
 
-export interface SingleTableConfiguration {
-  table: Table
-}
+export type TablesConfig = TableConfig | MultiTableConfig
 
-export interface MultiTableConfiguration {
-  defaultTableName?: string
-  entityTables: MultiEntityTable[]
-}
-
-export interface MultiEntityTable extends Table {
-  entityTypes?: string[]
-}
-export interface Table extends TableConfiguration {
+export interface TableConfig {
   tableName: string
-}
-
-export interface TableConfiguration {
   metaAttributeNames: MetaAttributeNames
-  dynamoDB?: DynamoDBInterface // TODO - check using global by default
   allowScans?: boolean
   gsiNames?: Record<string, string>
 }
 
-export function isSingleTableConfig(
-  x: SingleTableConfiguration | MultiTableConfiguration
-): x is SingleTableConfiguration {
-  return (x as SingleTableConfiguration).table !== undefined
+export interface MultiTableConfig {
+  entityTables: MultiEntityTableConfig[]
+  defaultTableName?: string
+}
+
+export interface MultiEntityTableConfig extends TableConfig {
+  entityTypes?: string[]
+}
+
+export function isSingleTableConfig(x: TablesConfig): x is TableConfig {
+  return (x as TableConfig).tableName !== undefined
 }

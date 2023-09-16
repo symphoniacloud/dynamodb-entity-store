@@ -1,9 +1,8 @@
 import { expect, test } from 'vitest'
 import { SHEEP_ENTITY } from '../examples/sheepTypeAndEntity'
-import { fakeDynamoDBInterface } from './fakes/fakeDynamoDBInterface'
-import { FakeClock } from './fakes/fakeClock'
-import { createStandardSingleTableStoreConfig } from '../../src/lib/support/configSupport'
-import { createStore } from '../../src/lib/tableBackedStore'
+import { fakeDynamoDBInterface } from './testSupportCode/fakes/fakeDynamoDBInterface'
+import { FakeClock } from './testSupportCode/fakes/fakeClock'
+import { createStoreContext, createStandardSingleTableConfig, createStore } from '../../src/lib'
 
 const METADATA = { $metadata: {} }
 
@@ -12,18 +11,10 @@ const UNIT_TEST_TABLE = 'unit-test-table'
 function wrapperAndStore({ allowScans = false }: { allowScans?: boolean } = {}) {
   const wrapper = fakeDynamoDBInterface()
 
-  const storeConfig = createStandardSingleTableStoreConfig(
-    UNIT_TEST_TABLE,
-    {
-      globalDynamoDB: wrapper,
-      clock: new FakeClock()
-    },
-    {
-      allowScans
-    }
-  )
+  const config = createStandardSingleTableConfig(UNIT_TEST_TABLE)
+  config.allowScans = allowScans
 
-  const store = createStore(storeConfig)
+  const store = createStore(config, createStoreContext({ dynamoDB: wrapper, clock: new FakeClock() }))
   return {
     wrapper,
     store

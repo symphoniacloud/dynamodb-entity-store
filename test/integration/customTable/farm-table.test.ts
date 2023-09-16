@@ -5,13 +5,15 @@ import {
   farmTableName,
   findFarmTableName
 } from '../testSupportCode/awsEnvironment'
-import { documentClientBackedInterface } from '../../../src/lib'
-import { FakeClock } from '../../unit/fakes/fakeClock'
+import {
+  consoleLogger,
+  createMinimumSingleTableConfig,
+  createStore,
+  createStoreContext
+} from '../../../src/lib'
+import { FakeClock } from '../../unit/testSupportCode/fakes/fakeClock'
 import { Farm, FARM_ENTITY } from '../../examples/farmTypeAndEntity'
 import { DeleteCommand } from '@aws-sdk/lib-dynamodb'
-import { createStore } from '../../../src/lib'
-import { createMinimumTable } from '../../../src/lib'
-import { consoleLogger } from '../../../src/lib'
 
 const docClient = createDocumentClient()
 
@@ -20,19 +22,13 @@ async function initializeStoreAndTable(options: { emptyTable?: boolean; allowSca
   expect(farmTableName).toBeDefined()
 
   const logger = consoleLogger
-  const store = createStore({
-    store: {
-      globalDynamoDB: documentClientBackedInterface({ documentClient: docClient, logger }),
-      clock: new FakeClock(),
-      logger
+  const store = createStore(
+    {
+      ...createMinimumSingleTableConfig(farmTableName, { pk: 'Name' }),
+      allowScans: true
     },
-    tables: {
-      table: {
-        ...createMinimumTable(farmTableName, 'Name'),
-        allowScans: true
-      }
-    }
-  })
+    createStoreContext({ clock: new FakeClock(), logger }, docClient)
+  )
 
   if (options.emptyTable === undefined || options.emptyTable) {
     const allRecords = await store.for(FARM_ENTITY).scanAll()

@@ -18,10 +18,10 @@ import {
   UpdateOptions
 } from '../../singleEntityOperations'
 import { tableBackedSingleEntityAdvancedOperations } from './tableBackedSingleEntityAdvancedOperations'
-import { TableResolver } from '../tableBackedConfigurationResolver'
+import { EntityContextResolver } from '../tableBackedConfigurationResolver'
 
 export function tableBackedSingleEntityOperations<TItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
-  tableConfigResolver: TableResolver,
+  tableConfigResolver: EntityContextResolver,
   entity: Entity<TItem, TPKSource, TSKSource>
 ): SingleEntityOperations<TItem, TPKSource, TSKSource> {
   const table = tableConfigResolver(entity.type),

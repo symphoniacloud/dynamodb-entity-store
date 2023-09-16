@@ -136,7 +136,9 @@ function pk({ name }: Pick<Farm, 'name'>) {
 
 ### `.convertToDynamoFormat()` (optional)
 
-`convertToDynamoFormat()` is an optional function you may choose to implement in order to change how DynamoDB Entity Store writes an object to DynamoDB during `put` operations. Since DynamoDB Entity Store uses the [AWS Document Client](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-lib-dynamodb/) library under the covers, this is more about choosing which fields to save, and any field-level modification, rather than lower-level "marshalling". If you need to change marshalling options at the AWS library level please refer to the [Setup chapter](2-Setup.md).
+`convertToDynamoFormat()` is an optional function you may choose to implement in order to change how DynamoDB Entity Store writes an object to DynamoDB during `put` operations.
+Since DynamoDB Entity Store uses the [AWS Document Client](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-lib-dynamodb/) library under the covers, this is more about choosing which fields to save, and any field-level modification, rather than lower-level "marshalling".
+If you need to change marshalling options at the AWS library level please refer to the [Setup chapter](Setup.md).
 
 By default DynamoDB Entity Store will store all the fields of an object, unmanipulated, using the field names of the object. E.g. going back to our `Sheep` example, let's say we're writing the following object:
 
@@ -214,7 +216,7 @@ The `gsis` field defines _generator_ functions for all of the Global Secondary I
 
 The type of `gsis` is `Record<string, GsiGenerators>`, a map from a GSI identifier to a GSI PK generator, and optionally a GSI SK generator.
 
-The **GSI identifier** will typically be the same as, or similar to, the name of your actual DynamoDB GSI. The mapping from _Entity_ GSI ID to DynamoDB GSI Name is configured in [Table Setup](2-Setup.md), but as an example the "standard" configuration uses `gsi` as the _Entity_ GSI ID, and `GSI` for the corresponding index name.
+The **GSI identifier** will typically be the same as, or similar to, the name of your actual DynamoDB GSI. The mapping from _Entity_ GSI ID to DynamoDB GSI Name is configured in [Table Setup](Setup.md), but as an example the "standard" configuration uses `gsi` as the _Entity_ GSI ID, and `GSI` for the corresponding index name.
 
 If you understand the table `pk()` and `sk()` generators then you'll understand the GSI Generators too. See the [example in the project README](https://github.com/symphoniacloud/dynamodb-entity-store/blob/main/README.md#example-2-adding-a-global-secondary-index) for an example. 
 

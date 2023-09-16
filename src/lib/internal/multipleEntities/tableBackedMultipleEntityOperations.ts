@@ -1,4 +1,4 @@
-import { TableResolver } from '../tableBackedConfigurationResolver'
+import { EntityContextResolver } from '../tableBackedConfigurationResolver'
 import { Entity } from '../../entities'
 import { MultipleEntityOperations, QueryMultipleBy } from '../../multipleEntityOperations'
 import { createEntityContext, EntityContext } from '../entityContext'
@@ -11,11 +11,11 @@ import {
 } from '../../singleEntityAdvancedOperations'
 
 export function tableBackedMultipleEntityOperations(
-  tableConfigResolver: TableResolver,
+  entityContextResolver: EntityContextResolver,
   entities: Entity<unknown, unknown, unknown>[]
 ): MultipleEntityOperations {
   const contextsByEntityType: Record<string, EntityContext<unknown, unknown, unknown>> = Object.fromEntries(
-    entities.map((e) => [e.type, createEntityContext(tableConfigResolver(e.type), e)])
+    entities.map((e) => [e.type, createEntityContext(entityContextResolver(e.type), e)])
   )
   if (new Set(Object.values(contextsByEntityType).map((c) => c.tableName)).size > 1)
     throw new Error(

@@ -1,5 +1,5 @@
 import {
-  createSingleTableConfiguration,
+  createMinimumSingleTableConfig,
   createStore,
   DynamoDBValues,
   entityFromPkOnlyEntity,
@@ -43,13 +43,10 @@ export const FARM_ENTITY = entityFromPkOnlyEntity({
 async function run() {
   // Custom configuration - use one table where the partition key attribute name is 'Name', and there is no SK
   // or any other metadata
-  const entityStore = createStore(
-    createSingleTableConfiguration({
-      tableName: 'FarmTable',
-      metaAttributeNames: { pk: 'Name' },
-      allowScans: true
-    })
-  )
+  const entityStore = createStore({
+    ...createMinimumSingleTableConfig('FarmTable', { pk: 'Name' }),
+    allowScans: true
+  })
 
   const farmStore = entityStore.for(FARM_ENTITY)
   await farmStore.put({ name: 'Sunflower Farm', address: 'Green Shoots Road, Honesdale, PA' })

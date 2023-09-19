@@ -40,7 +40,7 @@ Your corresponding `Entity` object would be of type `Entity<Sheep,...>`.
 With our example above, if the Partition Key for persisted sheep is based on the `breed` field, then `TPKSource` is:
 
 ```typescript
-type SkeepPKSource = {
+type SheepPKSource = {
   breed: string
 }
 ```
@@ -48,7 +48,7 @@ type SkeepPKSource = {
 and if the Sort Key for persisted sheep is based on the `name` field, then `TSKSource` is:
 
 ```typescript
-type SkeepSKSource = {
+type SheepSKSource = {
   name: string
 }
 ```
@@ -56,8 +56,8 @@ type SkeepSKSource = {
 However, since we know that both the PK source and SK Source types are subsets of `Sheep`, we can instead say:
 
 ```typescript
-type SkeepPKSource = Pick<Sheep, 'breed'>
-type SkeepSKSource = Pick<Sheep, 'name'>
+type SheepPKSource = Pick<Sheep, 'breed'>
+type SheepSKSource = Pick<Sheep, 'name'>
 ```
 
 We can then build our entire "Sheep Entity" type :
@@ -84,7 +84,7 @@ Each of these functions takes an argument of type `TPKSource` or `TSKSource`, as
 
 Let's go back to our example of `Sheep` from earlier. Let's say we have a particular sheep object that is internally represented as follows:
 
-```typescript
+```
 { breed: 'merino', name: 'shaun', ageInYears: 3 }
 ```
 
@@ -142,7 +142,7 @@ If you need to change marshalling options at the AWS library level please refer 
 
 By default DynamoDB Entity Store will store all the fields of an object, unmanipulated, using the field names of the object. E.g. going back to our `Sheep` example, let's say we're writing the following object:
 
-```typescript
+```
 { breed: 'merino', name: 'shaun', ageInYears: 3 }
 ```
 
@@ -238,7 +238,7 @@ There are various _Entity_-related support functions, which you can see in the [
 
 ## Examples
 
-For several examples, see the [examples directory](../examples/src/) , but for quick reference here's the complete `SHEEP_ENTITY` example that I used in this page:
+For several examples, see the [examples directory](../examples/src) , but for quick reference here's the complete `SHEEP_ENTITY` example that I used in this page:
 
 ```typescript
 export interface Sheep {

@@ -10,6 +10,7 @@ import {
   testTableName
 } from './awsEnvironment'
 import {
+  consoleLogger,
   createStandardSingleTableConfig,
   createStore,
   createStoreContext,
@@ -18,16 +19,17 @@ import {
 
 export const docClient = createDocumentClient()
 export const clock = new FakeClock()
-export const logger = noopLogger
 
 export async function initialize({
   allowScans,
   emptyTable,
-  useCustomTable
+  useCustomTable,
+  useConsoleLogger
 }: {
   emptyTable?: boolean
   allowScans?: boolean
   useCustomTable?: boolean
+  useConsoleLogger?: boolean
 } = {}) {
   if (useCustomTable) {
     await findCustomTableName()
@@ -58,5 +60,8 @@ export async function initialize({
 
   clock.fakeNowIso = '2023-07-01T19:00:00.000Z'
 
-  return createStore(config, createStoreContext({ clock, logger }, docClient))
+  return createStore(
+    config,
+    createStoreContext({ clock, logger: useConsoleLogger ? consoleLogger : noopLogger }, docClient)
+  )
 }

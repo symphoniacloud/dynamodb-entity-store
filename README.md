@@ -23,13 +23,14 @@ mike@symphonia.io, or use the issues in this project**.
 Entity Store provides the following:
 
 * Assistance for write operations, handling repetitive aspects like configuration of table names, key attribute names,
-  and setting metadata attributes
-* A typed interface for read operations (get, scans, and queries)
-* A common API for querying / scanning one page of results at a time, or all available results
+  and setting metadata attributes like "Last Updated" time, and "TTL" (Time To Live)
+* A typed interface, including parsing, for read operations (get, scans, and queries), which also provides entity-scope filtering for collection operations.
+* Capability to automatically load all available results for collection operations (queries and scans), while also providing single-page versions with almost identical interfaces. 
 * Simple setup when using ["Single Table Design"](https://www.alexdebrie.com/posts/dynamodb-single-table/#what-is-single-table-design) ...
 * ... but also allows non-standard and/or multi-table designs
 * A pretty-much-complete coverage of the entire DynamoDB API / SDK, including operations for batch and transaction
   operations, and options for diagnostic metadata (e.g. "consumed capacity")
+* ... all without any runtime library dependencies, apart from official AWS DynamoDB libraries (AWS SDK V3).  
 
 This library is named _Entity Store_ since it's based on the idea that your DynamoDB tables store one or many collections of related records, and each
 collection has the same persisted structure.
@@ -237,9 +238,7 @@ DynamoDB Entity Store DEBUG - Attempting to query or scan entity sheep [{"useAll
 DynamoDB Entity Store DEBUG - Query or scan result [{"result":{"$metadata":{"httpStatusCode":200,"requestId":"CN2O9KUEECRUJ0BTPT1DT79G6NVV4KQNSO5AEMVJF66Q9ASUAAJG","attempts":1,"totalRetryDelay":0},"Count":1,"Items":[{"_lastUpdated":"2023-08-21T19:15:37.396Z","SK":"NAME#bob","ageInYears":4,"PK":"SHEEP#BREED#merino","breed":"merino","_et":"sheep","name":"bob"}],"ScannedCount":1}}]
 ```
 
-The store's `logger` can actually be anything that satisifies
-the [`EntityStoreLogger`](https://github.com/symphoniacloud/dynamodb-entity-store/blob/main/src/lib/util/logger.ts)
-type.
+The store's `logger` can actually be anything that satisfies the [`EntityStoreLogger`](https://github.com/symphoniacloud/dynamodb-entity-store/blob/main/src/lib/util/logger.ts) type.
 The library provides a silent "No-op" logger that it uses by default, as well as the [`consoleLogger`](https://symphoniacloud.github.io/dynamodb-entity-store/variables/consoleLogger.html) shown here, but you
 can easily implement your own - there's an example in the [source code comments](https://github.com/symphoniacloud/dynamodb-entity-store/blob/94a622f/src/lib/util/logger.ts) of implementing a logger
 for [AWS PowerTools](https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger/).

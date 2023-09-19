@@ -87,7 +87,7 @@ function createPowertoolsEntityStoreLogger(logger: Logger): EntityStoreLogger {
 
 #### Overriding the Clock
 
-DynamoDB Entity Store uses a clock when generating the Last Updated field on items. By default this is the system clock, but you
+DynamoDB Entity Store uses a clock when generating the Last Updated and TTL attributes on items. By default this is the system clock, but you
 can override this - typically you'd only want to do so in tests. For an example see [`FakeClock`](https://github.com/symphoniacloud/dynamodb-entity-store/blob/main/test/unit/testSupportCode/fakes/fakeClock.ts) in the project's own test code.
 
 ### Configuring Tables
@@ -120,7 +120,7 @@ If you want you can "hand-roll" this object, however there are support functions
 
 For example, say you want to use a "standard single table" configuration. To create one of these you can call `createStandardSingleTableConfig()`, just passing your underlying table name. The resulting configuration will be as follows:
 
-```typescript
+```
 {
   tableName: 'testTable',
   allowScans: false,
@@ -215,3 +215,13 @@ You have a few options of how to create a `MultiTableConfig` object:
 
 * Use the `createStandardMultiTableConfig()` function if all of your tables use the same "standard" configuration described earlier
 * Build your own configuration, optionally using the other support functions in [_setupSupport.ts_](../src/lib/support/setupSupport.ts).
+
+## Caching / capturing Entity Store
+
+Your store object contains, and may have instantiated, a DynamoDB client interface / document client.
+It's typical to only a DynamoDB connection object once per configuration and application instance, partly because it has computational overhead.
+
+As such I recommend that you typically treat your store instances in the same way as DynamoDB connection objects - in other words don't instantiate an entity store every time you need it, and instead cache it / capture it wherever you store your application's in-memory state.
+
+A reason to do otherwise would be if you're managing your Document Client outside of DynamoDB Entity Store, and are using Entity Store in only a few places, rather than as your universal DynamoDB access layer.
+In which case feel free to instantiate Entity Store where you need it, passing in your Document Client. 

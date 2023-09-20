@@ -1,6 +1,6 @@
 import { documentClientBackedInterface } from '../dynamoDBInterface'
 import { realClock } from '../util/dateAndTime'
-import { MultiTableConfig, TableBackedStoreContext, TableConfig } from '../tableBackedStoreConfiguration'
+import { MultiTableConfig, StoreContext, TableConfig } from '../tableBackedStoreConfiguration'
 import { noopLogger } from '../util/logger'
 import { MetaAttributeNames } from '../entities'
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb'
@@ -15,9 +15,9 @@ import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb'
  * @param documentClient - override the DynamoDB document client used in the default DynamoDB wrapper. **IGNORED** if `dynamoDB` is provided in `options`
  */
 export function createStoreContext(
-  options: Partial<TableBackedStoreContext> = {},
+  options: Partial<StoreContext> = {},
   documentClient?: DynamoDBDocumentClient
-): TableBackedStoreContext {
+): StoreContext {
   const logger = options.logger ?? noopLogger
   return {
     clock: options.clock ?? realClock(),

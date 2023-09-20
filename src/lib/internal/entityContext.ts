@@ -1,11 +1,11 @@
 import { Entity, MetaAttributeNames } from '../entities'
 import { Mandatory } from '../util/types'
-import { TableBackedStoreContext, TableConfig } from '../tableBackedStoreConfiguration'
+import { StoreContext, TableConfig } from '../tableBackedStoreConfiguration'
 
 export type ContextMetaAttributeNames = Mandatory<MetaAttributeNames, 'gsisById'>
 
 export interface EntityContext<TItem extends TPKSource & TSKSource, TPKSource, TSKSource>
-  extends TableBackedStoreContext,
+  extends StoreContext,
     Pick<TableConfig, 'tableName' | 'allowScans'> {
   entity: Entity<TItem, TPKSource, TSKSource>
   tableGsiNames: Record<string, string>
@@ -15,7 +15,7 @@ export interface EntityContext<TItem extends TPKSource & TSKSource, TPKSource, T
 
 export interface EntityContextParams {
   table: TableConfig
-  storeContext: TableBackedStoreContext
+  storeContext: StoreContext
 }
 
 export function createEntityContext<TItem extends TPKSource & TSKSource, TPKSource, TSKSource>(

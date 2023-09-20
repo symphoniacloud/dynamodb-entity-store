@@ -1,7 +1,7 @@
 import {
   isSingleTableConfig,
   MultiEntityTableConfig,
-  TableBackedStoreContext,
+  StoreContext,
   TableConfig,
   TablesConfig
 } from '../tableBackedStoreConfiguration'
@@ -10,22 +10,19 @@ import { throwError } from '../util/errors'
 
 export type EntityContextResolver = (entityType: string) => EntityContextParams
 
-export function resolverFor(
-  storeContext: TableBackedStoreContext,
-  config: TablesConfig
-): EntityContextResolver {
+export function resolverFor(storeContext: StoreContext, config: TablesConfig): EntityContextResolver {
   return isSingleTableConfig(config)
     ? singleTableResolver(storeContext, config)
     : multiTableResolver(storeContext, config.entityTables, config.defaultTableName)
 }
 
-function singleTableResolver(storeContext: TableBackedStoreContext, table: TableConfig) {
+function singleTableResolver(storeContext: StoreContext, table: TableConfig) {
   const entityContext = { storeContext, table }
   return () => entityContext
 }
 
 function multiTableResolver(
-  storeContext: TableBackedStoreContext,
+  storeContext: StoreContext,
   entityTables: MultiEntityTableConfig[],
   defaultTableName: string | undefined
 ) {

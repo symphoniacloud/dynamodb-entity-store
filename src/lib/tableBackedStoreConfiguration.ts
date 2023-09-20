@@ -4,7 +4,7 @@ import { MetaAttributeNames } from './entities'
 
 // See functions in _setupSupport.ts_ for assistance in creating these objects
 
-export interface TableBackedStoreContext {
+export interface StoreContext {
   logger: EntityStoreLogger
   dynamoDB: DynamoDBInterface
   clock: Clock

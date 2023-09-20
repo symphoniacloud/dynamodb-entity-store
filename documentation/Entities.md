@@ -1,9 +1,13 @@
-# Chapter 1 - Entities
+# Chapter 2 - Entities
 
-_Entity_ objects are used by DynamoDB Entity Store during all database operations for defining configuration and behavior. Typically _Entity_ objects are defined as global constants within your app, only needing to be instantiated once per _Entity_ type. Each _Entity_ object must satisfy the [`Entity` interface](https://symphoniacloud.github.io/dynamodb-entity-store/interfaces/Entity.html) :
+**Prerequisite reading** - the very first part of [Setup](./Setup.md) on installing the library.
+
+_Entity_ objects are used by DynamoDB Entity Store during all database operations for defining configuration and behavior.
+Typically _Entity_ objects are defined as global constants within your app, only needing to be instantiated once per _Entity_ type.
+Each _Entity_ object must satisfy the [`Entity` interface](https://symphoniacloud.github.io/dynamodb-entity-store/interfaces/Entity.html) :
 
 ```typescript
-export interface Entity<TItem extends TPKSource & TSKSource, TPKSource, TSKSource> {
+interface Entity<TItem extends TPKSource & TSKSource, TPKSource, TSKSource> {
   type: string
   pk(source: TPKSource): string
   sk(source: TSKSource): string
@@ -19,7 +23,8 @@ export interface Entity<TItem extends TPKSource & TSKSource, TPKSource, TSKSourc
 
 Every _Entity_ must satisfy the type signature `Entity<TItem extends TPKSource & TSKSource, TPKSource, TSKSource>`.
 
-`TItem` is intended to be the "internal" type of the object that you're persisting to DynamoDB. `TItem` is both the type of the objects you are writing (e.g. using `put`) and the result of the items that you are reading (e.g. using `get` or `query`).
+`TItem` is intended to be the "internal" type of the object that you're persisting to DynamoDB.
+`TItem` is both the type of the objects you are writing (e.g. using `put`) and the result of the items that you are reading (e.g. using `get` or `query`).
 
 For example you may have an "internal" type like this:
 
@@ -31,7 +36,7 @@ interface Sheep {
 }
 ```
 
-Your corresponding `Entity` object would be of type `Entity<Sheep,...>`. 
+Your corresponding _Entity_ object would be of type `Entity<Sheep,...>`. 
 
 `TPKSource` and `TSKSource` are the input types used for _generating_ Partition Key and Sort Key values. DynamoDB Entity Store needs these values whenever it is writing an object with `put`, and whenever else it needs to specify a key. `TPKSource` and `TSKSource` must each be a subset of your overall "internal" type.
 
@@ -53,7 +58,7 @@ type SheepSKSource = {
 }
 ```
 
-However, since we know that both the PK source and SK Source types are subsets of `Sheep`, we can instead say:
+However, since we know that both the PK source and SK Source types are subsets of `Sheep`, we can instead define the types using TypeScript `Pick` _utility type_:
 
 ```typescript
 type SheepPKSource = Pick<Sheep, 'breed'>
@@ -70,17 +75,18 @@ Entity<Sheep, Pick<Sheep, 'breed'>, Pick<Sheep, 'name'>>
 
 The `type` field must be a string, unique for each type of _Entity_ you access with an instance DynamoDB Entity Store. This value is used in a number of ways:
 
-* Written as an attribute whenever you `put` an object, unless you configure not to do so at the table level. The default attribute name is `_et` (for "Entity Type"), but this is also configurable.
+* Written as an attribute whenever you `put` an object, unless you configure not to do so at the table level. The default attribute name is `_et` (for "Entity Type"), but this is also configurable (see [previous chapter](Setup.md) for changing how and whether the entity type is automatically written to the table).
 * To filter results during query and scan operations (unless configured otherwise).
 * For logging, and error messages.
 
 ### `.pk()` and `.sk()`
 
 Each _Entity_ must implement two functions which are used to _generate_ Partition Key and Sort Key values.
+This occurs during many operations, including `put` and `get`. 
 
 > If your table only has a Partition Key, and doesn't have a Sort Key, see the section _PK-only Entities_ below.
 
-Each of these functions takes an argument of type `TPKSource` or `TSKSource`, as defined earlier, and should return a string.
+Each of the `pk()` and `sk()` is passed an argument of type `TPKSource` or `TSKSource`, as defined earlier, and should return a string.
 
 Let's go back to our example of `Sheep` from earlier. Let's say we have a particular sheep object that is internally represented as follows:
 
@@ -90,8 +96,8 @@ Let's go back to our example of `Sheep` from earlier. Let's say we have a partic
 
 And let's say we'd like to store the following for our key attributes for such an object:
 
-* PK: `SHEEP#BREED#merino`
-* SK: `NAME#shaun`
+* Partition Key: `SHEEP#BREED#merino`
+* Sort Key: `NAME#shaun`
 
 Our `pk()` and `sk()` functions are then as follows:
 
@@ -105,7 +111,7 @@ function sk({ name }: Pick<Sheep, 'name'>) {
 }
 ```
 
-_This example uses [destructuring syntax](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment), but that's optional._
+> This example uses [destructuring syntax](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment), but that's optional.
 
 Notice that the parameter types here are precisely the same as those we gave for `TPKSource` and `TSKSource` in the _Entity_ type definition.
 
@@ -120,7 +126,7 @@ Second - if either of your Partition Key or Sort Key attributes are also being u
 E.g. say you have an internal type as follows:
 
 ```typescript
-export interface Farm {
+interface Farm {
   name: string
   address: string
 }
@@ -197,7 +203,7 @@ Our `parse()` implementation for `SHEEP_ENTITY` is then defined by calling `type
 If simply performing a type check isn't sufficient for an _Entity_, then you need to implement a custom `EntityParser<TItem>` function. `EntityParser` is defined as follows: 
 
 ```typescript
-export type EntityParser<TItem> = (
+type EntityParser<TItem> = (
   item: DynamoDBValues,
   allMetaAttributeNames: string[],
   metaAttributeNames: MetaAttributeNames
@@ -241,7 +247,7 @@ There are various _Entity_-related support functions, which you can see in the [
 For several examples, see the [examples directory](../examples/src) , but for quick reference here's the complete `SHEEP_ENTITY` example that I used in this page:
 
 ```typescript
-export interface Sheep {
+interface Sheep {
   breed: string
   name: string
   ageInYears: number

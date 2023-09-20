@@ -1,6 +1,6 @@
 import { AllEntitiesStore } from './entityStore'
 import { Entity } from './entities'
-import { TablesConfig, TableBackedStoreContext } from './tableBackedStoreConfiguration'
+import { TablesConfig, StoreContext } from './tableBackedStoreConfiguration'
 import { tableBackedSingleEntityOperations } from './internal/singleEntity/tableBackedSingleEntityOperations'
 import { resolverFor } from './internal/tableBackedConfigurationResolver'
 import { TableBackedWriteTransactionBuilder } from './internal/transactions/tableBackedWriteTransactionBuilder'
@@ -17,7 +17,7 @@ import { createStoreContext } from './support'
  * @param tablesConfig - either using objects created from setupSupport.ts, (e.g. `createStandardSingleTableConfig`) or you can fully customize
  * @param context - override the default store context. To see what those defaults are, see `createStoreContext` in setupSupport.ts
  */
-export function createStore(tablesConfig: TablesConfig, context?: TableBackedStoreContext): AllEntitiesStore {
+export function createStore(tablesConfig: TablesConfig, context?: StoreContext): AllEntitiesStore {
   const tableConfigResolver = resolverFor(context ?? createStoreContext(), tablesConfig)
   return {
     for<TItem extends TPKSource & TSKSource, TPKSource, TSKSource>(

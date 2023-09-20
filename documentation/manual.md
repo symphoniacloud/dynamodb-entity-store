@@ -2,8 +2,8 @@
 
 For an overview of using DynamoDB Entity Store, please see the [README](../README.md).
 
-1. [Entities](Entities.md)
-2. [Setup](Setup.md)
+1. [Setup](Setup.md)
+2. [Entities](Entities.md)
 3. [Getting Started With Operations](GettingStartedWithOperations.md)
 4. [Single Entity Table Queries and Table Scans](SingleEntityTableQueriesAndTableScans.md)
 5. [Using Global Secondary Indices](GSIs.md)

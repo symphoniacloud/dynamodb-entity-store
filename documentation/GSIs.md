@@ -3,7 +3,7 @@
 In the [last chapter](SingleEntityTableQueriesAndTableScans.md) you learned how to perform queries and scans over tables.
 This chapter shows you how to do the same for Global Secondary Indexes (GSIs).
 
-Like most things DynamoDB with, GSIs are kind of like indexes in relational databases, but also very different.
+Like most things DynamoDB, GSIs are kind of like indexes in relational databases, but also very different.
 If you haven't used GSIs before I strongly recommend you do some background reading first, either from [the official AWS docs](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GSI.html), or perhaps from [this brief overview](https://www.dynamodbguide.com/global-secondary-indexes/) by Alex DeBrie.
 
 > Important! Because of the way that result parsing is performed you should typically set your GSI's _ProjectionType_ to `ALL` (see [the AWS docs](https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Projection.html)) when using GSIs with DynamoDB Entity Store.

@@ -507,3 +507,7 @@ All farms:
 Name: Worthy Farm, Address: Glastonbury, England
 Name: Sunflower Farm, Address: Green Shoots Road, Honesdale, PA
 ```
+
+## Next steps
+
+If you want to read more on how to use DynamoDB Entity Store, then checkout [The Manual](documentation/manual.md).

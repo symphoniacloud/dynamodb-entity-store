@@ -349,4 +349,4 @@ If your table contains multiple entities then because of _Entity Filtering_ it's
 
 ## Next up - GSIs
 
-In this chapter you learned how to retrieve collections of items from your tables. The [next chapter](GSIs.md) explains how to do the same thing but for Global Secondary Indices.
+In this chapter you learned how to retrieve collections of items from your tables. The [next chapter](GSIs.md) explains how to do the same thing but for Global Secondary Indexes.

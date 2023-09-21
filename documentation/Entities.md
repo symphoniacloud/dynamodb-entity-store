@@ -162,7 +162,7 @@ This might result (depending on table configuration) in the following object bei
 
 The _metadata_ fields - `PK`, `SK`, `_et`, `_lastUpdated` - are controlled through other mechanisms, but if you want to change what _data_ fields are stored, and what values are stored for those fields, then you must implement `convertToDynamoFormat()`.
 
-The type signature of `convertToDynamoFormat()` is simple: `(item: TItem) => DynamoDBValues`, in other words it receives an object of your "internal" type, and must return a valid DynamoDB Document Client object _(`DynamoDBValues` is simply an alias for `Record<string, NativeAttributeValue>`, where [`NativeAttributeValue` comes from the AWS library.](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-util-dynamodb/TypeAlias/NativeAttributeValue/))_
+The type signature of `convertToDynamoFormat()` is: `(item: TItem) => DynamoDBValues`, in other words it receives an object of your "internal" type, and must return a valid DynamoDB Document Client object _(`DynamoDBValues` is simply an alias for `Record<string, NativeAttributeValue>`, where [`NativeAttributeValue` comes from the AWS library.](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-util-dynamodb/TypeAlias/NativeAttributeValue/))_
 
 You may need to implement `convertToDynamoFormat()` in situations like the following:
 
@@ -181,7 +181,7 @@ As described above for `.convertToDynamoFormat()` - with DynamoDB Entity Store's
 
 #### Type Predicate Parsing
 
-The standard, and simplest case, is that you just need to implement a [_TypeScript Type Predicate_](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates). This is a function that validates the correct fields for a type are present.
+The standard, and most simple case, is that you just need to implement a [_TypeScript Type Predicate_](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates). This is a function that validates the correct fields for a type are present.
 
 Going back to our Sheep example, we can define a Type Predicate as follows:
 
@@ -218,7 +218,7 @@ In other words:
 
 ### `.gsis` (optional)
 
-The `gsis` field defines _generator_ functions for all of the Global Secondary Indices (GSIs) an _Entity_ uses. In other words it's like `pk()` and `sk()`, but for GSIs instead of a table. If an _Entity_ doesn't use GSIs it can leave this field undefined.
+The `gsis` field defines _generator_ functions for all of the Global Secondary Indexes (GSIs) an _Entity_ uses. In other words it's like `pk()` and `sk()`, but for GSIs instead of a table. If an _Entity_ doesn't use GSIs it can leave this field undefined.
 
 The type of `gsis` is `Record<string, GsiGenerators>`, a map from a GSI identifier to a GSI PK generator, and optionally a GSI SK generator.
 

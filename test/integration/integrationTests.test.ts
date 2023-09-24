@@ -36,7 +36,8 @@ import {
   CHICKEN_ENTITY,
   findOlderThan,
   findYoungerThan,
-  gsiBreed
+  gsiBreed,
+  TWO_GSI_CHICKEN_ENTITY
 } from '../examples/chickenTypeAndEntity'
 import { FARM_ENTITY } from '../examples/farmTypeAndEntity'
 import { FakeClock } from '../unit/testSupportCode/fakes/fakeClock'
@@ -46,6 +47,7 @@ import { CAT_ENTITY } from '../examples/catTypeAndEntity'
 
 let documentClient: DynamoDBDocumentClient
 let testTableName: string
+let twoGSITableName: string
 let customTableName: string
 let farmTableName: string
 const clock = new FakeClock()
@@ -62,6 +64,7 @@ beforeAll(async () => {
   const awsEnv = await initAWSResources()
   documentClient = awsEnv.documentClient
   testTableName = awsEnv.testTableName
+  twoGSITableName = awsEnv.twoGSITableName
   customTableName = awsEnv.customTableName
   farmTableName = awsEnv.farmTableName
 })
@@ -103,7 +106,7 @@ describe('standard single table', () => {
     Pick<Chicken, 'breed'>,
     Pick<Chicken, 'name' | 'dateOfBirth'>
   >
-  beforeAll(async () => {
+  beforeAll(() => {
     tableName = testTableName
     // store = defineStandardSingleTableStore(documentClient, tableName)
     // storeWithScans = defineStandardSingleTableStore(documentClient, tableName, { allowScans: true })
@@ -1077,6 +1080,51 @@ describe('minimal single table', () => {
 
     await farmStore.delete(sunflowerFarm)
     expect(await scanWithDocClient(farmTableName)).toEqual([])
+  })
+})
+
+describe('Multiple GSI Single Table', () => {
+  let store: AllEntitiesStore
+  beforeAll(async () => {
+    const config = {
+      ...createStandardSingleTableConfig(twoGSITableName),
+      gsiNames: { gsi1: 'GSI1', gsi2: 'GSI2' }
+    }
+    config.metaAttributeNames.gsisById = {
+      gsi1: { pk: 'GSI1PK', sk: 'GSI1SK' },
+      gsi2: { pk: 'GSI2PK', sk: 'GSI2SK' }
+    }
+
+    store = createStore(config, createStoreContext({ clock, logger: noopLogger }, documentClient))
+  })
+
+  test('query with multiple GSIs', async () => {
+    await emptyTable(twoGSITableName)
+    await store.for(TWO_GSI_CHICKEN_ENTITY).put(ginger)
+    // NB: Different GSI fields
+    expect(await scanWithDocClient(twoGSITableName)).toEqual([
+      {
+        PK: 'CHICKEN#BREED#sussex',
+        SK: 'DATEOFBIRTH#2021-07-01#NAME#ginger',
+        GSI1PK: 'COOP#bristol',
+        GSI1SK: 'CHICKEN#BREED#sussex#DATEOFBIRTH#2021-07-01',
+        GSI2PK: 'CHICKEN',
+        GSI2SK: 'DATEOFBIRTH#2021-07-01',
+        _et: 'chicken',
+        _lastUpdated: '2023-07-01T19:00:00.000Z',
+        breed: 'sussex',
+        coop: 'bristol',
+        dateOfBirth: '2021-07-01',
+        name: 'ginger'
+      }
+    ])
+    await store.for(TWO_GSI_CHICKEN_ENTITY).put(babs)
+    await store.for(TWO_GSI_CHICKEN_ENTITY).put(yolko)
+
+    const result = await store
+      .for(TWO_GSI_CHICKEN_ENTITY)
+      .queryAllWithGsiByPk({ coop: 'bristol' }, { gsiId: 'gsi1' })
+    expect(result).toEqual([ginger, babs])
   })
 })
 

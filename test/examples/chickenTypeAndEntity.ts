@@ -48,6 +48,32 @@ export const CHICKEN_ENTITY: Entity<
   }
 }
 
+export const TWO_GSI_CHICKEN_ENTITY: Entity<
+  Chicken,
+  Pick<Chicken, 'breed'>,
+  Pick<Chicken, 'name' | 'dateOfBirth'>
+> = {
+  ...CHICKEN_ENTITY,
+  gsis: {
+    gsi1: {
+      pk({ coop }: Pick<Chicken, 'coop'>): string {
+        return `COOP#${coop}`
+      },
+      sk({ breed, dateOfBirth }: Pick<Chicken, 'breed' | 'dateOfBirth'>): string {
+        return gsiSk(breed, dateOfBirth)
+      }
+    },
+    gsi2: {
+      pk(): string {
+        return `CHICKEN`
+      },
+      sk({ dateOfBirth }: Pick<Chicken, 'dateOfBirth'>): string {
+        return `DATEOFBIRTH#${dateOfBirth}`
+      }
+    }
+  }
+}
+
 function sk(name: string, dateOfBirth: string) {
   return `DATEOFBIRTH#${dateOfBirth}#NAME#${name}`
 }

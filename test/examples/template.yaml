@@ -5,6 +5,9 @@ Outputs:
   TableName:
     Value: !Ref TestTable
 
+  TwoGSITableName:
+    Value: !Ref TwoGSITable
+
   CustomTableName:
     Value: !Ref CustomTable
 
@@ -42,6 +45,49 @@ Resources:
             KeyType: HASH
           - AttributeName: GSISK
             KeyType: RANGE
+
+  TwoGSITable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: GSI1PK
+          AttributeType: S
+        - AttributeName: GSI1SK
+          AttributeType: S
+        - AttributeName: GSI2PK
+          AttributeType: S
+        - AttributeName: GSI2SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: "GSI1"
+          Projection:
+            ProjectionType: ALL
+          KeySchema:
+            - AttributeName: GSI1PK
+              KeyType: HASH
+            - AttributeName: GSI1SK
+              KeyType: RANGE
+        - IndexName: "GSI2"
+          Projection:
+            ProjectionType: ALL
+          KeySchema:
+            - AttributeName: GSI2PK
+              KeyType: HASH
+            - AttributeName: GSI2SK
+              KeyType: RANGE
 
   CustomTable:
     Type: AWS::DynamoDB::Table

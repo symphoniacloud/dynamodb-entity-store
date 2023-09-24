@@ -21,18 +21,17 @@ export async function initAWSResources() {
     return tableName ?? throwError('Unable to find table name')()
   }
 
-  const newTestTableName = findTableName('TableName')
-  const newCustomTableName = findTableName('CustomTableName')
-  const newFarmTableName = findTableName('FarmTableName')
+  const tableNames = {
+    testTableName: findTableName('TableName'),
+    twoGSITableName: findTableName('TwoGSITableName'),
+    customTableName: findTableName('CustomTableName'),
+    farmTableName: findTableName('FarmTableName')
+  }
 
-  console.log(
-    `testTableName = ${newTestTableName}, customTableName = ${newCustomTableName}, farmTableName = ${newFarmTableName}`
-  )
+  console.log(JSON.stringify(tableNames))
 
   return {
     documentClient,
-    testTableName: newTestTableName,
-    customTableName: newCustomTableName,
-    farmTableName: newFarmTableName
+    ...tableNames
   }
 }

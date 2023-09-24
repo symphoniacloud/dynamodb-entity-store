@@ -11,6 +11,10 @@ export async function multipleEntityScan(
 ): Promise<MultipleEntityCollectionResponse> {
   const defaultEntityContext = Object.values(contextsByEntityType)[0]
 
+  if (defaultEntityContext.allowScans === undefined || !defaultEntityContext.allowScans) {
+    throw new Error('Scan operations are disabled for this store')
+  }
+
   // TODO - need all pages version
   return await performMultipleEntityOperationAndParse(
     contextsByEntityType,

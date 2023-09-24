@@ -3,6 +3,7 @@ import { Duck } from './duckTypeAndEntity'
 import { Sheep } from './sheepTypeAndEntity'
 import { Dog } from './dogTypeAndEntity'
 import { Cat } from './catTypeAndEntity'
+import { Farm } from './farmTypeAndEntity'
 
 export const shaunIdentifier = { breed: 'merino', name: 'shaun' }
 export const shaunTheSheep: Sheep = { ...shaunIdentifier, ageInYears: 3 }
@@ -13,6 +14,8 @@ export const alisonTheAlpaca: Sheep = { ...alisonIdentifier, ageInYears: 2 }
 
 export const chesterDog: Dog = { farm: 'Sunflower Farm', name: 'Chester', ageInYears: 4 }
 export const peggyCat: Cat = { farm: 'Sunflower Farm', name: 'Peggy', ageInYears: 7 }
+
+export const sunflowerFarm: Farm = { name: 'Sunflower Farm' }
 
 export const gingerIdentifier = {
   breed: 'sussex',

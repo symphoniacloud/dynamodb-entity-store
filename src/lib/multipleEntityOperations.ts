@@ -18,7 +18,7 @@ export interface MultipleEntityOperations {
     options?: AdvancedGsiQueryOnePageOptions
   ): QueryMultipleBy<TGSIPKSource>
 
-  scan(options?: AdvancedScanOnePageOptions): Promise<MultipleEntityCollectionResponse>
+  scanOnePage(options?: AdvancedScanOnePageOptions): Promise<MultipleEntityCollectionResponse>
 }
 
 export interface QueryMultipleBy<TQueryPK> {

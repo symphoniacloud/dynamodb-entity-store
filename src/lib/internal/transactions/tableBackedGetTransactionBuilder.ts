@@ -106,8 +106,6 @@ export function parseResponse(
 
   return {
     itemsByEntityType,
-    metadata: {
-      ...(result.ConsumedCapacity ? { consumedCapacity: result.ConsumedCapacity } : {})
-    }
+    ...(result.ConsumedCapacity ? { metadata: { consumedCapacity: result.ConsumedCapacity } } : {})
   }
 }

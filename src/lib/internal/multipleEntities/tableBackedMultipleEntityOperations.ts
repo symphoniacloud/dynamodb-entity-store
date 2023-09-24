@@ -36,7 +36,7 @@ export function tableBackedMultipleEntityOperations(
     ): QueryMultipleBy<TGSIPKSource> {
       return queryMultipleByGsi(contextsByEntityType, keyEntity, options ?? {})
     },
-    async scan(options?: AdvancedScanOnePageOptions) {
+    async scanOnePage(options?: AdvancedScanOnePageOptions) {
       return await multipleEntityScan(contextsByEntityType, options ?? {})
     }
   }

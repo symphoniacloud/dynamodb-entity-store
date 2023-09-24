@@ -86,6 +86,9 @@ export interface GetTransactionResponse {
    * Any elements that could not be found are represented by null in their corresponding array
    */
   itemsByEntityType: Record<string, unknown[]>
+  /**
+   * Only set if any sub properties are set
+   */
   metadata?: TransactionConsumedCapacityMetadata
 }
 

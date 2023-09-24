@@ -272,30 +272,32 @@ describe('standard single table', () => {
       })
 
       test('query one page by PK', async () => {
-        const result = await sheepOperations.queryOnePageByPk({ breed: 'merino' })
-        expect(result.items).toEqual([bobTheSheep, shaunTheSheep])
-        expect(result.lastEvaluatedKey).toBeUndefined()
+        expect(await sheepOperations.queryOnePageByPk({ breed: 'merino' })).toEqual({
+          items: [bobTheSheep, shaunTheSheep]
+        })
       })
 
       test('query all pages by PK', async () => {
-        const result = await sheepOperations.queryAllByPk({ breed: 'merino' })
-        expect(result).toEqual([bobTheSheep, shaunTheSheep])
+        expect(await sheepOperations.queryAllByPk({ breed: 'merino' })).toEqual([bobTheSheep, shaunTheSheep])
 
-        const resultBackwards = await sheepOperations.queryAllByPk(
-          { breed: 'merino' },
-          { scanIndexForward: false }
-        )
-        expect(resultBackwards).toEqual([shaunTheSheep, bobTheSheep])
+        // 'backwards'
+        expect(await sheepOperations.queryAllByPk({ breed: 'merino' }, { scanIndexForward: false })).toEqual([
+          shaunTheSheep,
+          bobTheSheep
+        ])
       })
 
       test('query with limit', async () => {
         const result = await sheepOperations.queryOnePageByPk({ breed: 'merino' }, { limit: 1 })
         // We set limit to 1, so we should only get 1 item - which one is defined by the SK, and "bob" comes before, "shaun"
-        expect(result.items).toEqual([bobTheSheep])
-        expect(result.lastEvaluatedKey).toEqual({
-          PK: 'SHEEP#BREED#merino',
-          SK: 'NAME#bob'
+        expect(result).toEqual({
+          items: [bobTheSheep],
+          lastEvaluatedKey: {
+            PK: 'SHEEP#BREED#merino',
+            SK: 'NAME#bob'
+          }
         })
+
         const secondResult = await sheepOperations.queryOnePageByPk(
           { breed: 'merino' },
           { limit: 1, exclusiveStartKey: result.lastEvaluatedKey }
@@ -312,20 +314,21 @@ describe('standard single table', () => {
       })
 
       test('query all pages by pk and sk', async () => {
-        const result = await sheepOperations.queryAllByPkAndSk(
-          { breed: 'merino' },
-          rangeWhereNameBetween('charlie', 'terry')
-        )
-        expect(result).toEqual([shaunTheSheep])
+        expect(
+          await sheepOperations.queryAllByPkAndSk(
+            { breed: 'merino' },
+            rangeWhereNameBetween('charlie', 'terry')
+          )
+        ).toEqual([shaunTheSheep])
       })
 
       test('query one page by pk and sk', async () => {
-        const result = await sheepOperations.queryOnePageByPkAndSk(
-          { breed: 'merino' },
-          rangeWhereNameBetween('charlie', 'terry')
-        )
-        expect(result.items).toEqual([shaunTheSheep])
-        expect(result.lastEvaluatedKey).toBeUndefined()
+        expect(
+          await sheepOperations.queryOnePageByPkAndSk(
+            { breed: 'merino' },
+            rangeWhereNameBetween('charlie', 'terry')
+          )
+        ).toEqual({ items: [shaunTheSheep] })
       })
 
       test('scan disabled by default', async () => {
@@ -335,9 +338,9 @@ describe('standard single table', () => {
       })
 
       test('scan one page', async () => {
-        const result = await sheepOperationsWithScans.scanOnePage()
-        expect(result.items).toEqual([alisonTheAlpaca, bobTheSheep, shaunTheSheep])
-        expect(result.lastEvaluatedKey).toBeUndefined()
+        expect(await sheepOperationsWithScans.scanOnePage()).toEqual({
+          items: [alisonTheAlpaca, bobTheSheep, shaunTheSheep]
+        })
       })
 
       test('scan all pages', async () => {
@@ -348,18 +351,20 @@ describe('standard single table', () => {
       test('scan with limit', async () => {
         const result = await sheepOperationsWithScans.scanOnePage({ limit: 2 })
         // We set limit to 2, so we should only get 2 items - which ones are defined by dynamodb ordering
-        expect(result.items).toEqual([alisonTheAlpaca, bobTheSheep])
-        expect(result.lastEvaluatedKey).toEqual({
-          PK: 'SHEEP#BREED#merino',
-          SK: 'NAME#bob'
+        expect(result).toEqual({
+          items: [alisonTheAlpaca, bobTheSheep],
+          lastEvaluatedKey: {
+            PK: 'SHEEP#BREED#merino',
+            SK: 'NAME#bob'
+          }
         })
 
-        const secondResult = await sheepOperationsWithScans.scanOnePage({
-          limit: 2,
-          exclusiveStartKey: result.lastEvaluatedKey
-        })
-        expect(secondResult.items).toEqual([shaunTheSheep])
-        expect(secondResult.lastEvaluatedKey).toBeUndefined()
+        expect(
+          await sheepOperationsWithScans.scanOnePage({
+            limit: 2,
+            exclusiveStartKey: result.lastEvaluatedKey
+          })
+        ).toEqual({ items: [shaunTheSheep] })
       })
     })
   })
@@ -374,9 +379,9 @@ describe('standard single table', () => {
         returnValues: 'ALL_OLD'
       })
       expect(putResponse.metadata?.consumedCapacity?.CapacityUnits).toBeDefined()
-      // TODO eventually - test putResponse.metadata?.itemCollectionMetrics - requires an example with a collection in item
-      // only get returned attributes if an overwrite occurred
+      // we only get returned attributes if an overwrite occurred
       expect(putResponse.unparsedReturnedAttributes).toBeUndefined()
+      // TODO eventually - test putResponse.metadata?.itemCollectionMetrics - requires an example with a collection in item
 
       const secondPut = await sheepOperations.advancedOperations.put(
         { ...shaunTheSheep, ageInYears: 11 },
@@ -547,14 +552,12 @@ describe('standard single table', () => {
       test('puts, gets, deletes', async () => {
         await emptyTable(tableName)
 
-        const putResult = await sheepOperations.advancedOperations.batchPut(
-          [shaunTheSheep, bobTheSheep, alisonTheAlpaca],
-          {
+        expect(
+          await sheepOperations.advancedOperations.batchPut([shaunTheSheep, bobTheSheep, alisonTheAlpaca], {
             batchSize: 2,
             ttl: 1234
-          }
-        )
-        expect(putResult).toEqual({})
+          })
+        ).toEqual({})
         const items = await scanWithDocClient(testTableName)
         expect(items.length).toEqual(3)
         expect(items[0]).toEqual({
@@ -663,39 +666,54 @@ describe('standard single table', () => {
       })
 
       test('queryByPk', async () => {
-        const result = await chickenOperations.queryOnePageByPk({ breed: 'sussex' })
-        expect(result.items).toEqual([yolko, ginger, babs, bunty])
+        expect((await chickenOperations.queryOnePageByPk({ breed: 'sussex' })).items).toEqual([
+          yolko,
+          ginger,
+          babs,
+          bunty
+        ])
       })
 
       test('queryByPkAndSk', async () => {
-        const olderResult = await chickenOperations.queryOnePageByPkAndSk(
-          { breed: 'sussex' },
-          findOlderThan('2021-10-01')
-        )
-        expect(olderResult.items).toEqual([yolko, ginger, babs])
+        expect(
+          (await chickenOperations.queryOnePageByPkAndSk({ breed: 'sussex' }, findOlderThan('2021-10-01')))
+            .items
+        ).toEqual([yolko, ginger, babs])
 
         // Get youngest (latest in SK) first
-        const youngerResult = await chickenOperations.queryOnePageByPkAndSk(
-          { breed: 'sussex' },
-          findYoungerThan('2021-08-01'),
-          { scanIndexForward: false }
-        )
-        expect(youngerResult.items).toEqual([bunty, babs])
+        expect(
+          (
+            await chickenOperations.queryOnePageByPkAndSk(
+              { breed: 'sussex' },
+              findYoungerThan('2021-08-01'),
+              { scanIndexForward: false }
+            )
+          ).items
+        ).toEqual([bunty, babs])
       })
 
-      // TODO - test one page
       test('queryByGsiPk', async () => {
-        const chickens = await chickenOperations.queryAllWithGsiByPk({ coop: 'dakota' })
-        expect(chickens).toEqual([cluck, yolko])
+        expect(await chickenOperations.queryAllWithGsiByPk({ coop: 'dakota' })).toEqual([cluck, yolko])
+        expect(await chickenOperations.queryOnePageWithGsiByPk({ coop: 'dakota' }, { limit: 1 })).toEqual({
+          items: [cluck],
+          lastEvaluatedKey: {
+            PK: 'CHICKEN#BREED#orpington',
+            SK: 'DATEOFBIRTH#2022-03-01#NAME#cluck',
+            GSIPK: 'COOP#dakota',
+            GSISK: 'CHICKEN#BREED#orpington#DATEOFBIRTH#2022-03-01'
+          }
+        })
       })
 
-      // TODO - test one page
       test('queryByGsiPkAndSk', async () => {
-        const result = await chickenOperations.queryAllWithGsiByPkAndSk(
-          { coop: 'dakota' },
-          gsiBreed('orpington')
-        )
-        expect(result).toEqual([cluck])
+        expect(
+          await chickenOperations.queryAllWithGsiByPkAndSk({ coop: 'dakota' }, gsiBreed('orpington'))
+        ).toEqual([cluck])
+        expect(
+          await chickenOperations.queryOnePageWithGsiByPkAndSk({ coop: 'dakota' }, gsiBreed('orpington'), {
+            limit: 1
+          })
+        ).toEqual({ items: [cluck] })
       })
 
       test('scan GSI disabled by default', async () => {
@@ -709,8 +727,7 @@ describe('standard single table', () => {
 
       test('scan GSI', async () => {
         const chickenOperationsWithScans = storeWithScans.for(CHICKEN_ENTITY)
-        const scanAllGsiResult = await chickenOperationsWithScans.scanAllWithGsi()
-        expect(scanAllGsiResult).toEqual([ginger, babs, bunty, cluck, yolko])
+        expect(await chickenOperationsWithScans.scanAllWithGsi()).toEqual([ginger, babs, bunty, cluck, yolko])
 
         const scanFirstPageGsiResult = await chickenOperationsWithScans.scanOnePageWithGsi({
           limit: 2,
@@ -718,13 +735,13 @@ describe('standard single table', () => {
         })
         expect(scanFirstPageGsiResult.items).toEqual([ginger, babs])
 
-        const scanSecondPageGsiResult = await chickenOperationsWithScans.scanOnePageWithGsi({
-          limit: 5,
-          gsiId: 'gsi',
-          exclusiveStartKey: scanFirstPageGsiResult.lastEvaluatedKey
-        })
-        expect(scanSecondPageGsiResult.items).toEqual([bunty, cluck, yolko])
-        expect(scanSecondPageGsiResult.lastEvaluatedKey).toBeUndefined()
+        expect(
+          await chickenOperationsWithScans.scanOnePageWithGsi({
+            limit: 5,
+            gsiId: 'gsi',
+            exclusiveStartKey: scanFirstPageGsiResult.lastEvaluatedKey
+          })
+        ).toEqual({ items: [bunty, cluck, yolko] })
       })
     })
   })
@@ -733,8 +750,6 @@ describe('standard single table', () => {
     beforeEach(async () => {
       await emptyTable(testTableName)
     })
-
-    // TODO - need test for conditionCheck
 
     test('put', async () => {
       await store.transactions
@@ -804,6 +819,25 @@ describe('standard single table', () => {
           ...ginger
         }
       ])
+    })
+
+    test('conditition check', async () => {
+      // Should fail because bob doesn't exist
+      expect(
+        async () =>
+          await store.transactions
+            .buildWriteTransaction(SHEEP_ENTITY)
+            .put(shaunTheSheep)
+            .conditionCheck(bobTheSheep, { conditionExpression: 'attribute_exists(PK)' })
+            .execute()
+      ).rejects.toThrowError()
+
+      // Should succeed because bob doesn't exist
+      await store.transactions
+        .buildWriteTransaction(SHEEP_ENTITY)
+        .put(shaunTheSheep)
+        .conditionCheck(bobTheSheep, { conditionExpression: 'attribute_not_exists(PK)' })
+        .execute()
     })
 
     test('get', async () => {
@@ -1041,14 +1075,14 @@ describe('single table with customizations', () => {
       }
     })
 
-    const items = await scanWithDocClient(tableName)
-    expect(items.length).toEqual(1)
-    expect(items[0]).toEqual({
-      CustomPK: 'SHEEP#BREED#merino',
-      CustomSK: 'NAME#shaun',
-      ...shaunTheSheep,
-      ageInYears: 4
-    })
+    expect(await scanWithDocClient(tableName)).toEqual([
+      {
+        CustomPK: 'SHEEP#BREED#merino',
+        CustomSK: 'NAME#shaun',
+        ...shaunTheSheep,
+        ageInYears: 4
+      }
+    ])
   })
 })
 
@@ -1078,8 +1112,7 @@ describe('minimal single table', () => {
       }
     ])
 
-    const retrievedFarm = await farmStore.getOrThrow(sunflowerFarm)
-    expect(retrievedFarm).toEqual(sunflowerFarm)
+    expect(await farmStore.getOrThrow(sunflowerFarm)).toEqual(sunflowerFarm)
 
     await farmStore.delete(sunflowerFarm)
     expect(await scanWithDocClient(farmTableName)).toEqual([])
@@ -1124,10 +1157,9 @@ describe('Multiple GSI Single Table', () => {
     await store.for(TWO_GSI_CHICKEN_ENTITY).put(babs)
     await store.for(TWO_GSI_CHICKEN_ENTITY).put(yolko)
 
-    const result = await store
-      .for(TWO_GSI_CHICKEN_ENTITY)
-      .queryAllWithGsiByPk({ coop: 'bristol' }, { gsiId: 'gsi1' })
-    expect(result).toEqual([ginger, babs])
+    expect(
+      await store.for(TWO_GSI_CHICKEN_ENTITY).queryAllWithGsiByPk({ coop: 'bristol' }, { gsiId: 'gsi1' })
+    ).toEqual([ginger, babs])
   })
 })
 

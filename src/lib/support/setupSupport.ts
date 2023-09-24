@@ -101,17 +101,3 @@ export const SingleGSIStandardMetaAttributeNames = {
     }
   }
 }
-
-export const TwoGSIStandardMetaAttributeNames = {
-  ...NoGSIStandardMetaAttributeNames,
-  gsisById: {
-    gsi: {
-      pk: 'GSIPK',
-      sk: 'GSISK'
-    },
-    gsi2: {
-      pk: 'GSI2PK',
-      sk: 'GSI2SK'
-    }
-  }
-}

@@ -10,8 +10,7 @@ import { Sheep, SHEEP_ENTITY } from '../../examples/sheepTypeAndEntity'
 import {
   NoGSIStandardMetaAttributeNames,
   noopLogger,
-  SingleGSIStandardMetaAttributeNames,
-  TwoGSIStandardMetaAttributeNames
+  SingleGSIStandardMetaAttributeNames
 } from '../../../src/lib'
 
 test('calcAllMetaDataAttributeNames', () => {
@@ -30,17 +29,6 @@ test('calcAllMetaDataAttributeNames', () => {
     '_lastUpdated',
     'GSIPK',
     'GSISK'
-  ])
-  expect(calcAllMetaAttributeNames(TwoGSIStandardMetaAttributeNames)).toEqual([
-    'PK',
-    'SK',
-    'ttl',
-    '_et',
-    '_lastUpdated',
-    'GSIPK',
-    'GSISK',
-    'GSI2PK',
-    'GSI2SK'
   ])
 })
 

@@ -24,6 +24,7 @@ import { DeleteCommand, DynamoDBDocumentClient, ScanCommand } from '@aws-sdk/lib
 import {
   AllEntitiesStore,
   createMinimumSingleTableConfig,
+  createStandardMultiTableConfig,
   createStandardSingleTableConfig,
   createStore,
   createStoreContext,
@@ -47,6 +48,7 @@ import { CAT_ENTITY } from '../examples/catTypeAndEntity'
 
 let documentClient: DynamoDBDocumentClient
 let testTableName: string
+let testTableTwoName: string
 let twoGSITableName: string
 let customTableName: string
 let farmTableName: string
@@ -64,6 +66,7 @@ beforeAll(async () => {
   const awsEnv = await initAWSResources()
   documentClient = awsEnv.documentClient
   testTableName = awsEnv.testTableName
+  testTableTwoName = awsEnv.testTableTwoName
   twoGSITableName = awsEnv.twoGSITableName
   customTableName = awsEnv.customTableName
   farmTableName = awsEnv.farmTableName
@@ -1128,7 +1131,7 @@ describe('Multiple GSI Single Table', () => {
   })
 })
 
-describe('multi table', () => {
+describe('multi table custom config', () => {
   let store: AllEntitiesStore
   beforeAll(() => {
     const config: TablesConfig = {
@@ -1204,5 +1207,56 @@ describe('multi table', () => {
         farm: [sunflowerFarm]
       }
     })
+  })
+})
+
+describe('multi table standard config', () => {
+  let store: AllEntitiesStore
+  beforeAll(() => {
+    // NB - no default table for this example
+    store = createStore(
+      createStandardMultiTableConfig({
+        [testTableName]: [SHEEP_ENTITY.type],
+        [testTableTwoName]: [DOG_ENTITY.type]
+      }),
+      createStoreContext({ clock: new FakeClock(), logger: noopLogger }, documentClient)
+    )
+  })
+
+  test('basic operations', async () => {
+    await emptyTable(testTableName)
+    await emptyTable(testTableTwoName)
+    await store.for(SHEEP_ENTITY).put(shaunTheSheep)
+    await store.for(DOG_ENTITY).put(chesterDog)
+
+    expect(await store.for(SHEEP_ENTITY).getOrThrow(shaunIdentifier)).toEqual(shaunTheSheep)
+    expect(await store.for(DOG_ENTITY).getOrThrow(chesterDog)).toEqual(chesterDog)
+    expect(async () => await store.for(CHICKEN_ENTITY).getOrThrow(ginger)).rejects.toThrowError(
+      'Unable to locate table that supports entity type chicken'
+    )
+
+    // Should have been written to correct tables
+    expect(await scanWithDocClient(testTableName)).toEqual([
+      {
+        PK: 'SHEEP#BREED#merino',
+        SK: 'NAME#shaun',
+        _et: 'sheep',
+        _lastUpdated: '2023-07-01T19:00:00.000Z',
+        ageInYears: 3,
+        breed: 'merino',
+        name: 'shaun'
+      }
+    ])
+    expect(await scanWithDocClient(testTableTwoName)).toEqual([
+      {
+        PK: 'FARM#Sunflower Farm',
+        SK: 'DOG#NAME#Chester',
+        _et: 'dog',
+        _lastUpdated: '2023-07-01T19:00:00.000Z',
+        ageInYears: 4,
+        farm: 'Sunflower Farm',
+        name: 'Chester'
+      }
+    ])
   })
 })

@@ -61,7 +61,7 @@ export function createStandardSingleTableConfig(tableName: string): TableConfig 
 }
 
 /**
- * Same configuration as createStandardSingleTableConfig but for multiple entities
+ * Same configuration as createStandardSingleTableConfig but for multiple tables
  * @param tablesToEntityTypes Map of underlying Dynamo Table Names to the entities stored in each table
  * @param defaultTableName Which table to use if an operation is performed on an entity not explicitly configured in tablesToEntityTypes. Default - no default table is used, and all entities must be explicitly configured.
  * @throws if `defaultTableName` isn't included in keys of `tablesToEntityTypes`

@@ -23,6 +23,7 @@ export async function initAWSResources() {
 
   const tableNames = {
     testTableName: findTableName('TableName'),
+    testTableTwoName: findTableName('TableTwoName'),
     twoGSITableName: findTableName('TwoGSITableName'),
     customTableName: findTableName('CustomTableName'),
     farmTableName: findTableName('FarmTableName')

@@ -44,7 +44,7 @@ If you're deciding on what DynamoDB library to choose you may want to also consi
 * [One Table](https://github.com/sensedeep/dynamodb-onetable)
 
 The rest of this README provides an overview of how to use the library. For more details see:
-* [The manual](./documentation/manual.md)
+* [The manual](./documentation/README.md)
 * [integration tests](https://github.com/symphoniacloud/dynamodb-entity-store/tree/main/test/integration)
 * [source code](/src/lib)
 * [Type Docs](https://symphoniacloud.github.io/dynamodb-entity-store/)
@@ -510,4 +510,4 @@ Name: Sunflower Farm, Address: Green Shoots Road, Honesdale, PA
 
 ## Next steps
 
-If you want to read more on how to use DynamoDB Entity Store, then checkout [The Manual](documentation/manual.md).
+If you want to read more on how to use DynamoDB Entity Store, then checkout [The Manual](documentation/README.md).

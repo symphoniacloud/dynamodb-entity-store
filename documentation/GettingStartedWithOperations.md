@@ -67,6 +67,19 @@ several operations against one entity in one method then I'll probably capture t
 In this chapter I describe _standard_ single entity, **single item**, operations - **put**, **get**, **update**, and **delete**.
 Queries and Scans are described in the following two chapters - [here for table operations](SingleEntityTableQueriesAndTableScans.md), and [here for GSI operations](GSIs.md). 
 
+## Error Handling
+
+Before we get to the operations - a note on error handling.
+_DynamoDB Entity Store_ doesn't catch any errors thrown by the DynamoDB document client.
+So if an operation fails for any reason when it reaches DynamoDB - whether it's a temporary error or not - then that error will propagate up to your own code.
+
+_DynamoDB Entity Store_ also throws its own errors for some scenarios if your code makes an invalid request, but you shouldn't assume that _Entity Store_ does any validation for arguments that it passes through to the Document Client library. 
+
+A particular place where this may cause problems is for batch operations with very large requests.
+_Entity Store's_ batch commands (see [Chapter 6](AdvancedSingleEntityOperations.md)) can make many requests to DynamoDB in quick succession, e.g. if you make a request with 10000 items.
+In this situation DynamoDB may fail with a throttling error, and this will result in an error that gets thrown to your code.
+However, you would not be able to tell (with batch commands as they are currently implemented) how much of your larger request, if any, had actually been successful. 
+
 ## Put
 
 The first operation to cover is `.put()`, or more fully:

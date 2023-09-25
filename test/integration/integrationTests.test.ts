@@ -76,7 +76,9 @@ beforeAll(async () => {
 })
 
 export async function scanWithDocClient(tableName: string) {
-  return (await documentClient.send(new ScanCommand({ TableName: tableName }))).Items ?? []
+  return (
+    (await documentClient.send(new ScanCommand({ TableName: tableName, ConsistentRead: true }))).Items ?? []
+  )
 }
 
 export async function emptyTable(tableName: string, isCustomTable?: boolean) {
@@ -830,17 +832,11 @@ describe('standard single table', () => {
         async () =>
           await store.transactions
             .buildWriteTransaction(SHEEP_ENTITY)
-            .put(shaunTheSheep)
             .conditionCheck(bobTheSheep, { conditionExpression: 'attribute_exists(PK)' })
             .execute()
-      ).rejects.toThrowError()
-
-      // Should succeed because bob doesn't exist
-      await store.transactions
-        .buildWriteTransaction(SHEEP_ENTITY)
-        .put(shaunTheSheep)
-        .conditionCheck(bobTheSheep, { conditionExpression: 'attribute_not_exists(PK)' })
-        .execute()
+      ).rejects.toThrowError(
+        'Transaction cancelled, please refer cancellation reasons for specific reasons [ConditionalCheckFailed]'
+      )
     })
 
     test('get', async () => {

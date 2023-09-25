@@ -46,6 +46,9 @@ import { DUCK_ENTITY } from '../examples/duckTypeAndEntity'
 import { DOG_ENTITY } from '../examples/dogTypeAndEntity'
 import { CAT_ENTITY } from '../examples/catTypeAndEntity'
 
+// I've put all of the integration tests in this one file to slightly speed up test runs by only
+// looking up CloudFormation values once. I couldn't find a way to do this otherwise with vitest
+
 let documentClient: DynamoDBDocumentClient
 let testTableName: string
 let testTableTwoName: string

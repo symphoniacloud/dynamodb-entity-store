@@ -100,7 +100,7 @@ export interface SingleEntityAdvancedOperations<TItem extends TPKSource & TSKSou
 
   scanOnePageWithGsi(options?: AdvancedGsiScanOnePageOptions): Promise<AdvancedCollectionResponse<TItem>>
 
-  batchPut(item: TItem[], options?: BatchPutOptions): Promise<AdvancedBatchWriteResponse>
+  batchPut(items: TItem[], options?: BatchPutOptions): Promise<AdvancedBatchWriteResponse>
 
   batchDelete<TKeySource extends TPKSource & TSKSource>(
     keySources: TKeySource[],

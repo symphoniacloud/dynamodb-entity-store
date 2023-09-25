@@ -6,7 +6,7 @@ This chapter shows you how to do the same for Global Secondary Indexes (GSIs).
 Like most things DynamoDB, GSIs are kind of like indexes in relational databases, but also very different.
 If you haven't used GSIs before I strongly recommend you do some background reading first, either from [the official AWS docs](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GSI.html), or perhaps from [this brief overview](https://www.dynamodbguide.com/global-secondary-indexes/) by Alex DeBrie.
 
-> Important! Because of the way that result parsing is performed you should typically set your GSI's _ProjectionType_ to `ALL` (see [the AWS docs](https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Projection.html)) when using GSIs with DynamoDB Entity Store.
+> Important! Because of the way that result parsing is performed by DynamoDB Entity Store you should typically set your GSI's _ProjectionType_ to `ALL` (see [the AWS docs](https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Projection.html)).
 If you need to use a different projection type, e.g. to reduce the number of attributes stored on a GSI, then you may want to consider using a different _Entity_ for querying from a GSI vs the one you use to access the GSI's table.
 
 You need to perform three actions when using GSIs with DynamoDB Entity Store:
@@ -16,6 +16,8 @@ You need to perform three actions when using GSIs with DynamoDB Entity Store:
 * Perform queries and/or scans
 
 I go through each in turn for the rest of this chapter.
+
+For working examples of everything in this chapter, see [example 2](../examples/src/example2Chickens.ts) and/or the [integration tests](../test/integration).
 
 ## GSI Configuration
 
@@ -234,7 +236,7 @@ So in our example the result is of type `Chicken[]` because:
 * `queryAllWithGsiByPk` has filtered all the DynamoDB results to just those where `_et` === `chicken` ...
 * ... and it has called `CHICKEN_ENTITY.parse()` on all items
 
-The `options?` parameter of each `query..WithGsi..` operation is the same as the table equivalent **except** for the following two differences :
+The `options?` parameter of each `query..WithGsi..` operation is the same as the table equivalent **except** for the following two differences:
 
 1 - If you have multiple GSIs on your table then you **must** specify which GSI you are using on each GSI query using the "logical" GSI ID.
 For example, if we wanted to use `TWO_GSI_CHICKEN_ENTITY` from above our query needs to change as follows:

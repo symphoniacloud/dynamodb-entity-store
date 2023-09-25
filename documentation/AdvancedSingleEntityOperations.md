@@ -8,7 +8,7 @@ By now you're probably pretty used to getting all of the operations for an Entit
 const sheepOperations = entityStore.for(SHEEP_ENTITY)
 ```
 
-The _advanced_ operations are simply a field of that:
+The _advanced_ operations are simply the `advancedOperations` field of that:
 
 ```typescript
 const advancedSheepOperations: SingleEntityAdvancedOperations<Sheep, Pick<Sheep, 'breed'>, Pick<Sheep, 'name'>> =
@@ -32,10 +32,10 @@ The first thing to know is that the _advanced_ operations are strictly extension
 
 The advanced versions differ in the following ways:
 
-* The options parameter of all methods take one or more extra optional fields that define which _diagnostic metadata_ to return
+* The options parameter of all methods take one or more extra optional fields that define any _diagnostic metadata_ to return
   * All operations therefore return an object that contains both the actual result, and may also contain the metadata configured by the options argument. In other words `getOrThrow()`, and the query-all / scan-all collection operations don't just return the desired item(s), they return an object where the items are on a `.item` or `.items` property
-* Write operations can be configured to use DynamoDB "return values"
-* Collection operations may return unparsed results
+* Write operations can be configured to request DynamoDB "return values"
+* Collection operations may additionally return unparsed results
 
 > The motivation for having "standard" and "advanced" operations at all is to make the result types cleaner for the majority of use cases. It's nice not to have to keep typing `.item` or `.items` in the majority of places where data is retrieved from DynamoDB.
 
@@ -51,12 +51,12 @@ DynamoDB _Entity Store_ doesn't get too involved with either of these, but some 
 To configure DynamoDB to return either/both of these types of metadata then set the [`returnConsumedCapacity`](https://symphoniacloud.github.io/dynamodb-entity-store/interfaces/ReturnConsumedCapacityOption.html) and/or [`returnItemCollectionMetrics`](https://symphoniacloud.github.io/dynamodb-entity-store/interfaces/ReturnItemCollectionMetricsOption.html) properties on the `options` argument of the operation method(s) you're using.
 The specific settings for these fields are passed straight through to DynamoDB, so refer to the DynamoDB documentation for deciding what value to use.
 
-If you specified either metadata option, and DynamoDB returned a relevant result, then a `.metadata` field will be on the result object, with a [`consumedCapacity`](https://symphoniacloud.github.io/dynamodb-entity-store/interfaces/ConsumedCapacityMetadata.html) and/or [`itemCollectionMetrics`](https://symphoniacloud.github.io/dynamodb-entity-store/interfaces/ItemCollectionMetricsMetadata.html) subfield
+If you specified either metadata option, and DynamoDB returned a relevant result, then a `.metadata` field will be on the result object, with a [`consumedCapacity`](https://symphoniacloud.github.io/dynamodb-entity-store/interfaces/ConsumedCapacityMetadata.html) and/or [`itemCollectionMetrics`](https://symphoniacloud.github.io/dynamodb-entity-store/interfaces/ItemCollectionMetricsMetadata.html) subfield.
 
 ### Return values for write operations
 
-DynamoDB allows requesting "return values" for write operations - `put()`, `update()`, and `delete()`.
-The advanced operations allow you to request these values when using _Entity Store_ however the usual parsing / typing logic is **bypassed** and such results are provided "raw" from the DynamoDB Document Client.
+DynamoDB allows requesting "return values" for write operations - `put()`, `update()`, and `delete()` (described [here](https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_PutItem.html) for _PutItem_).
+The advanced operations allow you to request these values when using _Entity Store_ however the usual parsing / typing logic for these type of results is **bypassed** and such results are provided "raw" from the DynamoDB Document Client.
 
 To request return values you must set the [`returnValues`](https://symphoniacloud.github.io/dynamodb-entity-store/interfaces/ReturnValuesOptions.html) and/or [`returnValuesOnConditionCheckFailure`](https://symphoniacloud.github.io/dynamodb-entity-store/interfaces/ReturnValuesOnConditionCheckFailureOption.html) field on the options argument of the operation(s) you are calling.
 The specific settings for these fields are passed straight through to DynamoDB, so refer to the DynamoDB documentation for deciding what value to use.
@@ -79,10 +79,10 @@ This can improve performance of your application for certain scenarios.
 
 DynamoDB _Entity Store_ supports batch operations in the following way:
 
-* A batch operation can actually accept more items than can be put in a DynamoDB batch (25 items for a batch write, 100 items for a batch get). If the total number of items in the request is larger than the DynamoDB batch command size, the operation is implemented as a "batch of batches", with each batch being executed in series, and the results combined.
+* A batch operation can actually accept more items than can be put in a DynamoDB batch (maximum of 25 items for a batch write, 100 items for a batch get). If the total number of items in the request is larger than the DynamoDB batch command size, the operation is implemented as a "batch of batches", with each batch being executed in series, and the results combined.
     * For "batch of batches" operations there is no current behavior for retry in the event of throttling
 * Batch operations can be performed **for one entity type at a time** - you can't currently perform batch operations for multiple entity types in one command.
-* One batch write operation can either be all puts, or all deletes, but not both
+* One batch write operation can either be all puts, or all deletes, but not a combination of both
 * For batch get operations the current behavior is that if any element is unparsable (e.g. because it's the incorrect entity type) then the whole command fails
 
 ### Batch Get
@@ -103,7 +103,7 @@ Each element of `keySources` follows the same rules as a single-item `get()`, so
 The result of this is an object of type [`AdvancedBatchGetResponse`](https://symphoniacloud.github.io/dynamodb-entity-store/types/AdvancedBatchGetResponse.html).
 The primary field on this is `items`. Each element of `items` is parsed the same way as single-item `get()`
 
-> **Important** The order of `items` might not be the same as the order of `keySources` 
+> **Warning**: the order of `items` might not be the same as the order of `keySources` 
 
 DynamoDB might not process all the elements of a batch get (see the documentation link for why).
 If this happens unprocessed items are available on the `unprocessedItems` field of the result.
@@ -117,7 +117,7 @@ Note that this field is populated directly by the items that DynamoDB returned, 
 * `returnConsumedCapacity` - whether to return consumed capacity metadata (see earlier in this chapter). If you specify this as `true` the result object will include a `metadata.consumedCapacities` property, which is an array of _ConsumedCapacity_, one for each batch call actually made (see below for when there may be more than one)
 * `batchSize` - the max size of each batch call to DynamoDB. Defaults to 100.
 
-> **IMPORTANT** the metadata subfield is `consumedCapacities`, **not** `consumedCapacity` like single-item `get()`
+> **Warning**: the metadata subfield is `consumedCapacities`, **not** `consumedCapacity` like single-item `get()`
 
 #### Batch of batches
 
@@ -139,7 +139,7 @@ The behavior for "batch of batches" is as follows:
 
 ### Batch Put
 
-> I recommend you read the [AWS documentation](https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_BatchWriteItem.html) first if you have not used DynamoDB Batch Gets previously
+> I recommend you read the [AWS documentation](https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_BatchWriteItem.html) first if you have not used DynamoDB Batch Writes previously
 
 DynamoDB has a _batchWrite_ operation, but EntityStore separates this for puts and deletes. Here's how you perform a batch put: 
 

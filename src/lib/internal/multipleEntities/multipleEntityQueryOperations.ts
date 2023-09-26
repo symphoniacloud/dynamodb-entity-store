@@ -16,9 +16,9 @@ import {
 import { Entity } from '../../entities'
 import { throwError } from '../../util'
 
-export async function queryMultipleByPk<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
+export async function queryMultipleByPk<TKeyItem extends TPKSource, TPKSource>(
   contexts: EntityContextsByEntityType,
-  keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
+  keyEntity: Entity<TKeyItem, TPKSource, unknown>,
   pkSource: TPKSource,
   allPages: boolean,
   options: AdvancedQueryOnePageOptions = {}
@@ -34,9 +34,9 @@ export async function queryMultipleByPk<TKeyItem extends TPKSource & TSKSource, 
   )
 }
 
-export async function queryMultipleBySkRange<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
+export async function queryMultipleBySkRange<TKeyItem extends TPKSource, TPKSource>(
   contexts: EntityContextsByEntityType,
-  keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
+  keyEntity: Entity<TKeyItem, TPKSource, unknown>,
   pkSource: TPKSource,
   queryRange: SkQueryRange,
   allPages: boolean,
@@ -63,14 +63,9 @@ export async function queryMultipleBySkRange<TKeyItem extends TPKSource & TSKSou
   )
 }
 
-export async function queryMultipleByGsiPk<
-  TKeyItem extends TPKSource & TSKSource,
-  TPKSource,
-  TSKSource,
-  TGSIPKSource
->(
+export async function queryMultipleByGsiPk<TKeyItem, TGSIPKSource>(
   contexts: EntityContextsByEntityType,
-  keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
+  keyEntity: Entity<TKeyItem, unknown, unknown>,
   pkSource: TGSIPKSource,
   allPages: boolean,
   options: AdvancedGsiQueryOnePageOptions = {}
@@ -91,14 +86,9 @@ export async function queryMultipleByGsiPk<
   )
 }
 
-export async function queryMultipleByGsiSkRange<
-  TKeyItem extends TPKSource & TSKSource,
-  TPKSource,
-  TSKSource,
-  TGSIPKSource
->(
+export async function queryMultipleByGsiSkRange<TKeyItem, TGSIPKSource>(
   contexts: EntityContextsByEntityType,
-  keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
+  keyEntity: Entity<TKeyItem, unknown, unknown>,
   pkSource: TGSIPKSource,
   queryRange: SkQueryRange,
   allPages: boolean,
@@ -131,12 +121,12 @@ export async function queryMultipleByGsiSkRange<
   )
 }
 
-function findKeyEntityContext<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
+function findKeyEntityContext<TKeyItem>(
   contextsByEntityType: EntityContextsByEntityType,
-  keyEntity: Entity<TKeyItem, TPKSource, TSKSource>
-): EntityContext<TKeyItem, TPKSource, TSKSource> {
+  keyEntity: Entity<TKeyItem, unknown, unknown>
+): EntityContext<TKeyItem, unknown, unknown> {
   return (
-    (contextsByEntityType[keyEntity.type] as EntityContext<TKeyItem, TPKSource, TSKSource>) ??
+    (contextsByEntityType[keyEntity.type] as EntityContext<TKeyItem, unknown, unknown>) ??
     throwError(`Unable to find context for entity type ${keyEntity.type}`)()
   )
 }

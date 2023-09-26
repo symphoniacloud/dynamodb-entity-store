@@ -33,70 +33,60 @@ export function tableBackedMultipleEntityOperations(
     )
 
   return {
-    async queryAllByPk<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
-      keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
+    async queryAllByPk<TKeyItem extends TPKSource, TPKSource>(
+      keyEntity: Entity<TKeyItem, TPKSource, unknown>,
       pkSource: TPKSource,
       options?: AdvancedQueryAllOptions
     ) {
       return queryMultipleByPk(contextsByEntityType, keyEntity, pkSource, true, options)
     },
-    async queryOnePageByPk<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
-      keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
+    async queryOnePageByPk<TKeyItem extends TPKSource, TPKSource>(
+      keyEntity: Entity<TKeyItem, TPKSource, unknown>,
       pkSource: TPKSource,
       options?: AdvancedQueryOnePageOptions
     ) {
       return queryMultipleByPk(contextsByEntityType, keyEntity, pkSource, false, options)
     },
-    async queryAllByPkAndSk<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
-      keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
+    async queryAllByPkAndSk<TKeyItem extends TPKSource, TPKSource>(
+      keyEntity: Entity<TKeyItem, TPKSource, unknown>,
       pkSource: TPKSource,
       queryRange: SkQueryRange,
       options?: AdvancedQueryAllOptions
     ) {
       return queryMultipleBySkRange(contextsByEntityType, keyEntity, pkSource, queryRange, true, options)
     },
-    async queryOnePageByPkAndSk<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
-      keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
+    async queryOnePageByPkAndSk<TKeyItem extends TPKSource, TPKSource>(
+      keyEntity: Entity<TKeyItem, TPKSource, unknown>,
       pkSource: TPKSource,
       queryRange: SkQueryRange,
       options?: AdvancedQueryOnePageOptions
     ) {
       return queryMultipleBySkRange(contextsByEntityType, keyEntity, pkSource, queryRange, false, options)
     },
-    async queryAllWithGsiByPk<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource, TGSIPKSource>(
-      keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
+    async queryAllWithGsiByPk<TKeyItem, TGSIPKSource>(
+      keyEntity: Entity<TKeyItem, unknown, unknown>,
       pkSource: TGSIPKSource,
       options?: AdvancedGsiQueryAllOptions
     ) {
       return queryMultipleByGsiPk(contextsByEntityType, keyEntity, pkSource, true, options)
     },
-    async queryOnePageWithGsiByPk<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource, TGSIPKSource>(
-      keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
+    async queryOnePageWithGsiByPk<TKeyItem, TGSIPKSource>(
+      keyEntity: Entity<TKeyItem, unknown, unknown>,
       pkSource: TGSIPKSource,
       options?: AdvancedQueryOnePageOptions
     ) {
       return queryMultipleByGsiPk(contextsByEntityType, keyEntity, pkSource, false, options)
     },
-    async queryAllWithGsiByPkAndSk<
-      TKeyItem extends TPKSource & TSKSource,
-      TPKSource,
-      TSKSource,
-      TGSIPKSource
-    >(
-      keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
+    async queryAllWithGsiByPkAndSk<TKeyItem, TGSIPKSource>(
+      keyEntity: Entity<TKeyItem, unknown, unknown>,
       pkSource: TGSIPKSource,
       queryRange: SkQueryRange,
       options?: AdvancedGsiQueryAllOptions
     ): Promise<MultipleEntityCollectionResponse> {
       return queryMultipleByGsiSkRange(contextsByEntityType, keyEntity, pkSource, queryRange, true, options)
     },
-    async queryOnePageWithGsiByPkAndSk<
-      TKeyItem extends TPKSource & TSKSource,
-      TPKSource,
-      TSKSource,
-      TGSIPKSource
-    >(
-      keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
+    async queryOnePageWithGsiByPkAndSk<TKeyItem, TGSIPKSource>(
+      keyEntity: Entity<TKeyItem, unknown, unknown>,
       pkSource: TGSIPKSource,
       queryRange: SkQueryRange,
       options?: AdvancedGsiQueryOnePageOptions

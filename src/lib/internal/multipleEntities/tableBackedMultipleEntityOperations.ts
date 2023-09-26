@@ -4,8 +4,11 @@ import { MultipleEntityCollectionResponse, MultipleEntityOperations } from '../.
 import { createEntityContext } from '../entityContext'
 import { scanMultiple } from './multipleEntityScanOperation'
 import {
+  AdvancedGsiQueryAllOptions,
   AdvancedGsiQueryOnePageOptions,
+  AdvancedQueryAllOptions,
   AdvancedQueryOnePageOptions,
+  AdvancedScanAllOptions,
   AdvancedScanOnePageOptions
 } from '../../singleEntityAdvancedOperations'
 import {
@@ -30,27 +33,62 @@ export function tableBackedMultipleEntityOperations(
     )
 
   return {
+    async queryAllByPk<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
+      keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
+      pkSource: TPKSource,
+      options?: AdvancedQueryAllOptions
+    ) {
+      return queryMultipleByPk(contextsByEntityType, keyEntity, pkSource, true, options)
+    },
     async queryOnePageByPk<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
       keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
       pkSource: TPKSource,
-      options: AdvancedQueryOnePageOptions = {}
-    ): Promise<MultipleEntityCollectionResponse> {
-      return await queryMultipleByPk(contextsByEntityType, keyEntity, pkSource, options)
+      options?: AdvancedQueryOnePageOptions
+    ) {
+      return queryMultipleByPk(contextsByEntityType, keyEntity, pkSource, false, options)
+    },
+    async queryAllByPkAndSk<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
+      keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
+      pkSource: TPKSource,
+      queryRange: SkQueryRange,
+      options?: AdvancedQueryAllOptions
+    ) {
+      return queryMultipleBySkRange(contextsByEntityType, keyEntity, pkSource, queryRange, true, options)
     },
     async queryOnePageByPkAndSk<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
       keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
       pkSource: TPKSource,
       queryRange: SkQueryRange,
-      options: AdvancedQueryOnePageOptions = {}
-    ): Promise<MultipleEntityCollectionResponse> {
-      return await queryMultipleBySkRange(contextsByEntityType, keyEntity, pkSource, queryRange, options)
+      options?: AdvancedQueryOnePageOptions
+    ) {
+      return queryMultipleBySkRange(contextsByEntityType, keyEntity, pkSource, queryRange, false, options)
+    },
+    async queryAllWithGsiByPk<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource, TGSIPKSource>(
+      keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
+      pkSource: TGSIPKSource,
+      options?: AdvancedGsiQueryAllOptions
+    ) {
+      return queryMultipleByGsiPk(contextsByEntityType, keyEntity, pkSource, true, options)
     },
     async queryOnePageWithGsiByPk<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource, TGSIPKSource>(
       keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
       pkSource: TGSIPKSource,
-      options: AdvancedGsiQueryOnePageOptions = {}
+      options?: AdvancedQueryOnePageOptions
+    ) {
+      return queryMultipleByGsiPk(contextsByEntityType, keyEntity, pkSource, false, options)
+    },
+    async queryAllWithGsiByPkAndSk<
+      TKeyItem extends TPKSource & TSKSource,
+      TPKSource,
+      TSKSource,
+      TGSIPKSource
+    >(
+      keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
+      pkSource: TGSIPKSource,
+      queryRange: SkQueryRange,
+      options?: AdvancedGsiQueryAllOptions
     ): Promise<MultipleEntityCollectionResponse> {
-      return await queryMultipleByGsiPk(contextsByEntityType, keyEntity, pkSource, options)
+      return queryMultipleByGsiSkRange(contextsByEntityType, keyEntity, pkSource, queryRange, true, options)
     },
     async queryOnePageWithGsiByPkAndSk<
       TKeyItem extends TPKSource & TSKSource,
@@ -61,12 +99,15 @@ export function tableBackedMultipleEntityOperations(
       keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
       pkSource: TGSIPKSource,
       queryRange: SkQueryRange,
-      options: AdvancedGsiQueryOnePageOptions = {}
+      options?: AdvancedGsiQueryOnePageOptions
     ): Promise<MultipleEntityCollectionResponse> {
-      return await queryMultipleByGsiSkRange(contextsByEntityType, keyEntity, pkSource, queryRange, options)
+      return queryMultipleByGsiSkRange(contextsByEntityType, keyEntity, pkSource, queryRange, false, options)
     },
-    async scanOnePage(options: AdvancedScanOnePageOptions = {}) {
-      return await scanMultiple(contextsByEntityType, options)
+    async scanAll(options?: AdvancedScanAllOptions): Promise<MultipleEntityCollectionResponse> {
+      return await scanMultiple(contextsByEntityType, true, options)
+    },
+    async scanOnePage(options?: AdvancedScanOnePageOptions) {
+      return await scanMultiple(contextsByEntityType, false, options)
     }
   }
 }

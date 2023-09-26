@@ -9,7 +9,8 @@ import { AdvancedScanOnePageOptions } from '../../singleEntityAdvancedOperations
 
 export async function scanMultiple(
   contextsByEntityType: EntityContextsByEntityType,
-  options: AdvancedScanOnePageOptions
+  allPages: boolean,
+  options: AdvancedScanOnePageOptions = {}
 ): Promise<MultipleEntityCollectionResponse> {
   const defaultEntityContext = Object.values(contextsByEntityType)[0]
 
@@ -19,7 +20,7 @@ export async function scanMultiple(
 
   return await performMultipleEntityOperationAndParse(
     contextsByEntityType,
-    configureScanOperation(defaultEntityContext, options, false),
+    configureScanOperation(defaultEntityContext, options, allPages),
     defaultEntityContext
   )
 }

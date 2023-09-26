@@ -899,7 +899,7 @@ describe('standard single table', () => {
         expect(
           await store
             .forMultiple([DUCK_ENTITY, CHICKEN_ENTITY])
-            .queryOnePageWithGsiByPk(DUCK_ENTITY, { coop: 'bristol' })
+            .queryAllWithGsiByPk(DUCK_ENTITY, { coop: 'bristol' })
         ).toEqual({
           itemsByEntityType: {
             chicken: [ginger],
@@ -929,7 +929,7 @@ describe('standard single table', () => {
 
         // Multiple Entity API
         expect(
-          await store.forMultiple([DOG_ENTITY]).queryOnePageByPk(DOG_ENTITY, { farm: 'Sunflower Farm' })
+          await store.forMultiple([DOG_ENTITY]).queryAllByPk(DOG_ENTITY, { farm: 'Sunflower Farm' })
         ).toEqual({
           itemsByEntityType: {
             dog: [chesterDog]
@@ -969,7 +969,7 @@ describe('standard single table', () => {
 
         // query GSI single entity with multiple entity api where multiple returned from table
         expect(
-          await store.forMultiple([DUCK_ENTITY]).queryOnePageWithGsiByPk(DUCK_ENTITY, { coop: 'bristol' })
+          await store.forMultiple([DUCK_ENTITY]).queryAllWithGsiByPk(DUCK_ENTITY, { coop: 'bristol' })
         ).toEqual({
           itemsByEntityType: {
             duck: [waddles]
@@ -1016,6 +1016,12 @@ describe('standard single table', () => {
 
       // Scan multiple entity API when all entities specified
       expect(await storeWithScans.forMultiple([SHEEP_ENTITY, CHICKEN_ENTITY]).scanOnePage()).toEqual({
+        itemsByEntityType: {
+          sheep: [shaunTheSheep],
+          chicken: [ginger]
+        }
+      })
+      expect(await storeWithScans.forMultiple([SHEEP_ENTITY, CHICKEN_ENTITY]).scanAll()).toEqual({
         itemsByEntityType: {
           sheep: [shaunTheSheep],
           chicken: [ginger]

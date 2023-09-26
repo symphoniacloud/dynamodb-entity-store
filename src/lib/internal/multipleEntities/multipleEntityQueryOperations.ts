@@ -20,7 +20,8 @@ export async function queryMultipleByPk<TKeyItem extends TPKSource & TSKSource, 
   contexts: EntityContextsByEntityType,
   keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
   pkSource: TPKSource,
-  options: AdvancedQueryOnePageOptions
+  allPages: boolean,
+  options: AdvancedQueryOnePageOptions = {}
 ): Promise<MultipleEntityCollectionResponse> {
   const keyEntityContext = findKeyEntityContext(contexts, keyEntity)
   return await queryMultipleWithCriteria(
@@ -29,7 +30,7 @@ export async function queryMultipleByPk<TKeyItem extends TPKSource & TSKSource, 
     options,
     `${keyEntityContext.metaAttributeNames.pk} = :pk`,
     expressionAttributeParams({ ':pk': keyEntityContext.entity.pk(pkSource) }),
-    false
+    allPages
   )
 }
 
@@ -38,7 +39,8 @@ export async function queryMultipleBySkRange<TKeyItem extends TPKSource & TSKSou
   keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
   pkSource: TPKSource,
   queryRange: SkQueryRange,
-  options: AdvancedQueryOnePageOptions
+  allPages: boolean,
+  options: AdvancedQueryOnePageOptions = {}
 ) {
   const keyEntityContext = findKeyEntityContext(contexts, keyEntity)
   if (!keyEntityContext.metaAttributeNames.sk)
@@ -57,7 +59,7 @@ export async function queryMultipleBySkRange<TKeyItem extends TPKSource & TSKSou
         '#sk': keyEntityContext.metaAttributeNames.sk
       }
     ),
-    false
+    allPages
   )
 }
 
@@ -70,7 +72,8 @@ export async function queryMultipleByGsiPk<
   contexts: EntityContextsByEntityType,
   keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
   pkSource: TGSIPKSource,
-  options: AdvancedGsiQueryOnePageOptions
+  allPages: boolean,
+  options: AdvancedGsiQueryOnePageOptions = {}
 ): Promise<MultipleEntityCollectionResponse> {
   const keyEntityContext = findKeyEntityContext(contexts, keyEntity)
   const gsiDetails = findGsiDetails(keyEntityContext, options)
@@ -84,7 +87,7 @@ export async function queryMultipleByGsiPk<
       IndexName: gsiDetails.tableIndexName,
       ...expressionAttributeParams({ ':pk': gsiDetails.generators.pk(pkSource) })
     },
-    false
+    allPages
   )
 }
 
@@ -98,7 +101,8 @@ export async function queryMultipleByGsiSkRange<
   keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
   pkSource: TGSIPKSource,
   queryRange: SkQueryRange,
-  options: AdvancedGsiQueryOnePageOptions
+  allPages: boolean,
+  options: AdvancedGsiQueryOnePageOptions = {}
 ) {
   const keyEntityContext = findKeyEntityContext(contexts, keyEntity)
   const gsiDetails = findGsiDetails(keyEntityContext, options)
@@ -123,7 +127,7 @@ export async function queryMultipleByGsiSkRange<
         }
       )
     },
-    false
+    allPages
   )
 }
 

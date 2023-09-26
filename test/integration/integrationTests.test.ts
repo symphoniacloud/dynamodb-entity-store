@@ -175,7 +175,21 @@ describe('standard single table', () => {
       ])
 
       // update
+      // Just update lastUpdated
       setClock('2023-09-01T19:00:00.000Z')
+      await sheepOperations.update(shaunIdentifier)
+      expect(await scanWithDocClient(tableName)).toEqual([
+        {
+          PK: 'SHEEP#BREED#merino',
+          SK: 'NAME#shaun',
+          _et: 'sheep',
+          _lastUpdated: '2023-09-01T19:00:00.000Z',
+          ...shaunTheSheep,
+          ageInYears: 4
+        }
+      ])
+
+      setClock('2023-10-01T19:00:00.000Z')
       await sheepOperations.update(shaunIdentifier, {
         update: {
           set: 'ageInYears = :newAge'
@@ -193,7 +207,7 @@ describe('standard single table', () => {
           PK: 'SHEEP#BREED#merino',
           SK: 'NAME#shaun',
           _et: 'sheep',
-          _lastUpdated: '2023-09-01T19:00:00.000Z',
+          _lastUpdated: '2023-10-01T19:00:00.000Z',
           ...shaunTheSheep,
           ageInYears: 5
         }
@@ -885,8 +899,7 @@ describe('standard single table', () => {
         expect(
           await store
             .forMultiple([DUCK_ENTITY, CHICKEN_ENTITY])
-            .queryWithGsi(DUCK_ENTITY)
-            .byPk({ coop: 'bristol' })
+            .queryOnePageWithGsiByPk(DUCK_ENTITY, { coop: 'bristol' })
         ).toEqual({
           itemsByEntityType: {
             chicken: [ginger],
@@ -916,7 +929,7 @@ describe('standard single table', () => {
 
         // Multiple Entity API
         expect(
-          await store.forMultiple([DOG_ENTITY]).query(DOG_ENTITY).byPk({ farm: 'Sunflower Farm' })
+          await store.forMultiple([DOG_ENTITY]).queryOnePageByPk(DOG_ENTITY, { farm: 'Sunflower Farm' })
         ).toEqual({
           itemsByEntityType: {
             dog: [chesterDog]
@@ -956,7 +969,7 @@ describe('standard single table', () => {
 
         // query GSI single entity with multiple entity api where multiple returned from table
         expect(
-          await store.forMultiple([DUCK_ENTITY]).queryWithGsi(DUCK_ENTITY).byPk({ coop: 'bristol' })
+          await store.forMultiple([DUCK_ENTITY]).queryOnePageWithGsiByPk(DUCK_ENTITY, { coop: 'bristol' })
         ).toEqual({
           itemsByEntityType: {
             duck: [waddles]

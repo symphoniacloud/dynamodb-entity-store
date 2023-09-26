@@ -86,8 +86,8 @@ export function gsiSkRangeQueryCriteria(
 export async function queryItems<TItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
   context: EntityContext<TItem, TPKSource, TSKSource>,
   { keyConditionExpression, partialCriteria }: QueryCriteria,
-  { scanIndexForward, ...otherOptions }: AdvancedQueryOnePageOptions,
-  allPages: boolean
+  allPages: boolean,
+  { scanIndexForward, ...otherOptions }: AdvancedQueryOnePageOptions
 ): Promise<AdvancedCollectionResponse<TItem>> {
   const queryConfig = configureQueryOperation(context, otherOptions, allPages, {
     KeyConditionExpression: keyConditionExpression,

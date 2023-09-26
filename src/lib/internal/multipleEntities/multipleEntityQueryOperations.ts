@@ -2,67 +2,82 @@ import { expressionAttributeParams } from '../common/operationsCommon'
 import { MultipleEntityCollectionResponse } from '../../multipleEntityOperations'
 import { EntityContext } from '../entityContext'
 import { QueryCommandInput } from '@aws-sdk/lib-dynamodb'
-import { performMultipleEntityOperationAndParse } from './multipleEntitiesQueryAndScanCommon'
-import { GsiDetails } from '../common/gsiQueryCommon'
+import {
+  EntityContextsByEntityType,
+  performMultipleEntityOperationAndParse
+} from './multipleEntitiesQueryAndScanCommon'
+import { findGsiDetails } from '../common/gsiQueryCommon'
 import { SkQueryRange } from '../../singleEntityOperations'
 import { configureQueryOperation } from '../common/queryAndScanCommon'
 import {
   AdvancedGsiQueryOnePageOptions,
   AdvancedQueryOnePageOptions
 } from '../../singleEntityAdvancedOperations'
+import { Entity } from '../../entities'
+import { throwError } from '../../util'
 
 export async function queryMultipleByPk<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
-  contextsByEntityType: Record<string, EntityContext<unknown, unknown, unknown>>,
-  keyItemContext: EntityContext<TKeyItem, TPKSource, TSKSource>,
-  options: AdvancedQueryOnePageOptions,
-  source: TPKSource
+  contexts: EntityContextsByEntityType,
+  keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
+  pkSource: TPKSource,
+  options: AdvancedQueryOnePageOptions
 ): Promise<MultipleEntityCollectionResponse> {
+  const keyEntityContext = findKeyEntityContext(contexts, keyEntity)
   return await queryMultipleWithCriteria(
-    contextsByEntityType,
-    keyItemContext,
+    contexts,
+    keyEntityContext,
     options,
-    `${keyItemContext.metaAttributeNames.pk} = :pk`,
-    expressionAttributeParams({ ':pk': keyItemContext.entity.pk(source) }),
+    `${keyEntityContext.metaAttributeNames.pk} = :pk`,
+    expressionAttributeParams({ ':pk': keyEntityContext.entity.pk(pkSource) }),
     false
   )
 }
 
 export async function queryMultipleBySkRange<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
-  contextsByEntityType: Record<string, EntityContext<unknown, unknown, unknown>>,
-  keyItemContext: EntityContext<TKeyItem, TPKSource, TSKSource>,
-  options: AdvancedQueryOnePageOptions,
-  source: TPKSource,
-  queryRange: SkQueryRange
+  contexts: EntityContextsByEntityType,
+  keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
+  pkSource: TPKSource,
+  queryRange: SkQueryRange,
+  options: AdvancedQueryOnePageOptions
 ) {
-  if (!keyItemContext.metaAttributeNames.sk) throw new Error('Unable to query by sk - table has no sort key')
+  const keyEntityContext = findKeyEntityContext(contexts, keyEntity)
+  if (!keyEntityContext.metaAttributeNames.sk)
+    throw new Error('Unable to query by sk - table has no sort key')
   return await queryMultipleWithCriteria(
-    contextsByEntityType,
-    keyItemContext,
+    contexts,
+    keyEntityContext,
     options,
-    `${keyItemContext.metaAttributeNames.pk} = :pk and ${queryRange.skConditionExpressionClause}`,
+    `${keyEntityContext.metaAttributeNames.pk} = :pk and ${queryRange.skConditionExpressionClause}`,
     expressionAttributeParams(
       {
-        ':pk': keyItemContext.entity.pk(source),
+        ':pk': keyEntityContext.entity.pk(pkSource),
         ...queryRange.expressionAttributeValues
       },
       {
-        '#sk': keyItemContext.metaAttributeNames.sk
+        '#sk': keyEntityContext.metaAttributeNames.sk
       }
     ),
     false
   )
 }
 
-export async function queryMultipleByGsiPk<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
-  contextsByEntityType: Record<string, EntityContext<unknown, unknown, unknown>>,
-  keyItemContext: EntityContext<TKeyItem, TPKSource, TSKSource>,
-  options: AdvancedGsiQueryOnePageOptions,
-  gsiDetails: GsiDetails,
-  pkSource: unknown
+export async function queryMultipleByGsiPk<
+  TKeyItem extends TPKSource & TSKSource,
+  TPKSource,
+  TSKSource,
+  TGSIPKSource
+>(
+  contexts: EntityContextsByEntityType,
+  keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
+  pkSource: TGSIPKSource,
+  options: AdvancedGsiQueryOnePageOptions
 ): Promise<MultipleEntityCollectionResponse> {
+  const keyEntityContext = findKeyEntityContext(contexts, keyEntity)
+  const gsiDetails = findGsiDetails(keyEntityContext, options)
+
   return await queryMultipleWithCriteria(
-    contextsByEntityType,
-    keyItemContext,
+    contexts,
+    keyEntityContext,
     options,
     `${gsiDetails.attributeNames.pk} = :pk`,
     {
@@ -73,20 +88,26 @@ export async function queryMultipleByGsiPk<TKeyItem extends TPKSource & TSKSourc
   )
 }
 
-export async function queryMultipleByGsiSkRange<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
-  contextsByEntityType: Record<string, EntityContext<unknown, unknown, unknown>>,
-  keyItemContext: EntityContext<TKeyItem, TPKSource, TSKSource>,
-  options: AdvancedGsiQueryOnePageOptions,
-  gsiDetails: GsiDetails,
-  pkSource: unknown,
-  queryRange: SkQueryRange
+export async function queryMultipleByGsiSkRange<
+  TKeyItem extends TPKSource & TSKSource,
+  TPKSource,
+  TSKSource,
+  TGSIPKSource
+>(
+  contexts: EntityContextsByEntityType,
+  keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
+  pkSource: TGSIPKSource,
+  queryRange: SkQueryRange,
+  options: AdvancedGsiQueryOnePageOptions
 ) {
+  const keyEntityContext = findKeyEntityContext(contexts, keyEntity)
+  const gsiDetails = findGsiDetails(keyEntityContext, options)
   if (!gsiDetails.attributeNames.sk)
     throw new Error('Unable to query by GSI sk - GSI on table has no sort key')
 
   return await queryMultipleWithCriteria(
-    contextsByEntityType,
-    keyItemContext,
+    contexts,
+    keyEntityContext,
     options,
     `${gsiDetails.attributeNames.pk} = :pk and ${queryRange.skConditionExpressionClause}`,
     {
@@ -106,10 +127,20 @@ export async function queryMultipleByGsiSkRange<TKeyItem extends TPKSource & TSK
   )
 }
 
+function findKeyEntityContext<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
+  contextsByEntityType: EntityContextsByEntityType,
+  keyEntity: Entity<TKeyItem, TPKSource, TSKSource>
+): EntityContext<TKeyItem, TPKSource, TSKSource> {
+  return (
+    (contextsByEntityType[keyEntity.type] as EntityContext<TKeyItem, TPKSource, TSKSource>) ??
+    throwError(`Unable to find context for entity type ${keyEntity.type}`)()
+  )
+}
+
 async function queryMultipleWithCriteria(
-  contextsByEntityType: Record<string, EntityContext<unknown, unknown, unknown>>,
+  contextsByEntityType: EntityContextsByEntityType,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  keyItemContext: EntityContext<any, any, any>,
+  keyEntityContext: EntityContext<any, any, any>,
   { scanIndexForward, ...otherOptions }: AdvancedQueryOnePageOptions,
   keyConditionExpression: string,
   partialCriteria: Omit<
@@ -118,22 +149,13 @@ async function queryMultipleWithCriteria(
   >,
   allPages: boolean
 ): Promise<MultipleEntityCollectionResponse> {
-  const {
-    metaAttributeNames: { entityType: entityTypeAttributeName }
-  } = keyItemContext
-
-  if (!entityTypeAttributeName)
-    throw new Error(
-      `Unable to operate on multiple entities - no entityType attribute is configured for table`
-    )
-
   return performMultipleEntityOperationAndParse(
     contextsByEntityType,
-    configureQueryOperation(keyItemContext, otherOptions, allPages, {
+    configureQueryOperation(keyEntityContext, otherOptions, allPages, {
       KeyConditionExpression: keyConditionExpression,
       ...partialCriteria,
       ...(scanIndexForward === false ? { ScanIndexForward: scanIndexForward } : {})
     }),
-    keyItemContext
+    keyEntityContext
   )
 }

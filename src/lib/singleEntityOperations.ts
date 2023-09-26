@@ -14,7 +14,7 @@ export interface SingleEntityOperations<TItem extends TPKSource & TSKSource, TPK
 
   update<TKeySource extends TPKSource & TSKSource>(
     keySource: TKeySource,
-    options: UpdateOptions
+    options?: UpdateOptions
   ): Promise<void>
 
   getOrUndefined<TKeySource extends TPKSource & TSKSource>(

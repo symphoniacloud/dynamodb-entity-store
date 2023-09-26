@@ -30,7 +30,7 @@ export interface SingleEntityAdvancedOperations<TItem extends TPKSource & TSKSou
 
   update<TKeySource extends TPKSource & TSKSource>(
     keySource: TKeySource,
-    options: AdvancedUpdateOptions
+    options?: AdvancedUpdateOptions
   ): Promise<AdvancedUpdateResponse>
 
   getOrUndefined<TKeySource extends TPKSource & TSKSource>(

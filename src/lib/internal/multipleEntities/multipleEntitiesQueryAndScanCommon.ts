@@ -14,11 +14,16 @@ import {
   ScanCommandOutput
 } from '@aws-sdk/lib-dynamodb'
 
+// Not defined in the type, but a guarantee from tableBackedMultipleEntityOperations
+// is that this only contains contexts for one table
+// Therefore any entry contains the same table details
+export type EntityContextsByEntityType = Record<string, EntityContext<unknown, unknown, unknown>>
+
 export async function performMultipleEntityOperationAndParse<
   TCommandInput extends ScanCommandInput & QueryCommandInput,
   TCommandOutput extends ScanCommandOutput & QueryCommandOutput
 >(
-  contextsByEntityType: Record<string, EntityContext<unknown, unknown, unknown>>,
+  contextsByEntityType: EntityContextsByEntityType,
   operationConfiguration: QueryScanOperationConfiguration<TCommandInput, TCommandOutput>,
   defaultEntityContext: EntityContext<unknown, unknown, unknown>
 ) {
@@ -41,7 +46,7 @@ export async function performMultipleEntityOperationAndParse<
 
 export function parseMultipleEntityResults(
   entityTypeAttributeName: string,
-  contextsByEntityType: Record<string, EntityContext<unknown, unknown, unknown>>,
+  contextsByEntityType: EntityContextsByEntityType,
   unparsedResult: UnparsedCollectionResult
 ): MultipleEntityCollectionResponse {
   const { itemsByEntityType, unparsedItems } = unparsedResult.items.reduce(

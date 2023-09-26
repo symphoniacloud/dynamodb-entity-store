@@ -1,31 +1,22 @@
 import {
-  AdvancedBatchGetResponse,
-  AdvancedBatchWriteResponse,
-  AdvancedCollectionResponse,
   AdvancedDeleteOptions,
-  AdvancedDeleteResponse,
   AdvancedGetOptions,
-  AdvancedGetOrThrowResponse,
-  AdvancedGetResponse,
   AdvancedGsiQueryAllOptions,
   AdvancedGsiQueryOnePageOptions,
   AdvancedGsiScanAllOptions,
   AdvancedGsiScanOnePageOptions,
   AdvancedPutOptions,
-  AdvancedPutResponse,
   AdvancedQueryAllOptions,
   AdvancedQueryOnePageOptions,
   AdvancedScanAllOptions,
   AdvancedScanOnePageOptions,
   AdvancedUpdateOptions,
-  AdvancedUpdateResponse,
   BatchDeleteOptions,
   BatchGetOptions,
   BatchPutOptions,
   SingleEntityAdvancedOperations
 } from '../../singleEntityAdvancedOperations'
-import { EntityContextParams, EntityContext } from '../entityContext'
-import { Entity } from '../../entities'
+import { EntityContext } from '../entityContext'
 import { putItem } from './putItem'
 import { getItem } from './getItem'
 import { updateItem } from './updateItem'
@@ -49,169 +40,153 @@ export function tableBackedSingleEntityAdvancedOperations<
   TPKSource,
   TSKSource
 >(
-  context: EntityContextParams,
-  entity: Entity<TItem, TPKSource, TSKSource>,
   entityContext: EntityContext<TItem, TPKSource, TSKSource>
 ): SingleEntityAdvancedOperations<TItem, TPKSource, TSKSource> {
-  function checkAllowScans() {
-    if (context.table.allowScans === undefined || !context.table.allowScans)
-      throw new Error('Scan operations are disabled for this store')
+  async function queryByPk(pkSource: TPKSource, allPages: boolean, options: AdvancedQueryAllOptions = {}) {
+    return queryItems(entityContext, pkQueryCriteria(entityContext, pkSource), allPages, options)
+  }
+
+  async function queryByPkAndSk(
+    pkSource: TPKSource,
+    queryRange: SkQueryRange,
+    allPages: boolean,
+    options: AdvancedQueryAllOptions = {}
+  ) {
+    return queryItems(
+      entityContext,
+      skRangeQueryCriteria(entityContext, pkSource, queryRange),
+      allPages,
+      options
+    )
+  }
+
+  async function queryGsiByPk<TGSIPKSource>(
+    pkSource: TGSIPKSource,
+    allPages: boolean,
+    options: AdvancedGsiQueryAllOptions = {}
+  ) {
+    const gsiDetails = findGsiDetails(entityContext, options)
+    return await queryItems(entityContext, gsiPkQueryCriteria(gsiDetails, pkSource), allPages, options)
+  }
+
+  async function queryGsiByPkAndSk<TGSIPKSource>(
+    pkSource: TGSIPKSource,
+    queryRange: SkQueryRange,
+    allPages: boolean,
+    options: AdvancedGsiQueryAllOptions = {}
+  ) {
+    const gsiDetails = findGsiDetails(entityContext, options)
+    return await queryItems(
+      entityContext,
+      gsiSkRangeQueryCriteria(gsiDetails, pkSource, queryRange),
+      allPages,
+      options
+    )
   }
 
   return {
-    async put(item: TItem, options?: AdvancedPutOptions): Promise<AdvancedPutResponse> {
-      return await putItem(entityContext, item, options)
+    async put(item: TItem, options?: AdvancedPutOptions) {
+      return putItem(entityContext, item, options)
     },
     async update<TKeySource extends TPKSource & TSKSource>(
       keySource: TKeySource,
-      options: AdvancedUpdateOptions
-    ): Promise<AdvancedUpdateResponse> {
-      return await updateItem(entityContext, keySource, options)
+      options: AdvancedUpdateOptions = {}
+    ) {
+      return updateItem(entityContext, keySource, options)
     },
-
     async getOrUndefined<TKeySource extends TPKSource & TSKSource>(
       keySource: TKeySource,
       options?: AdvancedGetOptions
-    ): Promise<AdvancedGetResponse<TItem, TPKSource, TSKSource>> {
-      return await getItem(entityContext, keySource, options)
+    ) {
+      return getItem(entityContext, keySource, options)
     },
     async getOrThrow<TKeySource extends TPKSource & TSKSource>(
       keySource: TKeySource,
       options?: AdvancedGetOptions
-    ): Promise<AdvancedGetOrThrowResponse<TItem, TPKSource, TSKSource>> {
+    ) {
       const { item, ...restOfResponse } = await getItem(entityContext, keySource, options)
       if (item) return { item, ...restOfResponse }
       throw new Error(
-        `Unable to find item for entity [${entity.type}] with key source ${JSON.stringify(keySource)}`
+        `Unable to find item for entity [${entityContext.entity.type}] with key source ${JSON.stringify(
+          keySource
+        )}`
       )
     },
     async delete<TKeySource extends TPKSource & TSKSource>(
       keySource: TKeySource,
       options?: AdvancedDeleteOptions
-    ): Promise<AdvancedDeleteResponse> {
-      return await deleteItem(entityContext, keySource, options)
+    ) {
+      return deleteItem(entityContext, keySource, options)
     },
-
-    async queryAllByPk(
-      pkSource: TPKSource,
-      options: AdvancedQueryAllOptions = {}
-    ): Promise<AdvancedCollectionResponse<TItem>> {
-      return await queryItems(entityContext, pkQueryCriteria(entityContext, pkSource), options, true)
+    async queryAllByPk(pkSource: TPKSource, options?: AdvancedQueryAllOptions) {
+      return queryByPk(pkSource, true, options)
     },
-
-    async queryOnePageByPk(
-      pkSource: TPKSource,
-      options: AdvancedQueryOnePageOptions = {}
-    ): Promise<AdvancedCollectionResponse<TItem>> {
-      return await queryItems(entityContext, pkQueryCriteria(entityContext, pkSource), options, false)
+    async queryOnePageByPk(pkSource: TPKSource, options?: AdvancedQueryOnePageOptions) {
+      return queryByPk(pkSource, false, options)
     },
-
     async queryAllByPkAndSk(
       pkSource: TPKSource,
       queryRange: SkQueryRange,
-      options: AdvancedQueryAllOptions = {}
-    ): Promise<AdvancedCollectionResponse<TItem>> {
-      return await queryItems(
-        entityContext,
-        skRangeQueryCriteria(entityContext, pkSource, queryRange),
-        options,
-        true
-      )
+      options?: AdvancedQueryAllOptions
+    ) {
+      return queryByPkAndSk(pkSource, queryRange, true, options)
     },
-
     async queryOnePageByPkAndSk(
       pkSource: TPKSource,
       queryRange: SkQueryRange,
-      options: AdvancedQueryOnePageOptions = {}
+      options?: AdvancedQueryOnePageOptions
     ) {
-      return await queryItems(
-        entityContext,
-        skRangeQueryCriteria(entityContext, pkSource, queryRange),
-        options,
-        false
-      )
+      return queryByPkAndSk(pkSource, queryRange, false, options)
     },
-
-    async queryAllWithGsiByPk<TGSIPKSource>(
-      pkSource: TGSIPKSource,
-      options: AdvancedGsiQueryAllOptions = {}
-    ) {
-      const gsiDetails = findGsiDetails(entityContext, options)
-      return await queryItems(entityContext, gsiPkQueryCriteria(gsiDetails, pkSource), options, true)
+    async queryAllWithGsiByPk<TGSIPKSource>(pkSource: TGSIPKSource, options?: AdvancedGsiQueryAllOptions) {
+      return queryGsiByPk(pkSource, true, options)
     },
-
     async queryOnePageWithGsiByPk<TGSIPKSource>(
       pkSource: TGSIPKSource,
-      options: AdvancedGsiQueryOnePageOptions = {}
+      options?: AdvancedGsiQueryOnePageOptions
     ) {
-      const gsiDetails = findGsiDetails(entityContext, options)
-      return await queryItems(entityContext, gsiPkQueryCriteria(gsiDetails, pkSource), options, false)
+      return queryGsiByPk(pkSource, false, options)
     },
-
     async queryAllWithGsiByPkAndSk<TGSIPKSource>(
       pkSource: TGSIPKSource,
       queryRange: SkQueryRange,
-      options: AdvancedGsiQueryAllOptions = {}
+      options?: AdvancedGsiQueryAllOptions
     ) {
-      const gsiDetails = findGsiDetails(entityContext, options)
-      return await queryItems(
-        entityContext,
-        gsiSkRangeQueryCriteria(gsiDetails, pkSource, queryRange),
-        options,
-        true
-      )
+      return queryGsiByPkAndSk(pkSource, queryRange, true, options)
     },
-
     async queryOnePageWithGsiByPkAndSk<TGSIPKSource>(
       pkSource: TGSIPKSource,
       queryRange: SkQueryRange,
       options: AdvancedGsiQueryOnePageOptions = {}
     ) {
-      const gsiDetails = findGsiDetails(entityContext, options)
-      return await queryItems(
-        entityContext,
-        gsiSkRangeQueryCriteria(gsiDetails, pkSource, queryRange),
-        options,
-        false
-      )
+      return queryGsiByPkAndSk(pkSource, queryRange, false, options)
     },
-
     async scanAll(options: AdvancedScanAllOptions = {}) {
-      checkAllowScans()
-      return await scanItems(entityContext, options, true)
+      return scanItems(entityContext, options, true)
     },
-
     async scanOnePage(options: AdvancedScanOnePageOptions = {}) {
-      checkAllowScans()
-      return await scanItems(entityContext, options, false)
+      return scanItems(entityContext, options, false)
     },
-
     async scanAllWithGsi(options: AdvancedGsiScanAllOptions = {}) {
-      checkAllowScans()
-      return await scanItems(entityContext, options, true, findGsiDetails(entityContext, options))
+      return scanItems(entityContext, options, true, findGsiDetails(entityContext, options))
     },
-
     async scanOnePageWithGsi(options: AdvancedGsiScanOnePageOptions = {}) {
-      checkAllowScans()
-      return await scanItems(entityContext, options, false, findGsiDetails(entityContext, options))
+      return scanItems(entityContext, options, false, findGsiDetails(entityContext, options))
     },
-
-    async batchPut(items: TItem[], options?: BatchPutOptions): Promise<AdvancedBatchWriteResponse> {
-      return await batchPutItems(entityContext, items, options)
+    async batchPut(items: TItem[], options?: BatchPutOptions) {
+      return batchPutItems(entityContext, items, options)
     },
-
     async batchDelete<TKeySource extends TPKSource & TSKSource>(
       keySources: TKeySource[],
       options?: BatchDeleteOptions
-    ): Promise<AdvancedBatchWriteResponse> {
-      return await deleteItems(entityContext, keySources, options)
+    ) {
+      return deleteItems(entityContext, keySources, options)
     },
-
     async batchGet<TKeySource extends TPKSource & TSKSource>(
       keySources: TKeySource[],
       options?: BatchGetOptions
-    ): Promise<AdvancedBatchGetResponse<TItem, TPKSource, TSKSource>> {
-      return await getItems(entityContext, keySources, options)
+    ) {
+      return getItems(entityContext, keySources, options)
     }
   }
 }

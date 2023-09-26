@@ -1,5 +1,4 @@
-import { createEntityContext, EntityContext } from '../entityContext'
-import { Entity } from '../../entities'
+import { EntityContext } from '../entityContext'
 import {
   DeleteOptions,
   GetOptions,
@@ -18,15 +17,11 @@ import {
   UpdateOptions
 } from '../../singleEntityOperations'
 import { tableBackedSingleEntityAdvancedOperations } from './tableBackedSingleEntityAdvancedOperations'
-import { EntityContextResolver } from '../tableBackedConfigurationResolver'
 
 export function tableBackedSingleEntityOperations<TItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
-  tableConfigResolver: EntityContextResolver,
-  entity: Entity<TItem, TPKSource, TSKSource>
+  entityContext: EntityContext<TItem, TPKSource, TSKSource>
 ): SingleEntityOperations<TItem, TPKSource, TSKSource> {
-  const table = tableConfigResolver(entity.type),
-    entityContext: EntityContext<TItem, TPKSource, TSKSource> = createEntityContext(table, entity),
-    advancedOperations = tableBackedSingleEntityAdvancedOperations(table, entity, entityContext)
+  const advancedOperations = tableBackedSingleEntityAdvancedOperations(entityContext)
 
   return {
     advancedOperations,
@@ -38,7 +33,7 @@ export function tableBackedSingleEntityOperations<TItem extends TPKSource & TSKS
 
     async update<TKeySource extends TPKSource & TSKSource>(
       keySource: TKeySource,
-      options: UpdateOptions
+      options?: UpdateOptions
     ): Promise<void> {
       await advancedOperations.update(keySource, options)
     },

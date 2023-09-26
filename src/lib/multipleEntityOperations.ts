@@ -7,24 +7,35 @@ import {
 } from './singleEntityAdvancedOperations'
 import { SkQueryRange } from './singleEntityOperations'
 
+// TODOEventually - all pages versions
 export interface MultipleEntityOperations {
-  query<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
+  queryOnePageByPk<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
     keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
+    pkSource: TPKSource,
     options?: AdvancedQueryOnePageOptions
-  ): QueryMultipleBy<TPKSource>
+  ): Promise<MultipleEntityCollectionResponse>
 
-  queryWithGsi<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource, TGSIPKSource>(
+  queryOnePageByPkAndSk<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
     keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
+    pkSource: TPKSource,
+    queryRange: SkQueryRange,
+    options?: AdvancedQueryOnePageOptions
+  ): Promise<MultipleEntityCollectionResponse>
+
+  queryOnePageWithGsiByPk<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource, TGSIPKSource>(
+    keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
+    pkSource: TGSIPKSource,
     options?: AdvancedGsiQueryOnePageOptions
-  ): QueryMultipleBy<TGSIPKSource>
+  ): Promise<MultipleEntityCollectionResponse>
+
+  queryOnePageWithGsiByPkAndSk<TKeyItem extends TPKSource & TSKSource, TPKSource, TSKSource, TGSIPKSource>(
+    keyEntity: Entity<TKeyItem, TPKSource, TSKSource>,
+    pkSource: TGSIPKSource,
+    queryRange: SkQueryRange,
+    options?: AdvancedGsiQueryOnePageOptions
+  ): Promise<MultipleEntityCollectionResponse>
 
   scanOnePage(options?: AdvancedScanOnePageOptions): Promise<MultipleEntityCollectionResponse>
-}
-
-export interface QueryMultipleBy<TQueryPK> {
-  byPk(source: TQueryPK): Promise<MultipleEntityCollectionResponse>
-
-  byPkAndSk(source: TQueryPK, queryRange: SkQueryRange): Promise<MultipleEntityCollectionResponse>
 }
 
 export interface MultipleEntityCollectionResponse {

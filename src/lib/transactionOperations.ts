@@ -6,6 +6,7 @@ import {
 } from './singleEntityAdvancedOperations'
 import { ConsumedCapacity } from '@aws-sdk/client-dynamodb'
 import { DeleteOptions, PutOptions, UpdateOptions } from './singleEntityOperations'
+import { Mandatory } from './util'
 
 // TOMAYBE - consider non builder versions
 export interface TransactionOperations {
@@ -33,7 +34,7 @@ export interface WriteTransactionBuilder<TItem extends TPKSource & TSKSource, TP
 
   conditionCheck<TKeySource extends TPKSource & TSKSource>(
     keySource: TKeySource,
-    options?: TransactionConditionCheckOptions
+    options: TransactionConditionCheckOptions
   ): WriteTransactionBuilder<TItem, TPKSource, TSKSource>
 
   nextEntity<TNextItem extends TNextPKSource & TNextSKSource, TNextPKSource, TNextSKSource>(
@@ -58,17 +59,15 @@ export interface GetTransactionBuilder<TItem extends TPKSource & TSKSource, TPKS
 export type TransactionPutOptions = PutOptions & ReturnValuesOnConditionCheckFailureOption
 export type TransactionUpdateOptions = UpdateOptions & ReturnValuesOnConditionCheckFailureOption
 export type TransactionDeleteOptions = DeleteOptions & ReturnValuesOnConditionCheckFailureOption
-
-export interface TransactionConditionCheckOptions {
-  conditionExpression: string
-  expressionAttributeValues?: DynamoDBValues
-  expressionAttributeNames?: Record<string, string>
-}
+export type TransactionConditionCheckOptions = Mandatory<TransactionDeleteOptions, 'conditionExpression'>
 
 export interface WriteTransactionOptions
   extends ReturnConsumedCapacityOption,
     ReturnItemCollectionMetricsOption {
-  clientRequestToken: string
+  /**
+   * Optional client request token. See https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_TransactWriteItems.html#API_TransactWriteItems_RequestParameters
+   */
+  clientRequestToken?: string
 }
 
 export type GetTransactionOptions = ReturnConsumedCapacityOption

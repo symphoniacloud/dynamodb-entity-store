@@ -8,7 +8,7 @@ import {
 } from '@aws-sdk/lib-dynamodb'
 import { isDebugLoggingEnabled } from '../../util/logger'
 import { Mandatory } from '../../util/types'
-import { ConditionCheckParams, createTransactionConditionCheckItem } from './conditionCheckOperation'
+import { ConditionCheckParams, createTransactionConditionCheck } from './conditionCheckOperation'
 import { returnConsumedCapacityParam, returnItemCollectionMetricsParam } from '../common/operationsCommon'
 import {
   TransactionConditionCheckOptions,
@@ -23,7 +23,7 @@ import { putParams } from '../common/putCommon'
 import { deleteParams } from '../common/deleteCommon'
 import { createUpdateParams } from '../common/updateCommon'
 
-type WriteTransactionRequest =
+type WriteTransactionAction =
   | {
       Put: PutCommandInput
     }
@@ -40,28 +40,28 @@ type WriteTransactionRequest =
 export class TableBackedWriteTransactionBuilder<TItem extends TPKSource & TSKSource, TPKSource, TSKSource>
   implements WriteTransactionBuilder<TItem, TPKSource, TSKSource>
 {
-  private readonly requests: WriteTransactionRequest[]
+  private readonly actions: WriteTransactionAction[]
   private readonly tableConfigResolver: (entityType: string) => EntityContextParams
   private readonly context: EntityContext<TItem, TPKSource, TSKSource>
 
   constructor(
     tableConfigResolver: (entityType: string) => EntityContextParams,
     currentEntity: Entity<TItem, TPKSource, TSKSource>,
-    requests?: WriteTransactionRequest[]
+    actions?: WriteTransactionAction[]
   ) {
     this.tableConfigResolver = tableConfigResolver
-    this.requests = requests ?? []
+    this.actions = actions ?? []
     this.context = createEntityContext(tableConfigResolver(currentEntity.type), currentEntity)
   }
 
   nextEntity<TNextItem extends TNextPKSource & TNextSKSource, TNextPKSource, TNextSKSource>(
     nextEntity: Entity<TNextItem, TNextPKSource, TNextSKSource>
   ): WriteTransactionBuilder<TNextItem, TNextPKSource, TNextSKSource> {
-    return new TableBackedWriteTransactionBuilder(this.tableConfigResolver, nextEntity, this.requests)
+    return new TableBackedWriteTransactionBuilder(this.tableConfigResolver, nextEntity, this.actions)
   }
 
   put(item: TItem, options?: TransactionPutOptions): WriteTransactionBuilder<TItem, TPKSource, TSKSource> {
-    this.requests.push({ Put: putParams(this.context, item, options) })
+    this.actions.push({ Put: putParams(this.context, item, options) })
     return this
   }
 
@@ -69,7 +69,7 @@ export class TableBackedWriteTransactionBuilder<TItem extends TPKSource & TSKSou
     keySource: TKeySource,
     options: TransactionUpdateOptions
   ): WriteTransactionBuilder<TItem, TPKSource, TSKSource> {
-    this.requests.push({ Update: createUpdateParams(this.context, keySource, options) })
+    this.actions.push({ Update: createUpdateParams(this.context, keySource, options) })
     return this
   }
 
@@ -77,7 +77,7 @@ export class TableBackedWriteTransactionBuilder<TItem extends TPKSource & TSKSou
     keySource: TKeySource,
     options?: TransactionDeleteOptions
   ): WriteTransactionBuilder<TItem, TPKSource, TSKSource> {
-    this.requests.push({ Delete: deleteParams(this.context, keySource, options) })
+    this.actions.push({ Delete: deleteParams(this.context, keySource, options) })
     return this
   }
 
@@ -85,15 +85,15 @@ export class TableBackedWriteTransactionBuilder<TItem extends TPKSource & TSKSou
     keySource: TKeySource,
     options: TransactionConditionCheckOptions
   ): WriteTransactionBuilder<TItem, TPKSource, TSKSource> {
-    this.requests.push({
-      ConditionCheck: createTransactionConditionCheckItem(this.context, keySource, options)
+    this.actions.push({
+      ConditionCheck: createTransactionConditionCheck(this.context, keySource, options)
     })
     return this
   }
 
   async execute(options?: WriteTransactionOptions): Promise<WriteTransactionResponse> {
     const transactionParams: TransactWriteCommandInput = {
-      TransactItems: this.requests,
+      TransactItems: this.actions,
       ...returnConsumedCapacityParam(options),
       ...returnItemCollectionMetricsParam(options),
       ...(options?.clientRequestToken ? { ClientRequestToken: options.clientRequestToken } : {})

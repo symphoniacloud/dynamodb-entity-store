@@ -773,10 +773,10 @@ describe('standard single table', () => {
     test('put', async () => {
       await store.transactions
         .buildWriteTransaction(SHEEP_ENTITY)
-        .put(shaunTheSheep)
+        .put(shaunTheSheep, { conditionExpression: 'attribute_not_exists(PK)' })
         .put(bobTheSheep)
         .nextEntity(CHICKEN_ENTITY)
-        .put(ginger)
+        .put(ginger, { conditionExpression: 'attribute_not_exists(PK)' })
         .execute()
 
       expect(await scanWithDocClient(testTableName)).toEqual([

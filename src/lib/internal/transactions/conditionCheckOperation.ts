@@ -15,7 +15,7 @@ export interface ConditionCheckParams {
   ExpressionAttributeValues?: DynamoDBValues
 }
 
-export function createTransactionConditionCheckItem<
+export function createTransactionConditionCheck<
   TItem extends TPKSource & TSKSource,
   TKeySource extends TPKSource & TSKSource,
   TPKSource,
@@ -26,7 +26,7 @@ export function createTransactionConditionCheckItem<
   options: TransactionConditionCheckOptions
 ): ConditionCheckParams {
   return {
-    ConditionExpression: options?.conditionExpression,
+    ConditionExpression: options.conditionExpression,
     ...tableNameParam(context),
     ...keyParamFromSource(context, keySource),
     ...expressionAttributeParamsFromOptions(options)

@@ -15,7 +15,7 @@ import {
   GetTransactionResponse
 } from '../../transactionOperations'
 
-interface GetTransactionItem {
+interface GetTransactionAction {
   Get: {
     Key: DynamoDBValues
     TableName: string
@@ -26,9 +26,9 @@ interface GetTransactionItem {
 export class TableBackedGetTransactionBuilder<TItem extends TPKSource & TSKSource, TPKSource, TSKSource>
   implements GetTransactionBuilder<TItem, TPKSource, TSKSource>
 {
-  private readonly requests: GetTransactionItem[]
+  private readonly actions: GetTransactionAction[]
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private readonly contextsPerRequest: EntityContext<any, any, any>[]
+  private readonly contextsPerAction: EntityContext<any, any, any>[]
   private readonly tableConfigResolver: (entityType: string) => EntityContextParams
   private readonly context: EntityContext<TItem, TPKSource, TSKSource>
 
@@ -37,28 +37,28 @@ export class TableBackedGetTransactionBuilder<TItem extends TPKSource & TSKSourc
     currentEntity: Entity<TItem, TPKSource, TSKSource>,
     {
       contexts,
-      requests
-    }: { contexts: EntityContext<unknown, unknown, unknown>[]; requests: GetTransactionItem[] } = {
+      actions
+    }: { contexts: EntityContext<unknown, unknown, unknown>[]; actions: GetTransactionAction[] } = {
       contexts: [],
-      requests: []
+      actions: []
     }
   ) {
     this.tableConfigResolver = tableConfigResolver
-    this.requests = requests
-    this.contextsPerRequest = contexts
+    this.actions = actions
+    this.contextsPerAction = contexts
     this.context = createEntityContext(tableConfigResolver(currentEntity.type), currentEntity)
   }
 
   get<TKeySource extends TPKSource & TSKSource>(
     keySource: TKeySource
   ): GetTransactionBuilder<TItem, TPKSource, TSKSource> {
-    this.requests.push({
+    this.actions.push({
       Get: {
         ...tableNameParam(this.context),
         ...keyParamFromSource(this.context, keySource)
       }
     })
-    this.contextsPerRequest.push(this.context)
+    this.contextsPerAction.push(this.context)
     return this
   }
 
@@ -66,14 +66,14 @@ export class TableBackedGetTransactionBuilder<TItem extends TPKSource & TSKSourc
     nextEntity: Entity<TNextItem, TNextPKSource, TNextSKSource>
   ): GetTransactionBuilder<TNextItem, TNextPKSource, TNextSKSource> {
     return new TableBackedGetTransactionBuilder(this.tableConfigResolver, nextEntity, {
-      contexts: this.contextsPerRequest,
-      requests: this.requests
+      contexts: this.contextsPerAction,
+      actions: this.actions
     })
   }
 
   async execute(options?: GetTransactionOptions): Promise<GetTransactionResponse> {
     const transactionParams: TransactGetCommandInput = {
-      TransactItems: this.requests,
+      TransactItems: this.actions,
       ...returnConsumedCapacityParam(options)
     }
 
@@ -85,7 +85,7 @@ export class TableBackedGetTransactionBuilder<TItem extends TPKSource & TSKSourc
       this.context.logger.debug(`Get transaction result`, { result })
     }
 
-    return parseResponse(this.contextsPerRequest, result)
+    return parseResponse(this.contextsPerAction, result)
   }
 }
 

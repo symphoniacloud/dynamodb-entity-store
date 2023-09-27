@@ -6,9 +6,9 @@ They're more limited than what some people may be used to from transactions in r
 * When I want to put two related items, but I only want to put both items if both satisfy a condition check
 * When I want to get two related items in a fast moving system, and know for sure that both items represented the same point in time
 
-The AWS docs have a [section devoted to DynamoDB transactions](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/transactions.html) so I recommend you start with them if you're new to this area.
+The AWS docs have a [section devoted to DynamoDB transactions](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/transactions.html) so I recommend you start with that if you're new to this area.
 
-DynamoDB supports two different types of transactional operation - `TransactWriteItems` and `TransactGetItems`.
+DynamoDB has two different types of transactional operation - `TransactWriteItems` and `TransactGetItems`.
 _DynamoDB Entity Store_ supports both types.
 
 Transactions often involve multiple types of entity, and one of the powerful aspects of DynamoDB transactional operations is that they support multiple tables in one operation. 
@@ -50,8 +50,8 @@ The builder object works as follows.
 
 ### First entity and `nextEntity()`
 
-Like the single entity operations, `.buildGetTransaction()` performs actions on an entity-by-entity basis.
-In other words all the get-actions you specify are in the context of one specific entity.
+Like the single entity operations, `.buildGetTransaction()` interprets actions on an entity-by-entity basis.
+In other words each of the get-actions you specify are in the context of an entity, but you can have different entities for different actions.
 To kick things off you specify the entity for your first get action.
 
 `buildGetTransaction()` takes one required parameter - an `Entity`.
@@ -68,9 +68,9 @@ If your configuration works for regular single-entity `get` operations, it will 
 
 ### `.get()`
 
-Once you've specified an entity - either the first entity when you call `.buildGetTransaction()`, or subsequent entities by calling `nextEntity()` - you can specify "get-actions" which are in the context of **the most recently specified entity**.
+Once you've specified an entity - either the first entity when you call `.buildGetTransaction()`, or subsequent entities by calling `nextEntity()` - you specify "get-actions" in the context of **the most recently specified entity**.
 
-Each get-action is specified by one call to [`.get()`](https://symphoniacloud.github.io/dynamodb-entity-store/interfaces/GetTransactionBuilder.html#get), which takes one argument - a `keySource` which is used along with the entity to generate the key for desired object.
+Each get-action is specified by one call to [`.get()`](https://symphoniacloud.github.io/dynamodb-entity-store/interfaces/GetTransactionBuilder.html#get), which takes one argument - a `keySource` used, along with the entity, to generate the key for desired object.
 This uses precisely the same logic as `.getOrThrow()` or `.getOrUndefined()` as described in [chapter 3](GettingStartedWithOperations.md).
 
 Because the library uses a builder pattern for transactions make sure to use the result of each `.get()` for whatever you do next.
@@ -102,7 +102,7 @@ This works in the same way as was described in [chapter 6](AdvancedSingleEntityO
 
 If `.execute()` is successful it returns an object of type [`GetTransactionResponse`](https://symphoniacloud.github.io/dynamodb-entity-store/interfaces/GetTransactionResponse.html).
 This has one required field - `itemsByEntityType`.
-As shown in the example above, `itemsByEntityType` is a map from entity type to the parsed result of each get-action.
+As shown in the example above, `itemsByEntityType` is a map from entity type to array of the parsed results of each get-action.
 Note that the entity type comes solely from the entity object that was in scope when each action was specified - the underlying table items **do not** need an entity-type attribute.
 
 Each array of parsed items (per entity type) is in the same order as was originally created in the `buildGetTransaction()` chain.

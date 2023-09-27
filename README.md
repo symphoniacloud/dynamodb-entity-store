@@ -510,4 +510,12 @@ Name: Sunflower Farm, Address: Green Shoots Road, Honesdale, PA
 
 ## Next steps
 
-If you want to read more on how to use DynamoDB Entity Store, then checkout [The Manual](documentation/README.md).
+If you want to read more on how to use DynamoDB Entity Store, then checkout [the manual](documentation/README.md).
+
+[The manual](documentation/README.md) also covers topics not included in this README, including:
+
+* [Multi-table configuration](documentation/Setup.md)
+* [Advanced operations with diagnostic metadata](documentation/AdvancedSingleEntityOperations.md)
+* [Batch operations](documentation/AdvancedSingleEntityOperations.md)
+* [Querying and scanning multiple entity types in single operations](documentation/QueryingAndScanningMultipleEntities.md)
+* [Transactional operations](documentation/TransactionalOperations.md)

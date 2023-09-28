@@ -32,7 +32,7 @@ Each of these collections is an _Entity_, which also corresponds to a _Domain Ty
 If you're deciding on what DynamoDB library to choose you may want to also consider the following alternatives:
 
 * [DynamoDB Toolbox](https://github.com/jeremydaly/dynamodb-toolbox) - Jeremy's library was the biggest inspiration to
-  my own work. When I was looking in 2022 DynamoDB Toolbox didn't support AWS SDK V3, but it does now.
+  my own work. When I was first working on these ideas in 2022 DynamoDB Toolbox didn't support AWS SDK V3, but it does now.
 * [One Table](https://github.com/sensedeep/dynamodb-onetable)
 
 The rest of this README provides an overview of how to use the library. For more details see:
@@ -41,7 +41,7 @@ The rest of this README provides an overview of how to use the library. For more
 * [Integration tests](https://github.com/symphoniacloud/dynamodb-entity-store/tree/main/test/integration)
 * [Source code](/src/lib)
 
-If you have questions or feedback, please use the [project issues](https://github.com/symphoniacloud/dynamodb-entity-store/issues), or feel free to email me: [mike@symphonia.io](mailto:mike@symphonia.io)
+If you have questions or feedback, please use the [project issues](https://github.com/symphoniacloud/dynamodb-entity-store/issues), or feel free to email me: [mike@symphonia.io](mailto:mike@symphonia.io) .
 
 ## Example 1: Single Table Design, without indexes
 

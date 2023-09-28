@@ -8,14 +8,32 @@ import { SkQueryRange } from '../singleEntityOperations'
 // These ranges can be used both for table and GSI queries since the #sk expression attribute name
 // is replaced with either the table or GSI SK attribute name depending on how the query is executed
 
+export function rangeWhereSkEquals(sk: string): SkQueryRange {
+  return queryRange('#sk = :sk', {
+    ':sk': sk
+  })
+}
+
 export function rangeWhereSkGreaterThan(sk: string): SkQueryRange {
   return queryRange('#sk > :sk', {
     ':sk': sk
   })
 }
 
+export function rangeWhereSkGreaterThanOrEquals(sk: string): SkQueryRange {
+  return queryRange('#sk >= :sk', {
+    ':sk': sk
+  })
+}
+
 export function rangeWhereSkLessThan(sk: string): SkQueryRange {
   return queryRange('#sk < :sk', {
+    ':sk': sk
+  })
+}
+
+export function rangeWhereSkLessThanOrEquals(sk: string): SkQueryRange {
+  return queryRange('#sk <= :sk', {
     ':sk': sk
   })
 }

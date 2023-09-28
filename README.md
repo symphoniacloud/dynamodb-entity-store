@@ -4,39 +4,31 @@ _A lightly opinionated DynamoDB library for TypeScript & JavaScript applications
 
 [DynamoDB](https://aws.amazon.com/dynamodb/) is a cloud-hosted NoSQL database from AWS (Amazon Web Services).
 AWS [provides an SDK](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-lib-dynamodb/) for using
-DynamoDB from TypeScript and JavaScript applications but
-it doesn't provide a particularly rich abstraction on top of
+DynamoDB from TypeScript and JavaScript applications but it doesn't provide a particularly rich abstraction on top of
 the [basic AWS HTTPS API](https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Operations_Amazon_DynamoDB.html).
 
-[_DynamoDB Entity Store_](https://github.com/symphoniacloud/dynamodb-entity-store) is a library which uses the JavaScript V3 SDK from AWS and provides a _slightly_ higher level
+[_DynamoDB Entity Store_](https://github.com/symphoniacloud/dynamodb-entity-store) is a library which uses the JavaScript V3 SDK from AWS and provides a higher level
 interface to work with.
-It definitely **is not** an "ORM library", and nor does it try to hide DynamoDB's fundamental behavior.
+It is definitely **not** an "ORM library", and nor does it try to hide DynamoDB's fundamental behavior.
 Because of this you'll still need to understand how to use DynamoDB from a modeling point of view - I strongly recommend
 Alex DeBrie's [book on the subject](https://www.dynamodbbook.com/).
 
-**WARNING!! THIS IS AN "ALPHA" VERSION!! I'm releasing an early version of this library to get feedback, but the API may well change in breaking ways over the
-next weeks / months WITHOUT A CORRESPONDING MAJOR RELEASE. I hope to create a stable release by the end of October.**
-
-**And since this is an early version I would STRONGLY APPRECIATE FEEDBACK! 😀 Please drop me an email at
-mike@symphonia.io, or use the issues in this project**.
-
 Entity Store provides the following:
 
-* Assistance for write operations, handling repetitive aspects like configuration of table names, key attribute names,
-  and setting metadata attributes like "Last Updated" time, and "TTL" (Time To Live)
-* A typed interface, including parsing, for read operations (get, scans, and queries), which also provides entity-scope filtering for collection operations.
-* Capability to automatically load all available results for collection operations (queries and scans), while also providing single-page versions with almost identical interfaces. 
+* More simple write operations, handling repetitive aspects like configuration of table names, attributes for keys,
+  and setting metadata attributes like "Last Updated" time, and "TTL" (Time To Live).
+* A cleaner interface for read operations (get, scans, and queries), including contextual result types, parsing, and automatic "entity type" filtering.
+* Automatically load all available items for query and scan operations (auto-pagination), or choose page-by-page results. 
 * Simple setup when using ["Single Table Design"](https://www.alexdebrie.com/posts/dynamodb-single-table/#what-is-single-table-design) ...
-* ... but also allows non-standard and/or multi-table designs
-* A pretty-much-complete coverage of the entire DynamoDB API / SDK, including operations for batch and transaction
-  operations, and options for diagnostic metadata (e.g. "consumed capacity")
+* ... but also allows non-standard and/or multi-table designs.
+* A pretty-much-complete coverage of the entire DynamoDB API / SDK, including batch and transaction
+  operations, and options for diagnostic metadata (e.g. "consumed capacity").
 * ... all without any runtime library dependencies, apart from official AWS DynamoDB libraries (AWS SDK V3).  
 
 This library is named _Entity Store_ since it's based on the idea that your DynamoDB tables store one or many collections of related records, and each
 collection has the same persisted structure.
 Each of these collections is an _Entity_, which also corresponds to a _Domain Type_ within your application's code.
 
-I started a first version of this library in 2022, and have used ideas here in a few projects since.
 If you're deciding on what DynamoDB library to choose you may want to also consider the following alternatives:
 
 * [DynamoDB Toolbox](https://github.com/jeremydaly/dynamodb-toolbox) - Jeremy's library was the biggest inspiration to
@@ -44,10 +36,12 @@ If you're deciding on what DynamoDB library to choose you may want to also consi
 * [One Table](https://github.com/sensedeep/dynamodb-onetable)
 
 The rest of this README provides an overview of how to use the library. For more details see:
-* [The manual](./documentation/README.md)
-* [integration tests](https://github.com/symphoniacloud/dynamodb-entity-store/tree/main/test/integration)
-* [source code](/src/lib)
+* [The (comprehensive!) manual](./documentation/README.md)
 * [Type Docs](https://symphoniacloud.github.io/dynamodb-entity-store/)
+* [Integration tests](https://github.com/symphoniacloud/dynamodb-entity-store/tree/main/test/integration)
+* [Source code](/src/lib)
+
+If you have questions or feedback, please use the [project issues](https://github.com/symphoniacloud/dynamodb-entity-store/issues), or feel free to email me: [mike@symphonia.io](mailto:mike@symphonia.io)
 
 ## Example 1: Single Table Design, without indexes
 
@@ -66,8 +60,6 @@ And let's say we want to store these Sheep in DynamoDB like this:
 | `PK`                  | `SK`          | `breed`   | `name`   | `ageInYears` |
 |-----------------------|---------------|-----------|----------|--------------|
 | `SHEEP#BREED#merino`  | `NAME#shaun`  | `merino`  | `shaun`  | 3            |
-| `SHEEP#BREED#merino`  | `NAME#bob`    | `merino`  | `bob`    | 4            |
-| `SHEEP#BREED#suffolk` | `NAME#alison` | `suffolk` | `alison` | 2            |
 
 We are using a ["Single Table Design"](https://www.alexdebrie.com/posts/dynamodb-single-table/#what-is-single-table-design) configuration here as follows:
 
@@ -119,7 +111,7 @@ We only need to create this object **once per type** of entity in our applicatio
 * **Optional:** express how to convert an object to a DynamoDB record ("formatting")
 * **Optional:** Create Global Secondary Index (GSI) key values
 
-> A complete discussion of _Entities_ is available in [the manual, here](./documentation/Entities.md).
+> A complete discussion of _Entities_ is available in [the manual](./documentation/Entities.md).
 
 We can now call `.for(...)` on our entity store. This returns an object that implements [`SingleEntityOperations`](https://symphoniacloud.github.io/dynamodb-entity-store/interfaces/SingleEntityOperations.html) - **this is the object that you'll likely work with most when using this library**.
 
@@ -165,7 +157,8 @@ generator functions as we did for `put` to calculate these, but based on just th
 a sheep.
 
 Note that unlike the AWS SDK's `get` operation here we get a **well-typed result**. This is possible because of the
-[**type-predicate function**](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates) that we included when creating `SHEEP_ENTITY` . Note that in this basic example we assume that the underlying DynamoDB record
+[**type-predicate function**](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates) that we included when creating `SHEEP_ENTITY` .
+Note that in this basic example we assume that the underlying DynamoDB record
 attributes include all the properties on a sheep object, but it's possible to customize parsing and/or derive values
 from the PK and SK fields if you want to optimize your DynamoDB table - I'll show that a little later.
 
@@ -192,7 +185,8 @@ when we call `queryAllByPk()`.
 Like `getOrThrow`, the result of the query operation is a well-typed list of items - again by using the parser / type
 predicate function on `SHEEP_ENTITY` .
 
-A lot of the power of using DynamoDB comes from using the Sort Key as part of a query. Now let's find all sheep of a particular breed, but also where `name` is in a particular alphabetic range:
+A lot of the power of using DynamoDB comes from using the Sort Key as part of a query.
+Now let's find all sheep of a particular breed, but also where `name` is in a particular alphabetic range:
 
 ```typescript
 function rangeWhereNameBetween(nameRangeStart: string, nameRangeEnd: string) {
@@ -226,7 +220,6 @@ When you're working on setting up your entities and queries you'll often want to
 doing. You can do this by turning on logging:
 
 ```typescript
-const config = createStandardSingleTableConfig('AnimalsTable')
 const entityStore = createStore(createStandardSingleTableConfig('AnimalsTable'), { logger: consoleLogger })
 ```
 
@@ -309,7 +302,7 @@ export const CHICKEN_ENTITY: Entity<
     * `gsis.gsi.sk()` generates the GSI SK
     * Remember - a GSI, unlike a table, can include multiple records for the same PK + SK combination
 
-Write operations are no different than before - Entity Store handles generating the GSI PK and SK fields given the
+Write operations are no different to code than before, and Entity Store handles generating the GSI PK and SK fields given the
 generator functions. So if we have the following...
 
 ```typescript
@@ -332,7 +325,7 @@ We can query this entity on the table PK and SK as normal, but let's skip to que
 First we can query just on the GSI's PK:
 
 ```typescript
-console.log('Chickens in Dakota:')
+console.log('Chickens in dakota:')
 for (const chicken of await chickenStore.queryAllWithGsiByPk({ coop: 'dakota' })) {
   console.log(chicken.name)
 }
@@ -349,7 +342,7 @@ yolko
 And we can also narrow down using the GSI SK values too:
 
 ```typescript
-console.log('\nOrpingtons in Dakota:')
+console.log('Orpingtons in dakota:')
 for (const chicken of await chickenStore.queryAllWithGsiByPkAndSk(
   { coop: 'dakota' },
   rangeWhereSkBeginsWith('CHICKEN#BREED#orpington')
@@ -372,7 +365,7 @@ involves using very generic PK and SK fields named `PK` and `SK`, using those fi
 putting all actual data on non-key attributes.
 
 Entity Store supports other modes of usage though. Let's say we also want to store Farms, in a separate table named
-FarmTable, which looks as follows:
+`FarmTable`, which looks as follows:
 
 | `Name`           | `FarmAddress`                      |
 |------------------|------------------------------------|
@@ -380,8 +373,7 @@ FarmTable, which looks as follows:
 | `Worthy Farm`    | `Glastonbury, England`             |
 
 For this table the Partition Key is `Name` and there is no Sort Key. Also note in this case we've chosen **not** to
-store the entity type
-or last-updated values - perhaps this is an old table we're importing into our application.
+store the entity type or last-updated values - perhaps this is an old table we're importing into our application.
 
 Our domain code will look like this - **note that the fields on the domain object start with lower case, even though
 those on the table start with upper case** . Again, this is just an example to show what's possible - mixing up
@@ -510,9 +502,7 @@ Name: Sunflower Farm, Address: Green Shoots Road, Honesdale, PA
 
 ## Next steps
 
-If you want to read more on how to use DynamoDB Entity Store, then checkout [the manual](documentation/README.md).
-
-[The manual](documentation/README.md) also covers topics not included in this README, including:
+If you want to read more on how to use DynamoDB Entity Store, then checkout [the manual](documentation/README.md), which also covers topics not included in this README:
 
 * [Multi-table configuration](documentation/Setup.md)
 * [Advanced operations with diagnostic metadata](documentation/AdvancedSingleEntityOperations.md)

@@ -8,7 +8,7 @@ By now you're probably pretty used to getting all of the operations for an Entit
 const sheepOperations = entityStore.for(SHEEP_ENTITY)
 ```
 
-The _advanced_ operations are simply the `advancedOperations` field of that:
+The _advanced_ operations are the `advancedOperations` field of that object:
 
 ```typescript
 const advancedSheepOperations: SingleEntityAdvancedOperations<Sheep, Pick<Sheep, 'breed'>, Pick<Sheep, 'name'>> =
@@ -67,7 +67,7 @@ This contains the unparsed return values from DynamoDB.
 ### Unparsed results for collection requests
 
 In [chapter 4](SingleEntityTableQueriesAndTableScans.md) you learned about DynamoDB Entity Store's _entity filtering_ behavior for queries and scans.
-For the _standard_ operations Entity Store simply discards any results for entities other than those in scope.
+For the _standard_ operations Entity Store discards any results for entities other than those in scope.
 
 For the _advanced_ versions of the query and scan operations Entity Store instead puts any results for other entities into a `unparsedItems` field of the operation result.
 If there aren't any unparsed items this field isn't defined, but if there are it's an array of raw item results from DynamoDB.

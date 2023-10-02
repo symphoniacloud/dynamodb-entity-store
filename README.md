@@ -3,14 +3,11 @@
 _A lightly opinionated DynamoDB library for TypeScript & JavaScript applications_
 
 [DynamoDB](https://aws.amazon.com/dynamodb/) is a cloud-hosted NoSQL database from AWS (Amazon Web Services).
-AWS [provides an SDK](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-lib-dynamodb/) for using
-DynamoDB from TypeScript and JavaScript applications but it doesn't provide a particularly rich abstraction on top of
-the [basic AWS HTTPS API](https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Operations_Amazon_DynamoDB.html).
+AWS [provides a fairly basic SDK](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-lib-dynamodb/) for using DynamoDB from TypeScript and JavaScript applications.
 
-[_DynamoDB Entity Store_](https://github.com/symphoniacloud/dynamodb-entity-store) is a library which uses the JavaScript V3 SDK from AWS and provides a higher level
-interface to work with.
+[_DynamoDB Entity Store_](https://github.com/symphoniacloud/dynamodb-entity-store) is a TypeScript / JavaScript library that provides a slightly higher abstraction.
 It is definitely **not** an "ORM library", and nor does it try to hide DynamoDB's fundamental behavior.
-Because of this you'll still need to understand how to use DynamoDB from a modeling point of view - I strongly recommend
+Therefore it requires that you still need a good understanding of how to work with DynamoDB in general - I strongly recommend
 Alex DeBrie's [book on the subject](https://www.dynamodbbook.com/).
 
 Entity Store provides the following:
@@ -23,7 +20,7 @@ Entity Store provides the following:
 * ... but also allows non-standard and/or multi-table designs.
 * A pretty-much-complete coverage of the entire DynamoDB API / SDK, including batch and transaction
   operations, and options for diagnostic metadata (e.g. "consumed capacity").
-* ... all without any runtime library dependencies, apart from official AWS DynamoDB libraries (AWS SDK V3).  
+* ... all without any runtime library dependencies, apart from the official AWS DynamoDB libraries (AWS SDK V3).  
 
 This library is named _Entity Store_ since it's based on the idea that your DynamoDB tables store one or many collections of related records, and each
 collection has the same persisted structure.
@@ -103,7 +100,8 @@ export const SHEEP_ENTITY = createEntity(
   ({ name }: Pick<Sheep, 'name'>) => `NAME#${name}`
 )
 ```
-We only need to create this object **once per type** of entity in our application, and so you might want to define each of them as a global constant. Each entity object is responsible for:
+We only need to create this object **once per type** of entity in our application, and usually can be stateless, so you might want to define each of them as a global constant.
+Each entity object is responsible for:
 
 * Defining the name of the entity type
 * Expressing how to convert a DynamoDB record to a well-typed object ("parsing")
@@ -158,7 +156,7 @@ a sheep.
 
 Note that unlike the AWS SDK's `get` operation here we get a **well-typed result**. This is possible because of the
 [**type-predicate function**](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates) that we included when creating `SHEEP_ENTITY` .
-Note that in this basic example we assume that the underlying DynamoDB record
+In this basic example we assume that the underlying DynamoDB record
 attributes include all the properties on a sheep object, but it's possible to customize parsing and/or derive values
 from the PK and SK fields if you want to optimize your DynamoDB table - I'll show that a little later.
 
@@ -178,11 +176,11 @@ bob is 4 years old
 shaun is 3 years old
 ```
 
-Similar to `get` we need to provide the value for the `PK` field, and again under the covers Entity Store is
+Similar to `getOrThrow` we need to provide the value for the `PK` field, and again under the covers Entity Store is
 calling `pk()` on `SHEEP_ENTITY` . Since this query only filters on the `PK` attribute we only need to provide `breed`
 when we call `queryAllByPk()`.
 
-Like `getOrThrow`, the result of the query operation is a well-typed list of items - again by using the parser / type
+The result of the query operation is a well-typed list of items - again by using the parser / type
 predicate function on `SHEEP_ENTITY` .
 
 A lot of the power of using DynamoDB comes from using the Sort Key as part of a query.
@@ -231,9 +229,9 @@ DynamoDB Entity Store DEBUG - Attempting to query or scan entity sheep [{"useAll
 DynamoDB Entity Store DEBUG - Query or scan result [{"result":{"$metadata":{"httpStatusCode":200,"requestId":"CN2O9KUEECRUJ0BTPT1DT79G6NVV4KQNSO5AEMVJF66Q9ASUAAJG","attempts":1,"totalRetryDelay":0},"Count":1,"Items":[{"_lastUpdated":"2023-08-21T19:15:37.396Z","SK":"NAME#bob","ageInYears":4,"PK":"SHEEP#BREED#merino","breed":"merino","_et":"sheep","name":"bob"}],"ScannedCount":1}}]
 ```
 
-The store's `logger` can actually be anything that satisfies the [`EntityStoreLogger`](https://github.com/symphoniacloud/dynamodb-entity-store/blob/main/src/lib/util/logger.ts) type.
+The store's `logger` can be anything that satisfies the [`EntityStoreLogger`](https://github.com/symphoniacloud/dynamodb-entity-store/blob/main/src/lib/util/logger.ts) type.
 The library provides a silent "No-op" logger that it uses by default, as well as the [`consoleLogger`](https://symphoniacloud.github.io/dynamodb-entity-store/variables/consoleLogger.html) shown here, but you
-can easily implement your own - there's an example in the [source code comments](https://github.com/symphoniacloud/dynamodb-entity-store/blob/94a622f/src/lib/util/logger.ts) of implementing a logger
+can easily implement your own - e.g. there's an example in the [source code comments](https://github.com/symphoniacloud/dynamodb-entity-store/blob/94a622f/src/lib/util/logger.ts) of implementing a logger
 for [AWS PowerTools](https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger/).
 
 ## Example 2: Adding a Global Secondary Index

@@ -20,7 +20,7 @@ interface AllEntitiesStore {
 
 There are three methods on this interface to match the three top-level groupings of operations you can perform:
 
-* Operations on one type on entity
+* Operations on one type of entity
 * Operations on multiple types of entity
 * Transactional operations (single or multiple entities)
 
@@ -142,7 +142,7 @@ If you need the [AWS API version of what `put` returns](https://docs.aws.amazon.
 ## Get
 
 The two methods for get-ting items both call [_GetItem_](https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_GetItem.html) under the covers and both have the same parameters.
-The difference between is what happens if the item doesn't exist.
+The difference between them is what happens if the item doesn't exist.
 I'll get onto that below when I cover the return value.
 
 First, the signatures:

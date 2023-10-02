@@ -86,7 +86,7 @@ This occurs during many operations, including `put` and `get`.
 
 > If your table only has a Partition Key, and doesn't have a Sort Key, see the section _PK-only Entities_ below.
 
-Each of the `pk()` and `sk()` is passed an argument of type `TPKSource` or `TSKSource`, as defined earlier, and should return a string.
+Each of `pk()` and `sk()` is passed an argument of type `TPKSource` or `TSKSource`, as defined earlier, and should return a string.
 
 Let's go back to our example of `Sheep` from earlier. Let's say we have a particular sheep object that is internally represented as follows:
 
@@ -119,9 +119,13 @@ Notice that the parameter types here are precisely the same as those we gave for
 
 A couple of less common scenarios.
 
-First - it's usually the case that the value of your PK / SK attributes will always contain all the actual field values defined in `TPKSource` / `TSKSource`, but that's not always true. In such situations just specify the full set of fields that **do** drive your PK / SK values, and then you can return whatever you like from the generator functions. 
+First - it's usually the case that your `pk()` and `sk()` functions return a context-free value based on their parameter types - `TPKSource` / `TSKSource`.
+In such cases your entity will likely be a stateless object.
 
-Second - if either of your Partition Key or Sort Key attributes are also being used to store specific values of your table (in other words your table **does not** have separate '`PK`' and '`SK`' style attributes configured) then you can just return field values unmanipulated from your generator functions, **but you still need to implement the functions** . 
+Sometimes though the value you want to generate for  `pk()` and/or `sk()` will be partly or solely dependent on _some other value(s)_ - e.g. a configuration value.
+In these situations you may need to create a stateful entity object (which you pass to entity store in `for(entity)`. 
+
+Second - if either of your Partition Key or Sort Key attributes are also being used to store specific fields of your entity (in other words your table **does not** have separate `PK` and `SK` style attributes configured) then you can just return field values unmanipulated from your generator functions, **but you still need to implement the functions** . 
 
 E.g. say you have an internal type as follows:
 
@@ -162,7 +166,7 @@ This might result (depending on table configuration) in the following object bei
 
 The _metadata_ fields - `PK`, `SK`, `_et`, `_lastUpdated` - are controlled through other mechanisms, but if you want to change what _data_ fields are stored, and what values are stored for those fields, then you must implement `convertToDynamoFormat()`.
 
-The type signature of `convertToDynamoFormat()` is: `(item: TItem) => DynamoDBValues`, in other words it receives an object of your "internal" type, and must return a valid DynamoDB Document Client object _(`DynamoDBValues` is simply an alias for `Record<string, NativeAttributeValue>`, where [`NativeAttributeValue` comes from the AWS library.](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-util-dynamodb/TypeAlias/NativeAttributeValue/))_
+The type signature of `convertToDynamoFormat()` is: `(item: TItem) => DynamoDBValues`, in other words it receives an object of your "internal" type, and must return a valid DynamoDB Document Client object _(`DynamoDBValues` is an alias for `Record<string, NativeAttributeValue>`, where [`NativeAttributeValue` comes from the AWS library.](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-util-dynamodb/TypeAlias/NativeAttributeValue/))_
 
 You may need to implement `convertToDynamoFormat()` in situations like the following:
 
@@ -177,7 +181,7 @@ If you implement `convertToDynamoFormat()` you'll likely also need to consider a
 
 Each _Entity_'s `parse()` function is used during read operations to convert the DynamoDB-persisted version of an item to the "internal" version of an item. As with `.convertToDynamoFormat()`, since DynamoDB Entity Store uses the [AWS Document Client](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-lib-dynamodb/) library under the covers such parsing is less about low-level type manipulation and more about field selection and calculation.
 
-As described above for `.convertToDynamoFormat()` - with DynamoDB Entity Store's default behavior the persisted version of object contains precisely the same fields as the internal version, and so in that case parsing consists of (a) removing all of the metadata fields and (b) validating the type, and returning a type-safe value. 
+As described above for `.convertToDynamoFormat()` - with DynamoDB Entity Store's default behavior the persisted version of object contains precisely the same fields as the internal version, and so in that case parsing consists of (a) removing all of the metadata fields and (b) validating the type, returning a type-safe value. 
 
 #### Type Predicate Parsing
 
@@ -200,7 +204,7 @@ Our `parse()` implementation for `SHEEP_ENTITY` is then defined by calling `type
 
 #### Advanced Parsing
 
-If simply performing a type check isn't sufficient for an _Entity_, then you need to implement a custom `EntityParser<TItem>` function. `EntityParser` is defined as follows: 
+If just performing a type check isn't sufficient for an _Entity_, then you need to implement a custom `EntityParser<TItem>` function. `EntityParser` is defined as follows: 
 
 ```typescript
 type EntityParser<TItem> = (

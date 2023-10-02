@@ -254,7 +254,7 @@ When you make calls to the operations functions in Entity Store the library will
 
 The `defaultTableName` property is useful if you have a situation where _most_ entities are in one table, but you have a few "special cases" of other entities being in different tables.
 
-You can create a `MultiTableConfig` object:
+To create a `MultiTableConfig` object:
 
 * Use the multi-table specific `createStandardMultiTableConfig()` support function if all of your tables use the same "standard" configuration described earlier
 * Build your own configuration, optionally using the other support functions in [_setupSupport.ts_](../src/lib/support/setupSupport.ts).

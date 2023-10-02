@@ -95,15 +95,15 @@ That's where the query-one-page versions of the query methods come in.
 
 Before proceeding if you don't know how DynamoDB pagination works you'll probably want to read [the AWS docs](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.Pagination.html).
 For example, results aren't page-numbered, or saved in DynamoDB, and you can't go backwards.
-Instead to get all pages, apart from the first page, you provide the key of the last element returned on the previous page and DynamoDB calculates just-in-time what the next page evaluates to.
+Instead to get all pages, apart from the first page, you provide the key of the last element "evaluated" on the previous page and DynamoDB calculates just-in-time what the next page should be.
 
 `queryOnePageByPk` takes an optional argument of type [`QueryOnePageOptions`](https://symphoniacloud.github.io/dynamodb-entity-store/interfaces/QueryOnePageOptions.html).
 This has the following optional properties:
 
 * `limit` - the maximum number of items to _evaluate_. What does _evaluate_ mean? Well, often it means the maximum number of items to return, but it's complicated. :) See [the AWS docs](https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Query.html#API_Query_RequestParameters).
 * `exclusiveStartKey` - The key of the first item to read. More on that in a moment. If you are requesting the first page, leave as undefined.
-* `scanIndexForward` - same as for `QueryAllOptions`
-* `consistentRead` - same as for `QueryAllOptions`
+* `scanIndexForward` - same as for `QueryAllOptions`, described earlier on this page
+* `consistentRead` - same as for `QueryAllOptions`, described earlier on this page
 
 Let's look at an example. Say we have 2 merino sheep in our table.
 We can run the following to just get one sheep at a time back from DynamoDB, by specifying the `limit` option with `queryOnePageByPk`:
@@ -114,7 +114,7 @@ const result = await sheepOperations.queryOnePageByPk({ breed: 'merino' }, { lim
 
 > You don't need to specify a `limit` - if you don't DynamoDB will return up to 1MB of results. I'm just specifying it here for clarity of example.
 
-This time the result isn't simply a list of items, it's an object of type [`OnePageResponse<TItem>`](https://symphoniacloud.github.io/dynamodb-entity-store/interfaces/OnePageResponse.html).
+This time the result isn't a list of items, it's an object of type [`OnePageResponse<TItem>`](https://symphoniacloud.github.io/dynamodb-entity-store/interfaces/OnePageResponse.html).
 This has two fields:
 
 * `items: TItem[]` - the parsed list of results for this page, using the same parsing rules as query-all methods
@@ -328,7 +328,7 @@ You should **only** use this command if you're happy to read your entire table! 
 
 `scanOnePage()` returns a page of results, rather than the entire table.
 
-Paging works in exactly the same as for querying, so read the _Query-one-page by Partition Key_ section above if you haven't done so already.
+Paging works in exactly the same way as for querying, so read the _Query-one-page by Partition Key_ section above if you haven't done so already.
 
 `scanOnePage()`'s options are of the following type:
 

@@ -14,7 +14,7 @@
     "local-checks": "tsc"
   },
   "dependencies": {
-    "@symphoniacloud/dynamodb-entity-store": "*"
+    "@symphoniacloud/dynamodb-entity-store": "1.x"
   },
   "devDependencies": {
     "@aws-sdk/types": "3.x",

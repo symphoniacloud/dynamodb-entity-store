@@ -1,4 +1,4 @@
-import { NativeAttributeValue } from '@aws-sdk/util-dynamodb/dist-types/models'
+import { NativeAttributeValue, NativeScalarAttributeValue } from '@aws-sdk/util-dynamodb/dist-types/models'
 
 export type DynamoDBValues = Record<string, NativeAttributeValue>
 
@@ -76,7 +76,7 @@ export interface Entity<TItem extends TPKSource & TSKSource, TPKSource, TSKSourc
    * often be some kind of encoding of one more fields
    * @param source
    */
-  pk(source: TPKSource): string
+  pk(source: TPKSource): NativeScalarAttributeValue
 
   /**
    * Given a subset of the fields of the entity type, generate the sort key value for the stored version of the object.
@@ -87,7 +87,7 @@ export interface Entity<TItem extends TPKSource & TSKSource, TPKSource, TSKSourc
    * often be some kind of encoding of one more fields
    * @param source
    */
-  sk(source: TSKSource): string
+  sk(source: TSKSource): NativeScalarAttributeValue
 
   /**
    * A map of GSI ID to generator functions, similar to pk() and sk()
@@ -104,7 +104,7 @@ export type PKOnlyEntity<TItem extends TPKSource, TPKSource> = Omit<Entity<TItem
 
 export interface GsiGenerators {
   // ToMaybe - better types for these?
-  pk(source: unknown): string
+  pk(source: unknown): NativeScalarAttributeValue
 
-  sk?(source: unknown): string
+  sk?(source: unknown): NativeScalarAttributeValue
 }

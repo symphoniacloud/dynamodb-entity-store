@@ -9,8 +9,8 @@ Each _Entity_ object must satisfy the [`Entity` interface](https://symphoniaclou
 ```typescript
 interface Entity<TItem extends TPKSource & TSKSource, TPKSource, TSKSource> {
   type: string
-  pk(source: TPKSource): string
-  sk(source: TSKSource): string
+  pk(source: TPKSource): NativeScalarAttributeValue
+  sk(source: TSKSource): NativeScalarAttributeValue
   convertToDynamoFormat?: EntityFormatter<TItem>
   parse: EntityParser<TItem>
   gsis?: Record<string, GsiGenerators>
@@ -86,7 +86,7 @@ This occurs during many operations, including `put` and `get`.
 
 > If your table only has a Partition Key, and doesn't have a Sort Key, see the section _PK-only Entities_ below.
 
-Each of `pk()` and `sk()` is passed an argument of type `TPKSource` or `TSKSource`, as defined earlier, and should return a string.
+Each of `pk()` and `sk()` is passed an argument of type `TPKSource` or `TSKSource`, as defined earlier, and should return a "scalar" value (specifically [`NativeScalarAttributeValue`](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-util-dynamodb/TypeAlias/NativeScalarAttributeValue/)).
 
 Let's go back to our example of `Sheep` from earlier. Let's say we have a particular sheep object that is internally represented as follows:
 

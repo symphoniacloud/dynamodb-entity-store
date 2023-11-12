@@ -180,28 +180,28 @@ export interface ReturnConsumedCapacityOption {
   /**
    * @see https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_GetItem.html#DDB-GetItem-request-ReturnConsumedCapacity
    */
-  returnConsumedCapacity?: ReturnConsumedCapacity | string
+  returnConsumedCapacity?: ReturnConsumedCapacity
 }
 
 export interface ReturnValuesOnConditionCheckFailureOption {
   /**
    * @see https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_PutItem.html#DDB-PutItem-request-ReturnValuesOnConditionCheckFailure
    */
-  returnValuesOnConditionCheckFailure?: ReturnValuesOnConditionCheckFailure | string
+  returnValuesOnConditionCheckFailure?: ReturnValuesOnConditionCheckFailure
 }
 
 export interface ReturnValuesOptions extends ReturnValuesOnConditionCheckFailureOption {
   /**
    * @see https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_PutItem.html#DDB-PutItem-request-ReturnValues
    */
-  returnValues?: ReturnValue | string
+  returnValues?: ReturnValue
 }
 
 export interface ReturnItemCollectionMetricsOption {
   /**
    * @see https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_PutItem.html#DDB-PutItem-request-ReturnItemCollectionMetrics
    */
-  returnItemCollectionMetrics?: ReturnItemCollectionMetrics | string
+  returnItemCollectionMetrics?: ReturnItemCollectionMetrics
 }
 
 export type AdvancedPutResponse = WithUnparsedReturnedAttributes &

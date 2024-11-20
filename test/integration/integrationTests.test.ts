@@ -606,6 +606,9 @@ describe('standard single table', () => {
         expect(batchGetResultItems.length).toEqual(3)
         expect(getResult.metadata).toBeUndefined()
 
+        expect(await sheepOperations.advancedOperations.batchDelete([])).toEqual({})
+        expect((await scanWithDocClient(tableName)).length).toEqual(3)
+
         const deleteResult = await sheepOperations.advancedOperations.batchDelete(
           [shaunIdentifier, bobIdentifier, alisonIdentifier],
           {

@@ -571,6 +571,10 @@ describe('standard single table', () => {
       test('puts, gets, deletes', async () => {
         await emptyTable(tableName)
 
+        // First up - make sure can put an empty list
+        expect(await sheepOperations.advancedOperations.batchPut([])).toEqual({})
+        expect((await scanWithDocClient(testTableName)).length).toEqual(0)
+
         expect(
           await sheepOperations.advancedOperations.batchPut([shaunTheSheep, bobTheSheep, alisonTheAlpaca], {
             batchSize: 2,

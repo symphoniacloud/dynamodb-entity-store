@@ -33,7 +33,7 @@
     "generate-docs": "typedoc src/lib/index.ts"
   },
   "engines": {
-    "node": ">=16.20.0"
+    "node": ">=20.0.0"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "3.x",
@@ -44,17 +44,17 @@
     "@aws-sdk/client-cloudformation": "3.x",
     "@aws-sdk/types": "3.x",
     "@types/deep-equal": "1.x",
-    "@types/node": "16.x",
-    "@typescript-eslint/eslint-plugin": "5.x",
-    "@typescript-eslint/parser": "5.x",
+    "@types/node": "20.x",
+    "@typescript-eslint/eslint-plugin": "7.x",
+    "@typescript-eslint/parser": "7.x",
     "deep-equal": "2.x",
     "eslint": "8.x",
-    "eslint-config-prettier": "8.x",
-    "prettier": "2.x",
+    "eslint-config-prettier": "9.x",
+    "prettier": "3.x",
     "ts-node": "10.x",
-    "typedoc": "^0.25.1",
-    "typescript": "4.x",
-    "vitest": "0.x"
+    "typedoc": "^0.26.0",
+    "typescript": "5.x",
+    "vitest": "2.x"
   },
   "files": [
     "package.json",

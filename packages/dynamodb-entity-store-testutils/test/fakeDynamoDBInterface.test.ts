@@ -130,7 +130,9 @@ describe('FakeDynamoDBInterface', () => {
     })
 
     it('should throw if RequestItems is undefined', async () => {
-      await expect(db.batchWrite({})).rejects.toThrow('RequestItems is required')
+      await expect(db.batchWrite({} as BatchWriteCommandInput)).rejects.toThrow(
+        'RequestItems is required'
+      )
     })
   })
 

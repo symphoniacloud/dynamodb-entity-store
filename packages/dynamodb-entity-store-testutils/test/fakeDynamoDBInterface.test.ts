@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { FakeDynamoDBInterface, METADATA } from '../src/fakeDynamoDBInterface.js'
+import { BatchWriteCommandInput } from '@aws-sdk/lib-dynamodb'
 
 describe('FakeDynamoDBInterface', () => {
   let db: FakeDynamoDBInterface

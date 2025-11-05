@@ -19,9 +19,6 @@
   },
   "devDependencies": {
     "@aws-sdk/types": "3.x",
-    "@types/deep-equal": "1.x",
-    "@types/node": "22.x",
-    "ts-node": "10.x",
-    "typescript": "5.x"
+    "@types/deep-equal": "1.x"
   }
 }

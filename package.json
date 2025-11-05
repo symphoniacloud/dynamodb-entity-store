@@ -31,17 +31,10 @@
     "node": ">=22.0.0"
   },
   "devDependencies": {
-    "@aws-sdk/client-cloudformation": "3.x",
-    "@aws-sdk/client-dynamodb": "3.x",
-    "@aws-sdk/lib-dynamodb": "3.x",
-    "@aws-sdk/types": "3.x",
-    "@aws-sdk/util-dynamodb": "3.x",
     "@eslint/js": "9.x",
-    "@types/deep-equal": "1.x",
     "@types/node": "22.x",
     "@typescript-eslint/eslint-plugin": "8.x",
     "@typescript-eslint/parser": "8.x",
-    "deep-equal": "2.x",
     "eslint": "9.x",
     "eslint-config-prettier": "9.x",
     "prettier": "3.x",

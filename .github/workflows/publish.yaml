@@ -45,6 +45,10 @@ jobs:
           fi
           echo "Detected version: $VERSION -> tag: $(cat $GITHUB_OUTPUT | grep tag= | cut -d= -f2)"
 
+      # Upgrade npm to latest version to support trusted publishing with scoped packages
+      # See: https://github.com/npm/cli/issues/8678
+      - run: npm install -g npm@latest
+
       - run: npm install
 
       # Modify package.json, inserting version attribute

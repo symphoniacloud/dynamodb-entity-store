@@ -3,15 +3,15 @@ import {
   calcAllMetaAttributeNames,
   createEntityContext,
   EntityContext
-} from '../../../src/lib/internal/entityContext'
-import { FakeClock } from '../testSupportCode/fakes/fakeClock'
-import { fakeDynamoDBInterface } from '../testSupportCode/fakes/fakeDynamoDBInterface'
-import { Sheep, SHEEP_ENTITY } from '../../examples/sheepTypeAndEntity'
+} from '../../../src/lib/internal/entityContext.js'
+import { FakeClock } from '../testSupportCode/fakes/fakeClock.js'
+import { fakeDynamoDBInterface } from '../testSupportCode/fakes/fakeDynamoDBInterface.js'
+import { Sheep, SHEEP_ENTITY } from '../../examples/sheepTypeAndEntity.js'
 import {
   NoGSIStandardMetaAttributeNames,
   noopLogger,
   SingleGSIStandardMetaAttributeNames
-} from '../../../src/lib'
+} from '../../../src/lib/index.js'
 
 test('calcAllMetaDataAttributeNames', () => {
   expect(calcAllMetaAttributeNames(NoGSIStandardMetaAttributeNames)).toEqual([

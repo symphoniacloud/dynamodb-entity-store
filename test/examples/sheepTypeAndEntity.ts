@@ -1,6 +1,6 @@
-import { createEntity } from '../../src/lib/support/entitySupport'
-import { rangeWhereSkBetween } from '../../src/lib/support/querySupport'
-import { DynamoDBValues } from '../../src/lib'
+import { createEntity } from '../../src/lib/support/entitySupport.js'
+import { rangeWhereSkBetween } from '../../src/lib/support/querySupport.js'
+import { DynamoDBValues } from '../../src/lib/index.js'
 
 export interface Sheep {
   breed: string

@@ -1,5 +1,5 @@
-import { DynamoDBValues, MetaAttributeNames } from '../../src/lib/entities'
-import { entityFromPkOnlyEntity, getPKValue, keyOnlyFormatter } from '../../src/lib/support/entitySupport'
+import { DynamoDBValues, MetaAttributeNames } from '../../src/lib/entities.js'
+import { entityFromPkOnlyEntity, getPKValue, keyOnlyFormatter } from '../../src/lib/support/entitySupport.js'
 
 export interface Farm {
   name: string

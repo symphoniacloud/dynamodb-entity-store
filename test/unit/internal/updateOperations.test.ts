@@ -1,9 +1,9 @@
 import { expect, test, describe } from 'vitest'
-import { SHEEP_ENTITY } from '../../examples/sheepTypeAndEntity'
-import { excludeKeys } from '../../../src/lib/util/collections'
-import { SingleGSIStandardMetaAttributeNames } from '../../../src/lib/support/setupSupport'
-import { contextFor } from '../testSupportCode/entityContextSupport'
-import { createUpdateParams } from '../../../src/lib/internal/common/updateCommon'
+import { SHEEP_ENTITY } from '../../examples/sheepTypeAndEntity.js'
+import { excludeKeys } from '../../../src/lib/util/collections.js'
+import { SingleGSIStandardMetaAttributeNames } from '../../../src/lib/support/setupSupport.js'
+import { contextFor } from '../testSupportCode/entityContextSupport.js'
+import { createUpdateParams } from '../../../src/lib/internal/common/updateCommon.js'
 
 const shaunIdentifier = { breed: 'merino', name: 'shaun' }
 

@@ -1,10 +1,10 @@
-import { typePredicateParser } from '../../src/lib/support/entitySupport'
+import { typePredicateParser } from '../../src/lib/support/entitySupport.js'
 import {
   rangeWhereSkBeginsWith,
   rangeWhereSkGreaterThan,
   rangeWhereSkLessThan
-} from '../../src/lib/support/querySupport'
-import { Entity } from '../../src/lib/entities'
+} from '../../src/lib/support/querySupport.js'
+import { Entity } from '../../src/lib/entities.js'
 
 export interface Chicken {
   breed: string

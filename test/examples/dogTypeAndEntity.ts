@@ -1,5 +1,5 @@
-import { typePredicateParser } from '../../src/lib/support/entitySupport'
-import { Entity } from '../../src/lib/entities'
+import { typePredicateParser } from '../../src/lib/support/entitySupport.js'
+import { Entity } from '../../src/lib/entities.js'
 
 export interface Dog {
   farm: string

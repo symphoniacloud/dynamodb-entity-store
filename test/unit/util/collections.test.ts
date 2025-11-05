@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { chunk, excludeKeys, removeNullOrUndefined, selectKeys } from '../../../src/lib/util/collections'
+import { chunk, excludeKeys, removeNullOrUndefined, selectKeys } from '../../../src/lib/util/collections.js'
 
 test('omitProperties', () => {
   expect(excludeKeys({ a: 1, b: 2, c: 3, d: 4 }, [])).toStrictEqual({ a: 1, b: 2, c: 3, d: 4 })

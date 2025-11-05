@@ -20,7 +20,7 @@
     "integration-tests": "npm run integration-tests --workspace=@symphoniacloud/dynamodb-entity-store",
     "lint": "npm run lint --workspaces --if-present",
     "format": "npm run format --workspaces --if-present",
-    "local-checks": "npm run local-checks --workspace=@symphoniacloud/dynamodb-entity-store",
+    "local-checks": "npm run local-checks --workspace=@symphoniacloud/dynamodb-entity-store-testutils && npm run local-checks --workspace=@symphoniacloud/dynamodb-entity-store",
     "all-checks": "npm run all-checks --workspace=@symphoniacloud/dynamodb-entity-store",
     "deploy": "npm run deploy --workspace=@symphoniacloud/dynamodb-entity-store",
     "deploy-and-all-checks": "npm run deploy-and-all-checks --workspace=@symphoniacloud/dynamodb-entity-store",

@@ -50,10 +50,9 @@ jobs:
       # Modify package.json, inserting version attribute
       - run: npm version $RELEASE_VERSION --no-git-tag-version
 
-      # Perform publish with appropriate tag, which will also run prepublishOnly
-      - run: npm publish --access public --tag ${{ steps.dist-tag.outputs.tag }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # Perform publish with appropriate tag and provenance, which will also run prepublishOnly
+      # Uses npm provenance (OIDC) instead of long-lived token for security
+      - run: npm publish --access public --provenance --tag ${{ steps.dist-tag.outputs.tag }}
 
       # Only generate and deploy docs for stable releases
       - name: Generate docs

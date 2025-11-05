@@ -2,22 +2,26 @@
   "$schema": "https://json.schemastore.org/tsconfig",
   "include": ["src/**/*.ts"],
   "compilerOptions": {
-    "target": "es2021",
-    "module": "commonjs",
+    // ** Modules **
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2022"],
 
     // ** Type Checking **
     "strict": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
 
     // ** Interop **
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "forceConsistentCasingInFileNames": true,
 
     // ** Completeness **
     "skipLibCheck": true,
 
+    // ** Emit **
     "noEmit": true,
     "declaration": false
   }

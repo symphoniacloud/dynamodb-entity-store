@@ -1,16 +1,16 @@
-import { Clock } from '../../util'
+import { Clock } from '../../util/index.js'
 import {
   conditionExpressionParam,
   createKeyFromSource,
   determineTTL,
   expressionAttributeParamsFromOptions,
   tableNameParam
-} from './operationsCommon'
-import { EntityContext } from '../entityContext'
-import { DynamoDBValues, Entity, MetaAttributeNames } from '../../entities'
-import { Mandatory } from '../../util'
+} from './operationsCommon.js'
+import { EntityContext } from '../entityContext.js'
+import { DynamoDBValues, Entity, MetaAttributeNames } from '../../entities.js'
+import { Mandatory } from '../../util/index.js'
 import { PutCommandInput } from '@aws-sdk/lib-dynamodb'
-import { PutOptions } from '../../singleEntityOperations'
+import { PutOptions } from '../../singleEntityOperations.js'
 
 // Also used for generating transaction put items
 export function putParams<TItem extends TPKSource & TSKSource, TPKSource, TSKSource>(

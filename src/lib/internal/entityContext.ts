@@ -1,6 +1,6 @@
-import { Entity, MetaAttributeNames } from '../entities'
-import { Mandatory } from '../util/types'
-import { StoreContext, TableConfig } from '../tableBackedStoreConfiguration'
+import { Entity, MetaAttributeNames } from '../entities.js'
+import { Mandatory } from '../util/types.js'
+import { StoreContext, TableConfig } from '../tableBackedStoreConfiguration.js'
 
 export type ContextMetaAttributeNames = Mandatory<MetaAttributeNames, 'gsisById'>
 

@@ -1,5 +1,5 @@
-import { DynamoDBValues } from '../entities'
-import { SkQueryRange } from '../singleEntityOperations'
+import { DynamoDBValues } from '../entities.js'
+import { SkQueryRange } from '../singleEntityOperations.js'
 
 // All of these use an expression attribute name instead of the actual sort key attribute name
 // This is then substituted for the actual sort key attribute name when a query is run

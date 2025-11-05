@@ -1,11 +1,11 @@
-import { MultipleEntityCollectionResponse } from '../../multipleEntityOperations'
+import { MultipleEntityCollectionResponse } from '../../multipleEntityOperations.js'
 import {
   EntityContextsByEntityType,
   performMultipleEntityOperationAndParse
-} from './multipleEntitiesQueryAndScanCommon'
+} from './multipleEntitiesQueryAndScanCommon.js'
 
-import { configureScanOperation } from '../common/queryAndScanCommon'
-import { AdvancedScanOnePageOptions } from '../../singleEntityAdvancedOperations'
+import { configureScanOperation } from '../common/queryAndScanCommon.js'
+import { AdvancedScanOnePageOptions } from '../../singleEntityAdvancedOperations.js'
 
 export async function scanMultiple(
   contextsByEntityType: EntityContextsByEntityType,

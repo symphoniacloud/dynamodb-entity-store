@@ -1,6 +1,6 @@
-import { Clock, EntityStoreLogger } from './util'
-import { DynamoDBInterface } from './dynamoDBInterface'
-import { MetaAttributeNames } from './entities'
+import { Clock, EntityStoreLogger } from './util/index.js'
+import { DynamoDBInterface } from './dynamoDBInterface.js'
+import { MetaAttributeNames } from './entities.js'
 
 // See functions in _setupSupport.ts_ for assistance in creating these objects
 

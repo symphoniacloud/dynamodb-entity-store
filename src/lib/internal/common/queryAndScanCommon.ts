@@ -1,21 +1,21 @@
-import { parseItem, returnConsumedCapacityParam } from './operationsCommon'
-import { DynamoDBValues } from '../../entities'
-import { EntityStoreLogger, isDebugLoggingEnabled, removeNullOrUndefined } from '../../util'
+import { parseItem, returnConsumedCapacityParam } from './operationsCommon.js'
+import { DynamoDBValues } from '../../entities.js'
+import { EntityStoreLogger, isDebugLoggingEnabled, removeNullOrUndefined } from '../../util/index.js'
 import {
   QueryCommandInput,
   QueryCommandOutput,
   ScanCommandInput,
   ScanCommandOutput
 } from '@aws-sdk/lib-dynamodb'
-import { EntityContext } from '../entityContext'
-import { MultipleEntityCollectionResponse } from '../../multipleEntityOperations'
+import { EntityContext } from '../entityContext.js'
+import { MultipleEntityCollectionResponse } from '../../multipleEntityOperations.js'
 import {
   AdvancedCollectionResponse,
   AdvancedQueryOnePageOptions,
   AdvancedScanOnePageOptions,
   ConsumedCapacitiesMetadata
-} from '../../singleEntityAdvancedOperations'
-import { GsiDetails } from './gsiQueryCommon'
+} from '../../singleEntityAdvancedOperations.js'
+import { GsiDetails } from './gsiQueryCommon.js'
 
 export interface QueryScanOperationConfiguration<
   TCommandInput extends ScanCommandInput & QueryCommandInput,

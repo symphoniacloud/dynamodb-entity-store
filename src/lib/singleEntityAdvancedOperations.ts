@@ -13,7 +13,7 @@ import {
   ScanOnePageOptions,
   SkQueryRange,
   UpdateOptions
-} from './singleEntityOperations'
+} from './singleEntityOperations.js'
 import {
   ConsumedCapacity,
   ItemCollectionMetrics,
@@ -22,8 +22,8 @@ import {
   ReturnValue,
   ReturnValuesOnConditionCheckFailure
 } from '@aws-sdk/client-dynamodb'
-import { DynamoDBValues } from './entities'
-import { Mandatory } from './util'
+import { DynamoDBValues } from './entities.js'
+import { Mandatory } from './util/index.js'
 
 export interface SingleEntityAdvancedOperations<TItem extends TPKSource & TSKSource, TPKSource, TSKSource> {
   put(item: TItem, options?: AdvancedPutOptions): Promise<AdvancedPutResponse>

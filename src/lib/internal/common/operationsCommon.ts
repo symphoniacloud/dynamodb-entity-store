@@ -1,12 +1,12 @@
-import { DynamoDBValues } from '../../entities'
-import { EntityContext } from '../entityContext'
-import { Clock, secondsTimestampInFutureDays } from '../../util'
+import { DynamoDBValues } from '../../entities.js'
+import { EntityContext } from '../entityContext.js'
+import { Clock, secondsTimestampInFutureDays } from '../../util/index.js'
 import { DeleteItemOutput } from '@aws-sdk/client-dynamodb'
 import {
   ReturnConsumedCapacityOption,
   ReturnItemCollectionMetricsOption,
   ReturnValuesOptions
-} from '../../singleEntityAdvancedOperations'
+} from '../../singleEntityAdvancedOperations.js'
 
 export interface WithExpression {
   expressionAttributeValues?: DynamoDBValues

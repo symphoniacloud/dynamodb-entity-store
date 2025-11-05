@@ -3,11 +3,11 @@ import {
   parseItem,
   returnConsumedCapacityParam,
   tableNameParam
-} from '../common/operationsCommon'
-import { EntityContext } from '../entityContext'
-import { isDebugLoggingEnabled } from '../../util'
+} from '../common/operationsCommon.js'
+import { EntityContext } from '../entityContext.js'
+import { isDebugLoggingEnabled } from '../../util/index.js'
 import { GetCommandInput, GetCommandOutput } from '@aws-sdk/lib-dynamodb'
-import { AdvancedGetOptions, AdvancedGetResponse } from '../../singleEntityAdvancedOperations'
+import { AdvancedGetOptions, AdvancedGetResponse } from '../../singleEntityAdvancedOperations.js'
 
 export async function getItem<
   TItem extends TPKSource & TSKSource,

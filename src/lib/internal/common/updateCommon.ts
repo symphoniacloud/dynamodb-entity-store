@@ -1,15 +1,15 @@
 // Also used for generating transaction update items
-import { ContextMetaAttributeNames, EntityContext } from '../entityContext'
-import { Mandatory } from '../../util'
+import { ContextMetaAttributeNames, EntityContext } from '../entityContext.js'
+import { Mandatory } from '../../util/index.js'
 import {
   conditionExpressionParam,
   determineTTL,
   expressionAttributeParamsFromOptions,
   keyParamFromSource,
   tableNameParam
-} from './operationsCommon'
+} from './operationsCommon.js'
 import { UpdateCommandInput } from '@aws-sdk/lib-dynamodb'
-import { UpdateOptions } from '../../singleEntityOperations'
+import { UpdateOptions } from '../../singleEntityOperations.js'
 
 // Also used by transactions
 export function createUpdateParams<

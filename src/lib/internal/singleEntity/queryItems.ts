@@ -1,14 +1,14 @@
-import { EntityContext } from '../entityContext'
+import { EntityContext } from '../entityContext.js'
 import {
   configureQueryOperation,
   executeQueryOrScan,
   parseResultsForEntity
-} from '../common/queryAndScanCommon'
+} from '../common/queryAndScanCommon.js'
 import { QueryCommandInput } from '@aws-sdk/lib-dynamodb'
-import { AdvancedCollectionResponse, AdvancedQueryOnePageOptions } from '../../singleEntityAdvancedOperations'
-import { expressionAttributeParams } from '../common/operationsCommon'
-import { GsiDetails } from '../common/gsiQueryCommon'
-import { SkQueryRange } from '../../singleEntityOperations'
+import { AdvancedCollectionResponse, AdvancedQueryOnePageOptions } from '../../singleEntityAdvancedOperations.js'
+import { expressionAttributeParams } from '../common/operationsCommon.js'
+import { GsiDetails } from '../common/gsiQueryCommon.js'
+import { SkQueryRange } from '../../singleEntityOperations.js'
 
 export interface QueryCriteria {
   keyConditionExpression: string

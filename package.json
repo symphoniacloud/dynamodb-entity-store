@@ -1,49 +1,41 @@
 {
-  "name": "@symphoniacloud/dynamodb-entity-store",
-  "description": "A lightly opinionated DynamoDB library for TypeScript & JavaScript applications",
+  "name": "@symphoniacloud/dynamodb-entity-store-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Workspace for DynamoDB Entity Store packages",
   "license": "MIT",
   "author": {
     "email": "mike@symphonia.io",
     "name": "Mike Roberts",
     "url": "https://symphonia.io"
   },
-  "keywords": [
-    "dynamodb"
+  "workspaces": [
+    "packages/*",
+    "examples"
   ],
-  "homepage": "https://github.com/symphoniacloud/dynamodb-entity-store",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/symphoniacloud/dynamodb-entity-store.git"
-  },
-  "bugs": {
-    "url": "https://github.com/symphoniacloud/dynamodb-entity-store/issues"
-  },
-  "type": "module",
   "scripts": {
-    "lint": "eslint --max-warnings=0 --fix-dry-run \"{src,test}/**/*.{js,ts}\"",
-    "format": "prettier --check \"{src,test}/**/*.{js,ts}\"",
-    "unit-tests": "npx vitest run --dir test/unit",
-    "local-checks": "tsc && npm run lint && npm run unit-tests",
-    "integration-tests": "npx vitest run --dir test/integration --config ./test/integration/vitest.config.ts",
-    "all-checks": "npm run local-checks && npm run integration-tests",
-    "deploy": "cd test/examples && aws cloudformation deploy --template-file template.yaml --stack-name \"${STACK_NAME-entity-store-test-stack}\" --no-fail-on-empty-changeset",
-    "deploy-and-all-checks": "npm run deploy && npm run all-checks",
-    "build": "rm -rf dist && tsc -p tsconfig.json",
-    "prepublishOnly": "npm run local-checks && npm run build",
-    "check-examples": "cd examples && npm run local-checks",
-    "generate-docs": "typedoc src/lib/index.ts"
+    "build": "npm run build --workspace=@symphoniacloud/dynamodb-entity-store",
+    "test": "npm run unit-tests --workspace=@symphoniacloud/dynamodb-entity-store && npm run integration-tests --workspace=@symphoniacloud/dynamodb-entity-store",
+    "unit-tests": "npm run unit-tests --workspace=@symphoniacloud/dynamodb-entity-store",
+    "integration-tests": "npm run integration-tests --workspace=@symphoniacloud/dynamodb-entity-store",
+    "lint": "npm run lint --workspaces --if-present",
+    "format": "npm run format --workspaces --if-present",
+    "local-checks": "npm run local-checks --workspace=@symphoniacloud/dynamodb-entity-store",
+    "all-checks": "npm run all-checks --workspace=@symphoniacloud/dynamodb-entity-store",
+    "deploy": "npm run deploy --workspace=@symphoniacloud/dynamodb-entity-store",
+    "deploy-and-all-checks": "npm run deploy-and-all-checks --workspace=@symphoniacloud/dynamodb-entity-store",
+    "check-examples": "npm run local-checks --workspace=@symphoniacloud/dynamodb-entity-store-examples",
+    "generate-docs": "npm run generate-docs --workspace=@symphoniacloud/dynamodb-entity-store"
   },
   "engines": {
     "node": ">=22.0.0"
   },
-  "dependencies": {
-    "@aws-sdk/client-dynamodb": "3.x",
-    "@aws-sdk/lib-dynamodb": "3.x",
-    "@aws-sdk/util-dynamodb": "3.x"
-  },
   "devDependencies": {
     "@aws-sdk/client-cloudformation": "3.x",
+    "@aws-sdk/client-dynamodb": "3.x",
+    "@aws-sdk/lib-dynamodb": "3.x",
     "@aws-sdk/types": "3.x",
+    "@aws-sdk/util-dynamodb": "3.x",
     "@eslint/js": "9.x",
     "@types/deep-equal": "1.x",
     "@types/node": "22.x",
@@ -58,17 +50,5 @@
     "typescript": "5.x",
     "typescript-eslint": "8.x",
     "vitest": "3.x"
-  },
-  "files": [
-    "package.json",
-    "README.md",
-    "LICENSE",
-    "dist/"
-  ],
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    }
   }
 }

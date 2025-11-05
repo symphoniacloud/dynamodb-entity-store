@@ -51,17 +51,17 @@ jobs:
 
       - run: npm install
 
-      # Modify package.json, inserting version attribute
-      - run: npm version $RELEASE_VERSION --no-git-tag-version
+      # Modify package.json, inserting version attribute in the main package
+      - run: npm version $RELEASE_VERSION --no-git-tag-version --workspace=@symphoniacloud/dynamodb-entity-store
 
       # Perform publish with appropriate tag and provenance, which will also run prepublishOnly
       # Uses npm provenance (OIDC) instead of long-lived token for security
-      - run: npm publish --access public --provenance --tag ${{ steps.dist-tag.outputs.tag }}
+      - run: npm publish --access public --provenance --tag ${{ steps.dist-tag.outputs.tag }} --workspace=@symphoniacloud/dynamodb-entity-store
 
       # Only generate and deploy docs for stable releases
       - name: Generate docs
         if: steps.dist-tag.outputs.tag == 'latest'
-        run: npm run generate-docs
+        run: npm run generate-docs --workspace=@symphoniacloud/dynamodb-entity-store
 
       - name: Upload docs artifact
         if: steps.dist-tag.outputs.tag == 'latest'

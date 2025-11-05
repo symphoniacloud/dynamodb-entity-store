@@ -1,7 +1,7 @@
-import { createStandardSingleTableConfig, Entity, MetaAttributeNames, noopLogger } from '../../../src/lib'
-import { createEntityContext, EntityContext } from '../../../src/lib/internal/entityContext'
-import { FakeDynamoDBInterface, fakeDynamoDBInterface } from './fakes/fakeDynamoDBInterface'
-import { FakeClock } from './fakes/fakeClock'
+import { createStandardSingleTableConfig, Entity, MetaAttributeNames, noopLogger } from '../../../src/lib/index.js'
+import { createEntityContext, EntityContext } from '../../../src/lib/internal/entityContext.js'
+import { FakeDynamoDBInterface, fakeDynamoDBInterface } from './fakes/fakeDynamoDBInterface.js'
+import { FakeClock } from './fakes/fakeClock.js'
 
 export function contextFor<TItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
   entity: Entity<TItem, TPKSource, TSKSource>,

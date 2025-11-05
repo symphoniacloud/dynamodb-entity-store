@@ -1,4 +1,4 @@
-import { Clock } from '../../../../src/lib/util/dateAndTime'
+import { Clock } from '../../../../src/lib/util/dateAndTime.js'
 
 export class FakeClock implements Clock {
   public fakeNowIso: string

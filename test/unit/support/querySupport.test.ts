@@ -7,7 +7,7 @@ import {
   rangeWhereSkGreaterThanOrEquals,
   rangeWhereSkLessThan,
   rangeWhereSkLessThanOrEquals
-} from '../../../src/lib/support/querySupport'
+} from '../../../src/lib/support/querySupport.js'
 
 test('skEquals', () => {
   expect(rangeWhereSkEquals('FIELD#aaa')).toEqual({

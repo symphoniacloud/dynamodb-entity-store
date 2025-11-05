@@ -2,7 +2,7 @@ import {
   EntityStoreLogger,
   EntityStoreLogItemExtraInput,
   EntityStoreLogItemMessage
-} from '../../../../src/lib/util/logger'
+} from '../../../../src/lib/util/logger.js'
 
 export function fakeLogger(levelName: Uppercase<string>): EntityStoreLogger & {
   debugs: [EntityStoreLogItemMessage, EntityStoreLogItemExtraInput][]

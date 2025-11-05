@@ -1,8 +1,8 @@
 import { expect, test } from 'vitest'
-import { SHEEP_ENTITY } from '../examples/sheepTypeAndEntity'
-import { fakeDynamoDBInterface } from './testSupportCode/fakes/fakeDynamoDBInterface'
-import { FakeClock } from './testSupportCode/fakes/fakeClock'
-import { createStoreContext, createStandardSingleTableConfig, createStore } from '../../src/lib'
+import { SHEEP_ENTITY } from '../examples/sheepTypeAndEntity.js'
+import { fakeDynamoDBInterface } from './testSupportCode/fakes/fakeDynamoDBInterface.js'
+import { FakeClock } from './testSupportCode/fakes/fakeClock.js'
+import { createStoreContext, createStandardSingleTableConfig, createStore } from '../../src/lib/index.js'
 
 const METADATA = { $metadata: {} }
 

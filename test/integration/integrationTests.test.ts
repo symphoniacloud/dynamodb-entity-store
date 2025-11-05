@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeAll, beforeEach, describe, expect, test } from 'vitest'
-import { initAWSResources } from './testSupportCode/integrationTestEnvironment'
-import { rangeWhereNameBetween, Sheep, SHEEP_ENTITY } from '../examples/sheepTypeAndEntity'
+import { initAWSResources } from './testSupportCode/integrationTestEnvironment.js'
+import { rangeWhereNameBetween, Sheep, SHEEP_ENTITY } from '../examples/sheepTypeAndEntity.js'
 import {
   alisonIdentifier,
   alisonTheAlpaca,
@@ -19,7 +19,7 @@ import {
   sunflowerFarm,
   waddles,
   yolko
-} from '../examples/testData'
+} from '../examples/testData.js'
 import { DeleteCommand, DynamoDBDocumentClient, ScanCommand } from '@aws-sdk/lib-dynamodb'
 import {
   AllEntitiesStore,
@@ -31,7 +31,7 @@ import {
   noopLogger,
   SingleEntityOperations,
   TablesConfig
-} from '../../src/lib'
+} from '../../src/lib/index.js'
 import {
   Chicken,
   CHICKEN_ENTITY,
@@ -39,12 +39,12 @@ import {
   findYoungerThan,
   gsiBreed,
   TWO_GSI_CHICKEN_ENTITY
-} from '../examples/chickenTypeAndEntity'
-import { FARM_ENTITY } from '../examples/farmTypeAndEntity'
-import { FakeClock } from '../unit/testSupportCode/fakes/fakeClock'
-import { DUCK_ENTITY } from '../examples/duckTypeAndEntity'
-import { DOG_ENTITY } from '../examples/dogTypeAndEntity'
-import { CAT_ENTITY } from '../examples/catTypeAndEntity'
+} from '../examples/chickenTypeAndEntity.js'
+import { FARM_ENTITY } from '../examples/farmTypeAndEntity.js'
+import { FakeClock } from '../unit/testSupportCode/fakes/fakeClock.js'
+import { DUCK_ENTITY } from '../examples/duckTypeAndEntity.js'
+import { DOG_ENTITY } from '../examples/dogTypeAndEntity.js'
+import { CAT_ENTITY } from '../examples/catTypeAndEntity.js'
 
 // I've put all of the integration tests in this one file to slightly speed up test runs by only
 // looking up CloudFormation values once. I couldn't find a way to do this otherwise with vitest

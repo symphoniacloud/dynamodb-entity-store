@@ -4,7 +4,7 @@ import {
   dateTimeAddHours,
   dateTimeAddMinutes,
   dateTimeAddSeconds
-} from '../../src/lib/util/dateAndTime'
+} from '../../src/lib/util/dateAndTime.js'
 
 test('dateTimeAdd', () => {
   expect(dateTimeAddDays(new Date('2023-03-01T01:23:45'), 3)).toEqual(new Date('2023-03-04T01:23:45'))

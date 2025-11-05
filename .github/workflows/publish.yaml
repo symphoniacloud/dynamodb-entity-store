@@ -24,18 +24,48 @@ jobs:
       # Capture the name of the published release to an environment variable
       # See https://stackoverflow.com/questions/58177786/get-the-current-pushed-tag-in-github-actions
       - run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+
+      # Determine npm dist-tag based on version
+      # Prereleases (containing -alpha, -beta, -rc, etc.) go to their respective tags
+      # Stable releases go to 'latest'
+      - name: Determine npm dist-tag
+        id: dist-tag
+        run: |
+          VERSION="${RELEASE_VERSION#v}"
+          if [[ "$VERSION" == *"-alpha"* ]]; then
+            echo "tag=alpha" >> $GITHUB_OUTPUT
+          elif [[ "$VERSION" == *"-beta"* ]]; then
+            echo "tag=beta" >> $GITHUB_OUTPUT
+          elif [[ "$VERSION" == *"-rc"* ]]; then
+            echo "tag=rc" >> $GITHUB_OUTPUT
+          elif [[ "$VERSION" == *"-"* ]]; then
+            echo "tag=next" >> $GITHUB_OUTPUT
+          else
+            echo "tag=latest" >> $GITHUB_OUTPUT
+          fi
+          echo "Detected version: $VERSION -> tag: $(cat $GITHUB_OUTPUT | grep tag= | cut -d= -f2)"
+
       - run: npm install
+
       # Modify package.json, inserting version attribute
       - run: npm version $RELEASE_VERSION --no-git-tag-version
-      # Perform publish, which will also run prepublishOnly
-      - run: npm publish --access public
+
+      # Perform publish with appropriate tag, which will also run prepublishOnly
+      - run: npm publish --access public --tag ${{ steps.dist-tag.outputs.tag }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - run: npm run generate-docs
+      # Only generate and deploy docs for stable releases
+      - name: Generate docs
+        if: steps.dist-tag.outputs.tag == 'latest'
+        run: npm run generate-docs
 
-      - uses: actions/upload-pages-artifact@v3
+      - name: Upload docs artifact
+        if: steps.dist-tag.outputs.tag == 'latest'
+        uses: actions/upload-pages-artifact@v3
         with:
           path: 'docs/'
 
-      - uses: actions/deploy-pages@v4
+      - name: Deploy docs to GitHub Pages
+        if: steps.dist-tag.outputs.tag == 'latest'
+        uses: actions/deploy-pages@v4

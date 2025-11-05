@@ -7,6 +7,7 @@
     "name": "Mike Roberts",
     "url": "https://symphonia.io"
   },
+  "type": "module",
   "scripts": {
     "example1": "npx ts-node -T src/example1Sheep.ts",
     "example2": "npx ts-node -T src/example2Chickens.ts",

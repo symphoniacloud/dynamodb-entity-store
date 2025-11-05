@@ -18,6 +18,7 @@
   "bugs": {
     "url": "https://github.com/symphoniacloud/dynamodb-entity-store/issues"
   },
+  "type": "module",
   "scripts": {
     "lint": "eslint --max-warnings=0 --fix-dry-run \"{src,test}/**/*.{js,ts}\"",
     "format": "prettier --check \"{src,test}/**/*.{js,ts}\"",
@@ -27,7 +28,7 @@
     "all-checks": "npm run local-checks && npm run integration-tests",
     "deploy": "cd test/examples && aws cloudformation deploy --template-file template.yaml --stack-name \"${STACK_NAME-entity-store-test-stack}\" --no-fail-on-empty-changeset",
     "deploy-and-all-checks": "npm run deploy && npm run all-checks",
-    "build": "rm -rf dist && tsc -p tsconfig-build-esm.json && tsc -p tsconfig-build-cjs.json && echo '{\"type\": \"module\"}' > dist/esm/package.json && echo '{\"type\": \"commonjs\"}' > dist/cjs/package.json",
+    "build": "rm -rf dist && tsc -p tsconfig.json",
     "prepublishOnly": "npm run local-checks && npm run build",
     "check-examples": "cd examples && npm run local-checks",
     "generate-docs": "typedoc src/lib/index.ts"
@@ -62,7 +63,10 @@
     "LICENSE",
     "dist/"
   ],
-  "main": "./dist/cjs/index.js",
-  "module": "./dist/esm/index.js",
-  "types": "./dist/cjs/index.d.ts"
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  }
 }

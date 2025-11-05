@@ -1,10 +1,10 @@
-import { EntityContext } from '../entityContext'
-import { isDebugLoggingEnabled } from '../../util/logger'
-import { createUpdateParams } from '../common/updateCommon'
+import { EntityContext } from '../entityContext.js'
+import { isDebugLoggingEnabled } from '../../util/logger.js'
+import { createUpdateParams } from '../common/updateCommon.js'
 import { UpdateCommandInput } from '@aws-sdk/lib-dynamodb'
-import { parseAttributesCapacityAndMetrics } from './singleEntityCommon'
-import { AdvancedUpdateOptions, AdvancedUpdateResponse } from '../../singleEntityAdvancedOperations'
-import { returnParamsForCapacityMetricsAndValues } from '../common/operationsCommon'
+import { parseAttributesCapacityAndMetrics } from './singleEntityCommon.js'
+import { AdvancedUpdateOptions, AdvancedUpdateResponse } from '../../singleEntityAdvancedOperations.js'
+import { returnParamsForCapacityMetricsAndValues } from '../common/operationsCommon.js'
 
 export async function updateItem<
   TItem extends TPKSource & TSKSource,

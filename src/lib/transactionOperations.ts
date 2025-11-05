@@ -1,12 +1,12 @@
-import { DynamoDBValues, Entity } from './entities'
+import { DynamoDBValues, Entity } from './entities.js'
 import {
   ReturnConsumedCapacityOption,
   ReturnItemCollectionMetricsOption,
   ReturnValuesOnConditionCheckFailureOption
-} from './singleEntityAdvancedOperations'
+} from './singleEntityAdvancedOperations.js'
 import { ConsumedCapacity } from '@aws-sdk/client-dynamodb'
-import { DeleteOptions, PutOptions, UpdateOptions } from './singleEntityOperations'
-import { Mandatory } from './util'
+import { DeleteOptions, PutOptions, UpdateOptions } from './singleEntityOperations.js'
+import { Mandatory } from './util/index.js'
 
 // TOMAYBE - consider non builder versions
 export interface TransactionOperations {

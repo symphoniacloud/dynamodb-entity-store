@@ -1,8 +1,8 @@
-import { EntityContext } from '../entityContext'
-import { keyParamFromSource } from '../common/operationsCommon'
-import { batchWrite, createWriteParamsBatches } from './batchWriteCommon'
+import { EntityContext } from '../entityContext.js'
+import { keyParamFromSource } from '../common/operationsCommon.js'
+import { batchWrite, createWriteParamsBatches } from './batchWriteCommon.js'
 import { BatchWriteCommandInput } from '@aws-sdk/lib-dynamodb'
-import { BatchDeleteOptions } from '../../singleEntityAdvancedOperations'
+import { BatchDeleteOptions } from '../../singleEntityAdvancedOperations.js'
 
 export async function deleteItems<
   TItem extends TPKSource & TSKSource,

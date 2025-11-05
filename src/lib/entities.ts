@@ -1,4 +1,4 @@
-import { NativeAttributeValue, NativeScalarAttributeValue } from '@aws-sdk/util-dynamodb/dist-types/models'
+import { NativeAttributeValue, NativeScalarAttributeValue } from '@aws-sdk/util-dynamodb'
 
 export type DynamoDBValues = Record<string, NativeAttributeValue>
 

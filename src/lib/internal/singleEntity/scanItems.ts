@@ -1,11 +1,11 @@
-import { EntityContext } from '../entityContext'
+import { EntityContext } from '../entityContext.js'
 import {
   configureScanOperation,
   executeQueryOrScan,
   parseResultsForEntity
-} from '../common/queryAndScanCommon'
-import { AdvancedCollectionResponse, AdvancedScanOnePageOptions } from '../../singleEntityAdvancedOperations'
-import { GsiDetails } from '../common/gsiQueryCommon'
+} from '../common/queryAndScanCommon.js'
+import { AdvancedCollectionResponse, AdvancedScanOnePageOptions } from '../../singleEntityAdvancedOperations.js'
+import { GsiDetails } from '../common/gsiQueryCommon.js'
 
 export async function scanItems<TItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
   context: EntityContext<TItem, TPKSource, TSKSource>,

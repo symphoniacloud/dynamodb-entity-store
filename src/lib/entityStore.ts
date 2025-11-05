@@ -1,7 +1,7 @@
-import { Entity } from './entities'
-import { MultipleEntityOperations } from './multipleEntityOperations'
-import { SingleEntityOperations } from './singleEntityOperations'
-import { TransactionOperations } from './transactionOperations'
+import { Entity } from './entities.js'
+import { MultipleEntityOperations } from './multipleEntityOperations.js'
+import { SingleEntityOperations } from './singleEntityOperations.js'
+import { TransactionOperations } from './transactionOperations.js'
 
 /**
  * Top-level interface for all operations in dynamodb-entity-store.

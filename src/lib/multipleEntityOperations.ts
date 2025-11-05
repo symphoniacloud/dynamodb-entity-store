@@ -1,4 +1,4 @@
-import { DynamoDBValues, Entity } from './entities'
+import { DynamoDBValues, Entity } from './entities.js'
 import {
   AdvancedGsiQueryAllOptions,
   AdvancedGsiQueryOnePageOptions,
@@ -7,8 +7,8 @@ import {
   AdvancedScanAllOptions,
   AdvancedScanOnePageOptions,
   ConsumedCapacitiesMetadata
-} from './singleEntityAdvancedOperations'
-import { SkQueryRange } from './singleEntityOperations'
+} from './singleEntityAdvancedOperations.js'
+import { SkQueryRange } from './singleEntityOperations.js'
 
 export interface MultipleEntityOperations {
   queryAllByPk<TKeyItem extends TPKSource, TPKSource>(

@@ -1,8 +1,8 @@
-import { EntityContextResolver } from '../tableBackedConfigurationResolver'
-import { Entity } from '../../entities'
-import { MultipleEntityCollectionResponse, MultipleEntityOperations } from '../../multipleEntityOperations'
-import { createEntityContext } from '../entityContext'
-import { scanMultiple } from './multipleEntityScanOperation'
+import { EntityContextResolver } from '../tableBackedConfigurationResolver.js'
+import { Entity } from '../../entities.js'
+import { MultipleEntityCollectionResponse, MultipleEntityOperations } from '../../multipleEntityOperations.js'
+import { createEntityContext } from '../entityContext.js'
+import { scanMultiple } from './multipleEntityScanOperation.js'
 import {
   AdvancedGsiQueryAllOptions,
   AdvancedGsiQueryOnePageOptions,
@@ -10,15 +10,15 @@ import {
   AdvancedQueryOnePageOptions,
   AdvancedScanAllOptions,
   AdvancedScanOnePageOptions
-} from '../../singleEntityAdvancedOperations'
+} from '../../singleEntityAdvancedOperations.js'
 import {
   queryMultipleByGsiPk,
   queryMultipleByGsiSkRange,
   queryMultipleByPk,
   queryMultipleBySkRange
-} from './multipleEntityQueryOperations'
-import { SkQueryRange } from '../../singleEntityOperations'
-import { EntityContextsByEntityType } from './multipleEntitiesQueryAndScanCommon'
+} from './multipleEntityQueryOperations.js'
+import { SkQueryRange } from '../../singleEntityOperations.js'
+import { EntityContextsByEntityType } from './multipleEntitiesQueryAndScanCommon.js'
 
 export function tableBackedMultipleEntityOperations(
   entityContextResolver: EntityContextResolver,

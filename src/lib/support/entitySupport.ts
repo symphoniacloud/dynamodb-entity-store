@@ -1,5 +1,5 @@
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-import { excludeKeys } from '../util/collections'
+import { excludeKeys } from '../util/collections.js'
 import {
   DynamoDBValues,
   Entity,
@@ -7,8 +7,8 @@ import {
   EntityParser,
   MetaAttributeNames,
   PKOnlyEntity
-} from '../entities'
-import { throwError } from '../util/errors'
+} from '../entities.js'
+import { throwError } from '../util/errors.js'
 
 export type TypePredicateFunction<T extends DynamoDBValues> = (o: DynamoDBValues) => o is T
 

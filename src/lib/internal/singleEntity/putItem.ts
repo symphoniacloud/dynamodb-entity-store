@@ -1,10 +1,10 @@
 import { PutCommandInput } from '@aws-sdk/lib-dynamodb'
-import { EntityContext } from '../entityContext'
-import { isDebugLoggingEnabled } from '../../util'
-import { parseAttributesCapacityAndMetrics } from './singleEntityCommon'
-import { AdvancedPutOptions, AdvancedPutResponse } from '../../singleEntityAdvancedOperations'
-import { putParams } from '../common/putCommon'
-import { returnParamsForCapacityMetricsAndValues } from '../common/operationsCommon'
+import { EntityContext } from '../entityContext.js'
+import { isDebugLoggingEnabled } from '../../util/index.js'
+import { parseAttributesCapacityAndMetrics } from './singleEntityCommon.js'
+import { AdvancedPutOptions, AdvancedPutResponse } from '../../singleEntityAdvancedOperations.js'
+import { putParams } from '../common/putCommon.js'
+import { returnParamsForCapacityMetricsAndValues } from '../common/operationsCommon.js'
 
 export async function putItem<TItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
   context: EntityContext<TItem, TPKSource, TSKSource>,

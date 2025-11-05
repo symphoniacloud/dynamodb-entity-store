@@ -1,12 +1,12 @@
-import { EntityContext } from '../entityContext'
-import { MultipleEntityCollectionResponse } from '../../multipleEntityOperations'
-import { parseItem } from '../common/operationsCommon'
+import { EntityContext } from '../entityContext.js'
+import { MultipleEntityCollectionResponse } from '../../multipleEntityOperations.js'
+import { parseItem } from '../common/operationsCommon.js'
 import {
   commonCollectionResponseElements,
   executeQueryOrScan,
   QueryScanOperationConfiguration,
   UnparsedCollectionResult
-} from '../common/queryAndScanCommon'
+} from '../common/queryAndScanCommon.js'
 import {
   QueryCommandInput,
   QueryCommandOutput,

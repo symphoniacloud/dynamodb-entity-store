@@ -1,7 +1,7 @@
-import { GsiGenerators } from '../../entities'
-import { EntityContext } from '../entityContext'
-import { throwError } from '../../util'
-import { WithGsiId } from '../../singleEntityOperations'
+import { GsiGenerators } from '../../entities.js'
+import { EntityContext } from '../entityContext.js'
+import { throwError } from '../../util/index.js'
+import { WithGsiId } from '../../singleEntityOperations.js'
 
 export interface GsiDetails {
   id: string

@@ -1,5 +1,5 @@
-import { DynamoDBValues } from './entities'
-import { SingleEntityAdvancedOperations } from './singleEntityAdvancedOperations'
+import { DynamoDBValues } from './entities.js'
+import { SingleEntityAdvancedOperations } from './singleEntityAdvancedOperations.js'
 
 /**
  * All the operations available when working with one entity at a time.

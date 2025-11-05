@@ -1,19 +1,19 @@
-import { DynamoDBValues, Entity } from '../../entities'
-import { EntityContextParams, createEntityContext, EntityContext } from '../entityContext'
+import { DynamoDBValues, Entity } from '../../entities.js'
+import { EntityContextParams, createEntityContext, EntityContext } from '../entityContext.js'
 import {
   keyParamFromSource,
   parseItem,
   returnConsumedCapacityParam,
   tableNameParam
-} from '../common/operationsCommon'
+} from '../common/operationsCommon.js'
 import { TransactGetCommandInput, TransactGetCommandOutput } from '@aws-sdk/lib-dynamodb'
-import { isDebugLoggingEnabled } from '../../util/logger'
+import { isDebugLoggingEnabled } from '../../util/logger.js'
 
 import {
   GetTransactionBuilder,
   GetTransactionOptions,
   GetTransactionResponse
-} from '../../transactionOperations'
+} from '../../transactionOperations.js'
 
 interface GetTransactionAction {
   Get: {

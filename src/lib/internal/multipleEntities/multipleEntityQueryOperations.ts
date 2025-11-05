@@ -1,20 +1,20 @@
-import { expressionAttributeParams } from '../common/operationsCommon'
-import { MultipleEntityCollectionResponse } from '../../multipleEntityOperations'
-import { EntityContext } from '../entityContext'
+import { expressionAttributeParams } from '../common/operationsCommon.js'
+import { MultipleEntityCollectionResponse } from '../../multipleEntityOperations.js'
+import { EntityContext } from '../entityContext.js'
 import { QueryCommandInput } from '@aws-sdk/lib-dynamodb'
 import {
   EntityContextsByEntityType,
   performMultipleEntityOperationAndParse
-} from './multipleEntitiesQueryAndScanCommon'
-import { findGsiDetails } from '../common/gsiQueryCommon'
-import { SkQueryRange } from '../../singleEntityOperations'
-import { configureQueryOperation } from '../common/queryAndScanCommon'
+} from './multipleEntitiesQueryAndScanCommon.js'
+import { findGsiDetails } from '../common/gsiQueryCommon.js'
+import { SkQueryRange } from '../../singleEntityOperations.js'
+import { configureQueryOperation } from '../common/queryAndScanCommon.js'
 import {
   AdvancedGsiQueryOnePageOptions,
   AdvancedQueryOnePageOptions
-} from '../../singleEntityAdvancedOperations'
-import { Entity } from '../../entities'
-import { throwError } from '../../util'
+} from '../../singleEntityAdvancedOperations.js'
+import { Entity } from '../../entities.js'
+import { throwError } from '../../util/index.js'
 
 export async function queryMultipleByPk<TKeyItem extends TPKSource, TPKSource>(
   contexts: EntityContextsByEntityType,

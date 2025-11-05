@@ -1,3 +1,3 @@
-export * from './setupSupport'
-export * from './entitySupport'
-export * from './querySupport'
+export * from './setupSupport.js'
+export * from './entitySupport.js'
+export * from './querySupport.js'

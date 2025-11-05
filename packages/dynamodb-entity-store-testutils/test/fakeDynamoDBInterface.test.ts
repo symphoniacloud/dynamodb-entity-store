@@ -207,7 +207,7 @@ describe('FakeDynamoDBInterface', () => {
                 TableName: 'test-table',
                 Key: { id: '1' }
               }
-            } as any
+            } as never
           ]
         })
       ).rejects.toThrow('Operation not implemented')

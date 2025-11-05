@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "dist", "test"],
+  "include": ["src/**/*.ts", "test/**/*.ts"],
+  "exclude": ["node_modules", "dist"],
   "compilerOptions": {
     // ** Modules **
     "target": "ES2022",

@@ -3,7 +3,7 @@ import {
   createMinimumSingleTableConfig,
   createStandardMultiTableConfig,
   createStandardSingleTableConfig
-} from '../../../src/lib'
+} from '../../../src/lib/index.js'
 
 test('createMinimumSingleTableConfig', () => {
   expect(createMinimumSingleTableConfig('testTable', { pk: 'TESTPK' })).toEqual({

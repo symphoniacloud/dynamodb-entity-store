@@ -1,9 +1,9 @@
-import { Chicken } from './chickenTypeAndEntity'
-import { Duck } from './duckTypeAndEntity'
-import { Sheep } from './sheepTypeAndEntity'
-import { Dog } from './dogTypeAndEntity'
-import { Cat } from './catTypeAndEntity'
-import { Farm } from './farmTypeAndEntity'
+import { Chicken } from './chickenTypeAndEntity.js'
+import { Duck } from './duckTypeAndEntity.js'
+import { Sheep } from './sheepTypeAndEntity.js'
+import { Dog } from './dogTypeAndEntity.js'
+import { Cat } from './catTypeAndEntity.js'
+import { Farm } from './farmTypeAndEntity.js'
 
 export const shaunIdentifier = { breed: 'merino', name: 'shaun' }
 export const shaunTheSheep: Sheep = { ...shaunIdentifier, ageInYears: 3 }

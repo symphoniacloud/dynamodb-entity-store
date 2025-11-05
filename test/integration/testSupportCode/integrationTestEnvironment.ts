@@ -1,5 +1,5 @@
 import { CloudFormationClient, DescribeStacksCommand } from '@aws-sdk/client-cloudformation'
-import { throwError } from '../../../src/lib'
+import { throwError } from '../../../src/lib/index.js'
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb'
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 

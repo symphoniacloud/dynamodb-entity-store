@@ -44,17 +44,19 @@
   "devDependencies": {
     "@aws-sdk/client-cloudformation": "3.x",
     "@aws-sdk/types": "3.x",
+    "@eslint/js": "9.x",
     "@types/deep-equal": "1.x",
     "@types/node": "22.x",
-    "@typescript-eslint/eslint-plugin": "7.x",
-    "@typescript-eslint/parser": "7.x",
+    "@typescript-eslint/eslint-plugin": "8.x",
+    "@typescript-eslint/parser": "8.x",
     "deep-equal": "2.x",
-    "eslint": "8.x",
+    "eslint": "9.x",
     "eslint-config-prettier": "9.x",
     "prettier": "3.x",
     "ts-node": "10.x",
     "typedoc": "^0.26.0",
     "typescript": "5.x",
+    "typescript-eslint": "8.x",
     "vitest": "3.x"
   },
   "files": [

@@ -1,34 +1,31 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  // Tests are excluded in build tsconfigs
-  "include": ["src/**/*.ts", "test/**/*.ts"],
-  "exclude": ["node_modules", "dist"],
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist", "test"],
   "compilerOptions": {
     // ** Modules **
     "target": "ES2022",
-    // "module"" is overridden in the ESM build config
-    "module": "commonjs",
-    // This is default for commonjs, but not for ES Modules, so be explicit here
-    "moduleResolution": "node",
+    "module": "ES2022",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022"],
 
     // ** Type Checking **
     "strict": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
 
     // ** Interop **
-    // Set to false - see https://evertpot.com/universal-commonjs-esm-typescript-packages/
-    "esModuleInterop": false,
+    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "forceConsistentCasingInFileNames": true,
 
     // ** Completeness **
     "skipLibCheck": true,
 
     // ** Emit **
-    // noEmit overridden in build tsconfigs
-    "noEmit": true,
+    "outDir": "dist",
     "declaration": true,
-    "sourceMap": true,
+    "declarationMap": true,
+    "sourceMap": true
   }
 }

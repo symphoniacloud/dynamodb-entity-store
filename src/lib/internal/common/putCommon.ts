@@ -34,19 +34,18 @@ export function itemParam<TItem extends TPKSource & TSKSource, TPKSource, TSKSou
 ): { Item: DynamoDBValues } {
   const { entity, clock } = context
   return {
-    Item:
-      {
-        ...createKeyFromSource(context, item),
-        ...gsiAttributes(context.metaAttributeNames, entity, item),
-        ...(context.metaAttributeNames.entityType
-          ? { [context.metaAttributeNames.entityType]: entity.type }
-          : {}),
-        ...(context.metaAttributeNames.lastUpdated
-          ? { [context.metaAttributeNames.lastUpdated]: clock.now().toISOString() }
-          : {}),
-        ...ttlAttribute(clock, context.metaAttributeNames.ttl, options),
-        ...(entity.convertToDynamoFormat ? entity.convertToDynamoFormat(item) : item)
-      } || {}
+    Item: {
+      ...createKeyFromSource(context, item),
+      ...gsiAttributes(context.metaAttributeNames, entity, item),
+      ...(context.metaAttributeNames.entityType
+        ? { [context.metaAttributeNames.entityType]: entity.type }
+        : {}),
+      ...(context.metaAttributeNames.lastUpdated
+        ? { [context.metaAttributeNames.lastUpdated]: clock.now().toISOString() }
+        : {}),
+      ...ttlAttribute(clock, context.metaAttributeNames.ttl, options),
+      ...(entity.convertToDynamoFormat ? entity.convertToDynamoFormat(item) : item)
+    } as DynamoDBValues
   }
 }
 

@@ -2,10 +2,10 @@ import {
   expressionAttributeParamsFromOptions,
   keyParamFromSource,
   tableNameParam
-} from '../common/operationsCommon'
-import { EntityContext } from '../entityContext'
-import { DynamoDBValues } from '../../entities'
-import { TransactionConditionCheckOptions } from '../../transactionOperations'
+} from '../common/operationsCommon.js'
+import { EntityContext } from '../entityContext.js'
+import { DynamoDBValues } from '../../entities.js'
+import { TransactionConditionCheckOptions } from '../../transactionOperations.js'
 
 export interface ConditionCheckParams {
   Key: DynamoDBValues

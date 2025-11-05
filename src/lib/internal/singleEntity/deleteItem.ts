@@ -1,10 +1,10 @@
 import { DeleteCommandInput } from '@aws-sdk/lib-dynamodb'
-import { EntityContext } from '../entityContext'
-import { deleteParams } from '../common/deleteCommon'
-import { isDebugLoggingEnabled } from '../../util'
-import { parseAttributesCapacityAndMetrics } from './singleEntityCommon'
-import { AdvancedDeleteOptions, AdvancedDeleteResponse } from '../../singleEntityAdvancedOperations'
-import { returnParamsForCapacityMetricsAndValues } from '../common/operationsCommon'
+import { EntityContext } from '../entityContext.js'
+import { deleteParams } from '../common/deleteCommon.js'
+import { isDebugLoggingEnabled } from '../../util/index.js'
+import { parseAttributesCapacityAndMetrics } from './singleEntityCommon.js'
+import { AdvancedDeleteOptions, AdvancedDeleteResponse } from '../../singleEntityAdvancedOperations.js'
+import { returnParamsForCapacityMetricsAndValues } from '../common/operationsCommon.js'
 
 export async function deleteItem<
   TItem extends TPKSource & TSKSource,

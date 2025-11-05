@@ -1,15 +1,15 @@
-import { EntityContext } from '../entityContext'
-import { chunk, isDebugLoggingEnabled, removeNullOrUndefined } from '../../util'
+import { EntityContext } from '../entityContext.js'
+import { chunk, isDebugLoggingEnabled, removeNullOrUndefined } from '../../util/index.js'
 import { BatchWriteCommandInput, BatchWriteCommandOutput } from '@aws-sdk/lib-dynamodb'
-import { DynamoDBValues } from '../../entities'
-import { returnConsumedCapacityParam, returnItemCollectionMetricsParam } from '../common/operationsCommon'
+import { DynamoDBValues } from '../../entities.js'
+import { returnConsumedCapacityParam, returnItemCollectionMetricsParam } from '../common/operationsCommon.js'
 import {
   AdvancedBatchWriteResponse,
   BatchDeleteOptions,
   BatchPutOptions,
   ConsumedCapacitiesMetadata,
   ItemCollectionMetricsCollectionMetadata
-} from '../../singleEntityAdvancedOperations'
+} from '../../singleEntityAdvancedOperations.js'
 
 export const DEFAULT_AND_MAX_BATCH_WRITE_SIZE = 25
 export const DEFAULT_AND_MAX_BATCH_READ_SIZE = 100

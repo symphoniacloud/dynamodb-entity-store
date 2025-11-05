@@ -1,4 +1,4 @@
-import { EntityContext } from '../entityContext'
+import { EntityContext } from '../entityContext.js'
 import {
   DeleteOptions,
   GetOptions,
@@ -15,8 +15,8 @@ import {
   SingleEntityOperations,
   SkQueryRange,
   UpdateOptions
-} from '../../singleEntityOperations'
-import { tableBackedSingleEntityAdvancedOperations } from './tableBackedSingleEntityAdvancedOperations'
+} from '../../singleEntityOperations.js'
+import { tableBackedSingleEntityAdvancedOperations } from './tableBackedSingleEntityAdvancedOperations.js'
 
 export function tableBackedSingleEntityOperations<TItem extends TPKSource & TSKSource, TPKSource, TSKSource>(
   entityContext: EntityContext<TItem, TPKSource, TSKSource>

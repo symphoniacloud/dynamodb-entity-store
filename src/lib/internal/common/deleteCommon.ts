@@ -1,11 +1,11 @@
-import { EntityContext } from '../entityContext'
+import { EntityContext } from '../entityContext.js'
 import {
   conditionExpressionParam,
   expressionAttributeParamsFromOptions,
   keyParamFromSource,
   tableNameParam
-} from './operationsCommon'
-import { DeleteOptions } from '../../singleEntityOperations'
+} from './operationsCommon.js'
+import { DeleteOptions } from '../../singleEntityOperations.js'
 
 // Also used for generating transaction delete items
 export function deleteParams<

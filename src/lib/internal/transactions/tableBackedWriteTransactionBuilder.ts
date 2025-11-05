@@ -1,15 +1,15 @@
-import { Entity } from '../../entities'
-import { EntityContextParams, createEntityContext, EntityContext } from '../entityContext'
+import { Entity } from '../../entities.js'
+import { EntityContextParams, createEntityContext, EntityContext } from '../entityContext.js'
 import {
   DeleteCommandInput,
   PutCommandInput,
   TransactWriteCommandInput,
   UpdateCommandInput
 } from '@aws-sdk/lib-dynamodb'
-import { isDebugLoggingEnabled } from '../../util/logger'
-import { Mandatory } from '../../util/types'
-import { ConditionCheckParams, createTransactionConditionCheck } from './conditionCheckOperation'
-import { returnConsumedCapacityParam, returnItemCollectionMetricsParam } from '../common/operationsCommon'
+import { isDebugLoggingEnabled } from '../../util/logger.js'
+import { Mandatory } from '../../util/types.js'
+import { ConditionCheckParams, createTransactionConditionCheck } from './conditionCheckOperation.js'
+import { returnConsumedCapacityParam, returnItemCollectionMetricsParam } from '../common/operationsCommon.js'
 import {
   TransactionConditionCheckOptions,
   TransactionDeleteOptions,
@@ -18,10 +18,10 @@ import {
   WriteTransactionBuilder,
   WriteTransactionOptions,
   WriteTransactionResponse
-} from '../../transactionOperations'
-import { putParams } from '../common/putCommon'
-import { deleteParams } from '../common/deleteCommon'
-import { createUpdateParams } from '../common/updateCommon'
+} from '../../transactionOperations.js'
+import { putParams } from '../common/putCommon.js'
+import { deleteParams } from '../common/deleteCommon.js'
+import { createUpdateParams } from '../common/updateCommon.js'
 
 type WriteTransactionAction =
   | {

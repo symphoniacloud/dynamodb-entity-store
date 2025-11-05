@@ -1,8 +1,8 @@
-import { documentClientBackedInterface } from '../dynamoDBInterface'
-import { realClock } from '../util/dateAndTime'
-import { MultiTableConfig, StoreContext, TableConfig } from '../tableBackedStoreConfiguration'
-import { noopLogger } from '../util/logger'
-import { MetaAttributeNames } from '../entities'
+import { documentClientBackedInterface } from '../dynamoDBInterface.js'
+import { realClock } from '../util/dateAndTime.js'
+import { MultiTableConfig, StoreContext, TableConfig } from '../tableBackedStoreConfiguration.js'
+import { noopLogger } from '../util/logger.js'
+import { MetaAttributeNames } from '../entities.js'
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb'
 
 /**

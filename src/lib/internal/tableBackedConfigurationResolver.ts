@@ -4,9 +4,9 @@ import {
   StoreContext,
   TableConfig,
   TablesConfig
-} from '../tableBackedStoreConfiguration'
-import { EntityContextParams } from './entityContext'
-import { throwError } from '../util/errors'
+} from '../tableBackedStoreConfiguration.js'
+import { EntityContextParams } from './entityContext.js'
+import { throwError } from '../util/errors.js'
 
 export type EntityContextResolver = (entityType: string) => EntityContextParams
 

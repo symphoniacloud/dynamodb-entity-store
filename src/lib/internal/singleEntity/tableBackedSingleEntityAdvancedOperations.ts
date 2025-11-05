@@ -15,25 +15,25 @@ import {
   BatchGetOptions,
   BatchPutOptions,
   SingleEntityAdvancedOperations
-} from '../../singleEntityAdvancedOperations'
-import { EntityContext } from '../entityContext'
-import { putItem } from './putItem'
-import { getItem } from './getItem'
-import { updateItem } from './updateItem'
-import { deleteItem } from './deleteItem'
-import { batchPutItems } from './batchPutItems'
-import { deleteItems } from './batchDeleteItems'
-import { getItems } from './batchGetItems'
+} from '../../singleEntityAdvancedOperations.js'
+import { EntityContext } from '../entityContext.js'
+import { putItem } from './putItem.js'
+import { getItem } from './getItem.js'
+import { updateItem } from './updateItem.js'
+import { deleteItem } from './deleteItem.js'
+import { batchPutItems } from './batchPutItems.js'
+import { deleteItems } from './batchDeleteItems.js'
+import { getItems } from './batchGetItems.js'
 import {
   gsiPkQueryCriteria,
   gsiSkRangeQueryCriteria,
   pkQueryCriteria,
   queryItems,
   skRangeQueryCriteria
-} from './queryItems'
-import { SkQueryRange } from '../../singleEntityOperations'
-import { findGsiDetails } from '../common/gsiQueryCommon'
-import { scanItems } from './scanItems'
+} from './queryItems.js'
+import { SkQueryRange } from '../../singleEntityOperations.js'
+import { findGsiDetails } from '../common/gsiQueryCommon.js'
+import { scanItems } from './scanItems.js'
 
 export function tableBackedSingleEntityAdvancedOperations<
   TItem extends TPKSource & TSKSource,

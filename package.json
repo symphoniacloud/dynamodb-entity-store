@@ -14,8 +14,8 @@
     "examples"
   ],
   "scripts": {
-    "build": "npm run build --workspace=@symphoniacloud/dynamodb-entity-store",
-    "test": "npm run unit-tests --workspace=@symphoniacloud/dynamodb-entity-store && npm run integration-tests --workspace=@symphoniacloud/dynamodb-entity-store",
+    "build": "npm run build --workspace=@symphoniacloud/dynamodb-entity-store && npm run build --workspace=@symphoniacloud/dynamodb-entity-store-testutils",
+    "test": "npm run test --workspace=@symphoniacloud/dynamodb-entity-store-testutils && npm run unit-tests --workspace=@symphoniacloud/dynamodb-entity-store && npm run integration-tests --workspace=@symphoniacloud/dynamodb-entity-store",
     "unit-tests": "npm run unit-tests --workspace=@symphoniacloud/dynamodb-entity-store",
     "integration-tests": "npm run integration-tests --workspace=@symphoniacloud/dynamodb-entity-store",
     "lint": "npm run lint --workspaces --if-present",

@@ -41,6 +41,18 @@ export class FakeTable {
     return Array.from(this.items.values())
   }
 
+  query(pkValue: NativeAttributeValue, skValue?: NativeAttributeValue) {
+    return this.allItems().filter((item) => {
+      const itemPk = item[this.pkName]
+      if (itemPk !== pkValue) return false
+      if (skValue !== undefined && this.skName) {
+        const itemSk = item[this.skName]
+        return itemSk === skValue
+      }
+      return true
+    })
+  }
+
   keyFromItem(item: Record<string, NativeAttributeValue> | undefined): TableKey {
     if (!item) throw new Error('Item is undefined')
     const pkValue = item[this.pkName]

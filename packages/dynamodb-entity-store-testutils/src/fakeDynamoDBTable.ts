@@ -1,8 +1,8 @@
 import { NativeAttributeValue } from '@aws-sdk/lib-dynamodb'
 
 interface TableKey {
-  PK: string
-  SK?: string
+  PK: NativeAttributeValue
+  SK?: NativeAttributeValue
 }
 
 export class FakeTable {

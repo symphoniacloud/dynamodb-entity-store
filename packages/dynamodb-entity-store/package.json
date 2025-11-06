@@ -28,7 +28,7 @@
     "all-checks": "npm run local-checks && npm run integration-tests",
     "deploy": "cd test/examples && aws cloudformation deploy --template-file template.yaml --stack-name \"${STACK_NAME-entity-store-test-stack}\" --no-fail-on-empty-changeset",
     "deploy-and-all-checks": "npm run deploy && npm run all-checks",
-    "build": "rm -rf dist && tsc -p tsconfig.json",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
     "prepublishOnly": "npm run local-checks && npm run build",
     "generate-docs": "typedoc src/lib/index.ts"
   },

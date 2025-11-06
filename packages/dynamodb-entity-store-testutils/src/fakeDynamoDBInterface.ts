@@ -108,9 +108,23 @@ export class FakeDynamoDBInterface implements DynamoDBInterface {
   }
 
   async queryAllPages(params: QueryCommandInput): Promise<QueryCommandOutput[]> {
+    const table = this.getTableFrom(params)
+    const attrValues = params.ExpressionAttributeValues
+    if (!attrValues) {
+      throw new Error('ExpressionAttributeValues required for query (must include partition key value)')
+    }
+
+    // Extract partition key value - try common names, fall back to first value
+    const pkValue = attrValues[':pk'] ?? attrValues[':partitionKey'] ?? Object.values(attrValues)[0]
+
+    // Extract sort key value if present
+    const skValue = attrValues[':sk'] ?? attrValues[':sortKey']
+
+    const items = table.query(pkValue, skValue)
+
     return [
       {
-        Items: this.getTableFrom(params).allItems(),
+        Items: items,
         ...METADATA
       }
     ]

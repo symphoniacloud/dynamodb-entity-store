@@ -245,11 +245,16 @@ describe('FakeDynamoDBInterface', () => {
       await db.put({ TableName: 'test-table', Item: { id: '2', name: 'Second' } })
     })
 
-    it('should return all items in queryAllPages', async () => {
-      const results = await db.queryAllPages({ TableName: 'test-table' })
+    it('should filter by partition key in queryAllPages', async () => {
+      const results = await db.queryAllPages({
+        TableName: 'test-table',
+        KeyConditionExpression: 'id = :pk',
+        ExpressionAttributeValues: { ':pk': '1' }
+      })
 
       expect(results).toHaveLength(1)
-      expect(results[0].Items).toHaveLength(2)
+      expect(results[0].Items).toHaveLength(1)
+      expect(results[0].Items?.[0]).toEqual({ id: '1', name: 'First' })
     })
 
     it('queryOnePage should throw not implemented', async () => {

@@ -201,19 +201,25 @@ describe('FakeDynamoDBInterface', () => {
       expect(db.tables['test-table'].get({ id: '2' })).toBeDefined()
     })
 
-    it('should throw for unsupported operation types', async () => {
-      await expect(
-        db.transactionWrite({
-          TransactItems: [
-            {
-              Update: {
-                TableName: 'test-table',
-                Key: { id: '1' }
-              }
-            } as never
-          ]
-        })
-      ).rejects.toThrow('Operation not implemented')
+    it('should handle Update operations in transaction', async () => {
+      await db.put({ TableName: 'test-table', Item: { id: '1', count: 0 } })
+
+      await db.transactionWrite({
+        TransactItems: [
+          {
+            Update: {
+              TableName: 'test-table',
+              Key: { id: '1' },
+              UpdateExpression: 'SET #count = :val',
+              ExpressionAttributeNames: { '#count': 'count' },
+              ExpressionAttributeValues: { ':val': 5 }
+            }
+          }
+        ]
+      })
+
+      const result = await db.get({ TableName: 'test-table', Key: { id: '1' } })
+      expect(result.Item?.count).toBe(5)
     })
   })
 
@@ -257,37 +263,85 @@ describe('FakeDynamoDBInterface', () => {
       expect(results[0].Items?.[0]).toEqual({ id: '1', name: 'First' })
     })
 
-    it('queryOnePage should throw not implemented', async () => {
-      await expect(db.queryOnePage({ TableName: 'test-table' })).rejects.toThrow(
-        'Not implemented'
-      )
+    it('queryOnePage should filter by partition key', async () => {
+      const result = await db.queryOnePage({
+        TableName: 'test-table',
+        KeyConditionExpression: 'id = :pk',
+        ExpressionAttributeValues: { ':pk': '1' }
+      })
+
+      expect(result.Items).toHaveLength(1)
+      expect(result.Items?.[0]).toEqual({ id: '1', name: 'First' })
     })
   })
 
-  describe('unimplemented methods', () => {
-    it('update should throw not implemented', async () => {
-      await expect(
-        db.update({
-          TableName: 'test-table',
-          Key: { id: '1' }
-        })
-      ).rejects.toThrow('Not implemented')
+  describe('update operations', () => {
+    it('should update an existing item', async () => {
+      await db.put({ TableName: 'test-table', Item: { id: '1', count: 0, name: 'First' } })
+
+      await db.update({
+        TableName: 'test-table',
+        Key: { id: '1' },
+        UpdateExpression: 'SET #count = :val',
+        ExpressionAttributeNames: { '#count': 'count' },
+        ExpressionAttributeValues: { ':val': 5 }
+      })
+
+      const result = await db.get({ TableName: 'test-table', Key: { id: '1' } })
+      expect(result.Item?.count).toBe(5)
+      expect(result.Item?.name).toBe('First')
     })
 
-    it('batchGet should throw not implemented', async () => {
-      await expect(
-        db.batchGet({
-          RequestItems: {}
-        })
-      ).rejects.toThrow('Not implemented')
+    it('should create item if it does not exist', async () => {
+      await db.update({
+        TableName: 'test-table',
+        Key: { id: '99' },
+        UpdateExpression: 'SET #name = :val',
+        ExpressionAttributeNames: { '#name': 'name' },
+        ExpressionAttributeValues: { ':val': 'New' }
+      })
+
+      const result = await db.get({ TableName: 'test-table', Key: { id: '99' } })
+      expect(result.Item?.name).toBe('New')
+    })
+  })
+
+  describe('batchGet operations', () => {
+    beforeEach(async () => {
+      await db.put({ TableName: 'test-table', Item: { id: '1', name: 'First' } })
+      await db.put({ TableName: 'test-table', Item: { id: '2', name: 'Second' } })
     })
 
-    it('transactionGet should throw not implemented', async () => {
-      await expect(
-        db.transactionGet({
-          TransactItems: []
-        })
-      ).rejects.toThrow('Not implemented')
+    it('should get multiple items', async () => {
+      const result = await db.batchGet({
+        RequestItems: {
+          'test-table': {
+            Keys: [{ id: '1' }, { id: '2' }]
+          }
+        }
+      })
+
+      expect(result.Responses?.['test-table']).toHaveLength(2)
+    })
+  })
+
+  describe('transactionGet operations', () => {
+    beforeEach(async () => {
+      await db.put({ TableName: 'test-table', Item: { id: '1', name: 'First' } })
+      await db.put({ TableName: 'test-table', Item: { id: '2', name: 'Second' } })
+    })
+
+    it('should get multiple items in a transaction', async () => {
+      const result = await db.transactionGet({
+        TransactItems: [
+          { Get: { TableName: 'test-table', Key: { id: '1' } } },
+          { Get: { TableName: 'test-table', Key: { id: '2' } } }
+        ]
+      })
+
+      expect(result.Responses).toHaveLength(2)
+      expect(result.Responses?.[0].Item?.name).toBe('First')
+      expect(result.Responses?.[1].Item?.name).toBe('Second')
     })
   })
 

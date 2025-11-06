@@ -1,2 +1,2 @@
 export { FakeTable } from './fakeDynamoDBTable.js'
-export { FakeDynamoDBInterface, METADATA } from './fakeDynamoDBInterface.js'
+export { FakeDynamoDBInterface, METADATA, ConditionalCheckFailedException } from './fakeDynamoDBInterface.js'

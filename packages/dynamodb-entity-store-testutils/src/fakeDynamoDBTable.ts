@@ -25,7 +25,7 @@ export class FakeTable {
     this.items.set(this.findMatchingKey(itemKey) ?? itemKey, item)
   }
 
-  get(key: Record<string, NativeAttributeValue> | undefined) {
+  get(key: Record<string, NativeAttributeValue> | undefined): Record<string, NativeAttributeValue> | undefined {
     const matchingKey = this.findMatchingKey(this.keyFromItem(key))
     return matchingKey ? this.items.get(matchingKey) : undefined
   }

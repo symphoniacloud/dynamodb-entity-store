@@ -8,9 +8,9 @@
 % npm install @symphoniacloud/dynamodb-entity-store
 ```
 
-The library is provided in both CommonJS and ESModule form. All entrypoints are available from the root _index.js_ file.
+The library is provided for ES Modules / ESM only. If you require CJS support then you can use Version 1, which is in NPM, and the source code [is here on the v1 branch](https://github.com/symphoniacloud/dynamodb-entity-store/tree/v1).
 
-> _I tried using package.json [exports](https://nodejs.org/api/packages.html#exports) but IDE support seems flakey, so I've reverted for now to just supporting a root "barrel" file_
+All entrypoints are available from the root _index.js_ file.
 
 ## Instantiating Entity Store
 

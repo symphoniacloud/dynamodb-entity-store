@@ -38,6 +38,12 @@ The rest of this README provides an overview of how to use the library. For more
 * [Integration tests](https://github.com/symphoniacloud/dynamodb-entity-store/tree/main/test/integration)
 * [Source code](/src/lib)
 
+> [!IMPORTANT]
+> As of November 2025, and Version 2, this library is **ES Modules / ESM** only. 
+> If you require CJS support, or support back to Node 16, then you can use Version 1, which is in NPM, and the 
+> source code [is here on the v1 branch](https://github.com/symphoniacloud/dynamodb-entity-store/tree/v1).
+
+
 If you have questions or feedback, please use the [project issues](https://github.com/symphoniacloud/dynamodb-entity-store/issues), or feel free to email me: [mike@symphonia.io](mailto:mike@symphonia.io) .
 
 ## Example 1: Single Table Design, without indexes

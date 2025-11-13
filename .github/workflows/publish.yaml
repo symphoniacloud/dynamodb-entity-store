@@ -67,7 +67,7 @@ jobs:
         if: steps.dist-tag.outputs.tag == 'latest'
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'docs/'
+          path: 'packages/dynamodb-entity-store/docs/'
 
       - name: Deploy docs to GitHub Pages
         if: steps.dist-tag.outputs.tag == 'latest'

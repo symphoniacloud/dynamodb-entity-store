@@ -1,5 +1,7 @@
 node_modules
 dist
 docs
+packages/dynamodb-entity-store/README.md
+packages/dynamodb-entity-store/LICENSE
 
 yarn-error.log

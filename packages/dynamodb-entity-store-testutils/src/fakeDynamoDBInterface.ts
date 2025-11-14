@@ -32,7 +32,7 @@ export class FakeDynamoDBInterface implements DynamoDBInterface {
       this.tables[tableName] = new FakeTable(pkName, skName)
     }
 
-    // Needed because of Javascript and weird 'this' behavior when using dynamic binding
+    // Needed because of Javascript 'this' behavior when using dynamic binding
     // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this#bound_methods_in_classes
     this.queryOnePage = this.queryOnePage.bind(this)
     this.queryAllPages = this.queryAllPages.bind(this)
@@ -64,7 +64,7 @@ export class FakeDynamoDBInterface implements DynamoDBInterface {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async update(params: UpdateCommandInput): Promise<UpdateCommandOutput> {
-    throw new Error('Not implemented')
+    throw new Error('Not yet implemented')
   }
 
   async get(params: GetCommandInput): Promise<GetCommandOutput> {
@@ -76,7 +76,7 @@ export class FakeDynamoDBInterface implements DynamoDBInterface {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async batchGet(params: BatchGetCommandInput): Promise<BatchGetCommandOutput> {
-    throw new Error('Not implemented')
+    throw new Error('Not yet implemented')
   }
 
   async delete(params: DeleteCommandInput) {
@@ -91,7 +91,7 @@ export class FakeDynamoDBInterface implements DynamoDBInterface {
       } else if (item.Delete) {
         this.getTableFrom(item.Delete).deleteItem(item.Delete.Key)
       } else {
-        throw new Error('Operation not implemented')
+        throw new Error('Operation not yet implemented')
       }
     }
     return METADATA
@@ -99,35 +99,17 @@ export class FakeDynamoDBInterface implements DynamoDBInterface {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async transactionGet(params: TransactGetCommandInput): Promise<TransactGetCommandOutput> {
-    throw new Error('Not implemented')
+    throw new Error('Not yet implemented')
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async queryOnePage(params: QueryCommandInput): Promise<QueryCommandOutput> {
-    throw new Error('Not implemented')
+    throw new Error('Not yet implemented')
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async queryAllPages(params: QueryCommandInput): Promise<QueryCommandOutput[]> {
-    const table = this.getTableFrom(params)
-    const attrValues = params.ExpressionAttributeValues
-    if (!attrValues) {
-      throw new Error('ExpressionAttributeValues required for query (must include partition key value)')
-    }
-
-    // Extract partition key value - try common names, fall back to first value
-    const pkValue = attrValues[':pk'] ?? attrValues[':partitionKey'] ?? Object.values(attrValues)[0]
-
-    // Extract sort key value if present
-    const skValue = attrValues[':sk'] ?? attrValues[':sortKey']
-
-    const items = table.query(pkValue, skValue)
-
-    return [
-      {
-        Items: items,
-        ...METADATA
-      }
-    ]
+    throw new Error('Not yet implemented')
   }
 
   async scanOnePage(params: ScanCommandInput): Promise<ScanCommandOutput> {
@@ -146,7 +128,7 @@ export class FakeDynamoDBInterface implements DynamoDBInterface {
     ]
   }
 
-  public getTableFrom(withTableName: { TableName: string | undefined }) {
+  private getTableFrom(withTableName: { TableName: string | undefined }) {
     return this.getTable(withTableName.TableName)
   }
 

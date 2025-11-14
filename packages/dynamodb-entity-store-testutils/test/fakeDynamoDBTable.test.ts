@@ -1,172 +1,111 @@
-import { describe, it, expect } from 'vitest'
-import { FakeTable } from '../src/fakeDynamoDBTable.js'
+import { expect, test } from 'vitest'
+import { FakeTable } from '../src/index.js'
 
-describe('FakeTable', () => {
-  describe('PK-only table', () => {
-    it('should put and get an item', () => {
-      const table = new FakeTable('id', undefined)
-      const item = { id: 'test-id', name: 'Test Item', value: 42 }
+function createTables() {
+  return {
+    pkOnly: new FakeTable('PK', undefined),
+    pkAndSk: new FakeTable('PK', 'SK')
+  }
+}
 
-      table.putItem(item)
+test('basic put, get, delete', async () => {
+  const { pkOnly, pkAndSk } = createTables()
 
-      const retrieved = table.get({ id: 'test-id' })
-      expect(retrieved).toEqual(item)
-    })
+  pkOnly.putItem({ PK: 1, b: 2 })
+  pkOnly.putItem({ PK: 2, b: 3 })
+  pkAndSk.putItem({ PK: 1, SK: 2, b: 3 })
+  pkAndSk.putItem({ PK: 1, SK: 3, b: 4 })
 
-    it('should return undefined for non-existent item', () => {
-      const table = new FakeTable('id', undefined)
-
-      const retrieved = table.get({ id: 'non-existent' })
-      expect(retrieved).toBeUndefined()
-    })
-
-    it('should update item with same PK', () => {
-      const table = new FakeTable('id', undefined)
-      table.putItem({ id: 'test-id', name: 'Original' })
-      table.putItem({ id: 'test-id', name: 'Updated', extra: 'field' })
-
-      const retrieved = table.get({ id: 'test-id' })
-      expect(retrieved).toEqual({ id: 'test-id', name: 'Updated', extra: 'field' })
-      expect(table.allItems()).toHaveLength(1)
-    })
-
-    it('should delete an item', () => {
-      const table = new FakeTable('id', undefined)
-      table.putItem({ id: 'test-id', name: 'Test' })
-
-      table.deleteItem({ id: 'test-id' })
-
-      expect(table.get({ id: 'test-id' })).toBeUndefined()
-      expect(table.allItems()).toHaveLength(0)
-    })
-
-    it('should return all items', () => {
-      const table = new FakeTable('id', undefined)
-      table.putItem({ id: '1', name: 'First' })
-      table.putItem({ id: '2', name: 'Second' })
-      table.putItem({ id: '3', name: 'Third' })
-
-      const all = table.allItems()
-      expect(all).toHaveLength(3)
-      expect(all).toContainEqual({ id: '1', name: 'First' })
-      expect(all).toContainEqual({ id: '2', name: 'Second' })
-      expect(all).toContainEqual({ id: '3', name: 'Third' })
-    })
-
-    it('should throw error if PK field is missing', () => {
-      const table = new FakeTable('id', undefined)
-
-      expect(() => table.putItem({ name: 'No ID' })).toThrow('PK field [id] is not found')
-    })
-
-    it('should handle undefined item gracefully on put', () => {
-      const table = new FakeTable('id', undefined)
-
-      expect(() => table.putItem(undefined)).not.toThrow()
-      expect(table.allItems()).toHaveLength(0)
-    })
-
-    it('should throw error on keyFromItem with undefined item', () => {
-      const table = new FakeTable('id', undefined)
-
-      expect(() => table.keyFromItem(undefined)).toThrow('Item is undefined')
-    })
+  expect(pkOnly.allItems()).toEqual([
+    {
+      PK: 1,
+      b: 2
+    },
+    {
+      PK: 2,
+      b: 3
+    }
+  ])
+  expect(pkOnly.get({ PK: 1 })).toEqual({
+    PK: 1,
+    b: 2
   })
+  expect(pkOnly.get({ PK: -1 })).toEqual(undefined)
 
-  describe('PK+SK table', () => {
-    it('should put and get an item with composite key', () => {
-      const table = new FakeTable('PK', 'SK')
-      const item = { PK: 'USER#123', SK: 'PROFILE', name: 'John', age: 30 }
-
-      table.putItem(item)
-
-      const retrieved = table.get({ PK: 'USER#123', SK: 'PROFILE' })
-      expect(retrieved).toEqual(item)
-    })
-
-    it('should distinguish items with same PK but different SK', () => {
-      const table = new FakeTable('PK', 'SK')
-      table.putItem({ PK: 'USER#123', SK: 'PROFILE', type: 'profile' })
-      table.putItem({ PK: 'USER#123', SK: 'SETTINGS', type: 'settings' })
-
-      expect(table.get({ PK: 'USER#123', SK: 'PROFILE' })).toEqual({
-        PK: 'USER#123',
-        SK: 'PROFILE',
-        type: 'profile'
-      })
-      expect(table.get({ PK: 'USER#123', SK: 'SETTINGS' })).toEqual({
-        PK: 'USER#123',
-        SK: 'SETTINGS',
-        type: 'settings'
-      })
-      expect(table.allItems()).toHaveLength(2)
-    })
-
-    it('should update item with same PK and SK', () => {
-      const table = new FakeTable('PK', 'SK')
-      table.putItem({ PK: 'USER#123', SK: 'PROFILE', name: 'Original' })
-      table.putItem({ PK: 'USER#123', SK: 'PROFILE', name: 'Updated' })
-
-      const retrieved = table.get({ PK: 'USER#123', SK: 'PROFILE' })
-      expect(retrieved).toEqual({ PK: 'USER#123', SK: 'PROFILE', name: 'Updated' })
-      expect(table.allItems()).toHaveLength(1)
-    })
-
-    it('should delete item by composite key', () => {
-      const table = new FakeTable('PK', 'SK')
-      table.putItem({ PK: 'USER#123', SK: 'PROFILE', name: 'Test' })
-      table.putItem({ PK: 'USER#123', SK: 'SETTINGS', name: 'Other' })
-
-      table.deleteItem({ PK: 'USER#123', SK: 'PROFILE' })
-
-      expect(table.get({ PK: 'USER#123', SK: 'PROFILE' })).toBeUndefined()
-      expect(table.get({ PK: 'USER#123', SK: 'SETTINGS' })).toBeDefined()
-      expect(table.allItems()).toHaveLength(1)
-    })
-
-    it('should throw error if SK field is missing when SK is configured', () => {
-      const table = new FakeTable('PK', 'SK')
-
-      expect(() => table.putItem({ PK: 'USER#123', name: 'No SK' })).toThrow(
-        'SK field [SK] is not found'
-      )
-    })
-
-    it('should return all items regardless of key structure', () => {
-      const table = new FakeTable('PK', 'SK')
-      table.putItem({ PK: 'USER#1', SK: 'A', data: 'first' })
-      table.putItem({ PK: 'USER#1', SK: 'B', data: 'second' })
-      table.putItem({ PK: 'USER#2', SK: 'A', data: 'third' })
-
-      const all = table.allItems()
-      expect(all).toHaveLength(3)
-    })
+  expect(pkAndSk.allItems()).toEqual([
+    {
+      PK: 1,
+      SK: 2,
+      b: 3
+    },
+    {
+      PK: 1,
+      SK: 3,
+      b: 4
+    }
+  ])
+  expect(pkAndSk.get({ PK: 1, SK: 3 })).toEqual({
+    PK: 1,
+    SK: 3,
+    b: 4
   })
+  expect(pkAndSk.get({ PK: -1, SK: 3 })).toEqual(undefined)
 
-  describe('Edge cases', () => {
-    it('should handle numeric values in keys', () => {
-      const table = new FakeTable('id', undefined)
-      table.putItem({ id: 123, name: 'Numeric ID' })
+  pkOnly.deleteItem({ PK: 1 })
+  pkAndSk.deleteItem({ PK: 1, SK: 3 })
 
-      const retrieved = table.get({ id: 123 })
-      expect(retrieved).toEqual({ id: 123, name: 'Numeric ID' })
-    })
+  expect(pkOnly.allItems()).toEqual([
+    {
+      PK: 2,
+      b: 3
+    }
+  ])
+  expect(pkOnly.get({ PK: 1 })).toEqual(undefined)
 
-    it('should handle deleting non-existent item gracefully', () => {
-      const table = new FakeTable('id', undefined)
+  expect(pkAndSk.allItems()).toEqual([
+    {
+      PK: 1,
+      SK: 2,
+      b: 3
+    }
+  ])
+  expect(pkAndSk.get({ PK: 1, SK: 3 })).toEqual(undefined)
+})
 
-      expect(() => table.deleteItem({ id: 'does-not-exist' })).not.toThrow()
-      expect(table.allItems()).toHaveLength(0)
-    })
+test('put with duplicate key should overwrite', async () => {
+  const { pkOnly, pkAndSk } = createTables()
 
-    it('should maintain insertion order in allItems', () => {
-      const table = new FakeTable('id', undefined)
-      table.putItem({ id: '1', name: 'First' })
-      table.putItem({ id: '2', name: 'Second' })
-      table.putItem({ id: '3', name: 'Third' })
+  pkOnly.putItem({ PK: 1, b: 2 })
+  pkOnly.putItem({ b: 99, PK: 1 })
+  expect(pkOnly.allItems()).toEqual([
+    {
+      PK: 1,
+      b: 99
+    }
+  ])
 
-      const ids = table.allItems().map((item) => item.id)
-      expect(ids).toEqual(['1', '2', '3'])
-    })
-  })
+  pkAndSk.putItem({ PK: 1, SK: 2, b: 3 })
+  pkAndSk.putItem({ PK: 1, SK: 4, b: 3 })
+  pkAndSk.putItem({ SK: 2, PK: 1, b: 99 })
+
+  expect(pkAndSk.allItems()).toEqual([
+    {
+      PK: 1,
+      SK: 2,
+      b: 99
+    },
+    {
+      PK: 1,
+      SK: 4,
+      b: 3
+    }
+  ])
+})
+
+test('invalid requests', async () => {
+  const { pkOnly, pkAndSk } = createTables()
+  expect(() => pkOnly.putItem({ name: 'zz' })).toThrow('PK field [PK] is not found')
+  expect(() => pkAndSk.putItem({ name: 'zz' })).toThrow('PK field [PK] is not found')
+  expect(() => pkAndSk.putItem({ PK: 1, name: 'zz' })).toThrow('SK field [SK] is not found')
+  expect(() => pkOnly.get(undefined)).toThrow('Item is undefined')
 })

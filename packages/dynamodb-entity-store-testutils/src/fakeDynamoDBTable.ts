@@ -6,9 +6,9 @@ interface TableKey {
 }
 
 export class FakeTable {
-  public readonly pkName: string
-  public readonly skName: string | undefined
-  public readonly items: Map<TableKey, Record<string, NativeAttributeValue>> = new Map<
+  private readonly pkName: string
+  private readonly skName: string | undefined
+  private readonly items: Map<TableKey, Record<string, NativeAttributeValue>> = new Map<
     TableKey,
     Record<string, NativeAttributeValue>
   >()
@@ -41,19 +41,7 @@ export class FakeTable {
     return Array.from(this.items.values())
   }
 
-  query(pkValue: NativeAttributeValue, skValue?: NativeAttributeValue) {
-    return this.allItems().filter((item) => {
-      const itemPk = item[this.pkName]
-      if (itemPk !== pkValue) return false
-      if (skValue !== undefined && this.skName) {
-        const itemSk = item[this.skName]
-        return itemSk === skValue
-      }
-      return true
-    })
-  }
-
-  keyFromItem(item: Record<string, NativeAttributeValue> | undefined): TableKey {
+  private keyFromItem(item: Record<string, NativeAttributeValue> | undefined): TableKey {
     if (!item) throw new Error('Item is undefined')
     const pkValue = item[this.pkName]
     if (!pkValue) throw new Error(`PK field [${this.pkName}] is not found`)
@@ -66,7 +54,7 @@ export class FakeTable {
     }
   }
 
-  // Required because we have a complex key on items, and Map only matches object
+  // Required because we have a complex key on items (a Map), and Map only matches object
   // complex keys if they are the same instance
   private findMatchingKey(key: TableKey) {
     for (const tableKey of this.items.keys()) {

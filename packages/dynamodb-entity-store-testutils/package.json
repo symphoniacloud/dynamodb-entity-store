@@ -27,7 +27,7 @@
     "format": "prettier --check \"{src,test}/**/*.{js,ts}\"",
     "test": "vitest run",
     "local-checks": "tsc && npm run lint && npm run test",
-    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json && cp ../../README.md . && cp ../../LICENSE .",
     "prepublishOnly": "npm run local-checks && npm run build"
   },
   "engines": {
@@ -41,8 +41,8 @@
   },
   "files": [
     "package.json",
-    "../../README.md",
-    "../../LICENSE",
+    "README.md",
+    "LICENSE",
     "dist/"
   ],
   "exports": {

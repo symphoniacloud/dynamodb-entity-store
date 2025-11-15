@@ -7,7 +7,6 @@ on:
   pull_request:
     branches:
       - main
-      - 2025-11
   workflow_dispatch:
 
 # Only allow one run at a time for this workflow
@@ -42,7 +41,7 @@ jobs:
         env:
           STACK_NAME: dynamodb-entity-store-ci
         run: >
-          npm install && npm run deploy-and-all-checks && npm run build
+          npm install && npm run local-checks && npm run deploy-and-remote-checks && npm run build
 
       # To test that doc generation works
       - run: npm run generate-docs

@@ -2,6 +2,8 @@ node_modules
 dist
 docs
 packages/dynamodb-entity-store/README.md
+packages/dynamodb-entity-store-testutils/README.md
 packages/dynamodb-entity-store/LICENSE
+packages/dynamodb-entity-store-testutils/LICENSE
 
 yarn-error.log

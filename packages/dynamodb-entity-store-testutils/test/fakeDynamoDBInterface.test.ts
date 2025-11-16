@@ -409,6 +409,22 @@ test('transactionWrite', async () => {
   })
 })
 
+test('put accepts ReturnConsumedCapacity and ReturnItemCollectionMetrics but ignores them', async () => {
+  const db = ddb()
+
+  await db.put({
+    ...PKONLY_TABLE_REQUEST,
+    Item: { TEST_PK: 1, b: 2 },
+    ReturnConsumedCapacity: 'TOTAL',
+    ReturnItemCollectionMetrics: 'SIZE'
+  })
+
+  expect(await db.get({ ...PKONLY_TABLE_REQUEST, Key: { TEST_PK: 1 } })).toEqual({
+    Item: { TEST_PK: 1, b: 2 },
+    ...METADATA
+  })
+})
+
 test('put throws error when unsupported properties are provided', async () => {
   const db = ddb()
 
@@ -438,6 +454,23 @@ test('get accepts ConsistentRead parameter but ignores it', async () => {
   })
 })
 
+test('get accepts ReturnConsumedCapacity but ignores it', async () => {
+  const db = ddb()
+
+  await db.put({ ...PKONLY_TABLE_REQUEST, Item: { TEST_PK: 1, b: 2 } })
+
+  const result = await db.get({
+    ...PKONLY_TABLE_REQUEST,
+    Key: { TEST_PK: 1 },
+    ReturnConsumedCapacity: 'TOTAL'
+  })
+
+  expect(result).toEqual({
+    Item: { TEST_PK: 1, b: 2 },
+    ...METADATA
+  })
+})
+
 test('get throws error when unsupported properties are provided', async () => {
   const db = ddb()
 
@@ -451,6 +484,21 @@ test('get throws error when unsupported properties are provided', async () => {
   ).rejects.toThrow(
     'FakeDynamoDBInterface.get does not support the following properties: ProjectionExpression, ExpressionAttributeNames'
   )
+})
+
+test('delete accepts ReturnConsumedCapacity and ReturnItemCollectionMetrics but ignores them', async () => {
+  const db = ddb()
+
+  await db.put({ ...PKONLY_TABLE_REQUEST, Item: { TEST_PK: 1, b: 2 } })
+
+  await db.delete({
+    ...PKONLY_TABLE_REQUEST,
+    Key: { TEST_PK: 1 },
+    ReturnConsumedCapacity: 'TOTAL',
+    ReturnItemCollectionMetrics: 'SIZE'
+  })
+
+  expect(await db.get({ ...PKONLY_TABLE_REQUEST, Key: { TEST_PK: 1 } })).toEqual(EMPTY_GET_RESPONSE)
 })
 
 test('delete throws error when unsupported properties are provided', async () => {
@@ -478,68 +526,73 @@ test('delete throws error when unsupported properties are provided', async () =>
   )
 })
 
-test('batchWrite throws error when unsupported properties are provided', async () => {
+test('batchWrite accepts ReturnConsumedCapacity and ReturnItemCollectionMetrics but ignores them', async () => {
   const db = ddb()
 
-  await expect(
-    db.batchWrite({
-      RequestItems: {
-        pkOnly: [{ PutRequest: { Item: { TEST_PK: 1, b: 2 } } }]
-      },
-      ReturnConsumedCapacity: 'TOTAL'
-    })
-  ).rejects.toThrow(
-    'FakeDynamoDBInterface.batchWrite does not support the following properties: ReturnConsumedCapacity'
-  )
+  await db.batchWrite({
+    RequestItems: {
+      pkOnly: [{ PutRequest: { Item: { TEST_PK: 1, b: 2 } } }]
+    },
+    ReturnConsumedCapacity: 'TOTAL',
+    ReturnItemCollectionMetrics: 'SIZE'
+  })
 
-  await expect(
-    db.batchWrite({
-      RequestItems: {
-        pkOnly: [{ PutRequest: { Item: { TEST_PK: 1, b: 2 } } }]
-      },
-      ReturnItemCollectionMetrics: 'SIZE',
-      ReturnConsumedCapacity: 'TOTAL'
-    })
-  ).rejects.toThrow(
-    'FakeDynamoDBInterface.batchWrite does not support the following properties: ReturnItemCollectionMetrics, ReturnConsumedCapacity'
-  )
+  expect(await db.get({ ...PKONLY_TABLE_REQUEST, Key: { TEST_PK: 1 } })).toEqual({
+    Item: { TEST_PK: 1, b: 2 },
+    ...METADATA
+  })
 })
 
-test('transactionWrite throws error when unsupported properties are provided', async () => {
+test('transactionWrite accepts ReturnConsumedCapacity, ReturnItemCollectionMetrics, and ClientRequestToken but ignores them', async () => {
   const db = ddb()
 
-  await expect(
-    db.transactionWrite({
-      TransactItems: [
-        {
-          Put: {
-            TableName: 'pkOnly',
-            Item: { TEST_PK: 1, b: 2 }
-          }
+  await db.transactionWrite({
+    TransactItems: [
+      {
+        Put: {
+          TableName: 'pkOnly',
+          Item: { TEST_PK: 1, b: 2 }
         }
-      ],
-      ReturnConsumedCapacity: 'TOTAL'
-    })
-  ).rejects.toThrow(
-    'FakeDynamoDBInterface.transactionWrite does not support the following properties: ReturnConsumedCapacity'
-  )
+      }
+    ],
+    ReturnConsumedCapacity: 'TOTAL',
+    ReturnItemCollectionMetrics: 'SIZE',
+    ClientRequestToken: 'token123'
+  })
 
-  await expect(
-    db.transactionWrite({
-      TransactItems: [
-        {
-          Put: {
-            TableName: 'pkOnly',
-            Item: { TEST_PK: 1, b: 2 }
-          }
-        }
-      ],
-      ClientRequestToken: 'token123',
-      ReturnItemCollectionMetrics: 'SIZE'
-    })
-  ).rejects.toThrow(
-    'FakeDynamoDBInterface.transactionWrite does not support the following properties: ClientRequestToken, ReturnItemCollectionMetrics'
-  )
+  expect(await db.get({ ...PKONLY_TABLE_REQUEST, Key: { TEST_PK: 1 } })).toEqual({
+    Item: { TEST_PK: 1, b: 2 },
+    ...METADATA
+  })
+})
+
+test('scanOnePage accepts ReturnConsumedCapacity but ignores it', async () => {
+  const db = ddb()
+
+  await db.put({ ...PKONLY_TABLE_REQUEST, Item: { TEST_PK: 1, b: 2 } })
+
+  const result = await db.scanOnePage({
+    ...PKONLY_TABLE_REQUEST,
+    ReturnConsumedCapacity: 'TOTAL'
+  })
+
+  expect(result.Items).toHaveLength(1)
+  expect(result.Items).toContainEqual({ TEST_PK: 1, b: 2 })
+})
+
+test('scanAllPages accepts ReturnConsumedCapacity but ignores it', async () => {
+  const db = ddb()
+
+  await db.put({ ...PKONLY_TABLE_REQUEST, Item: { TEST_PK: 1, b: 2 } })
+
+  const results = await db.scanAllPages({
+    ...PKONLY_TABLE_REQUEST,
+    ReturnConsumedCapacity: 'INDEXES'
+  })
+
+  expect(results).toHaveLength(1)
+  expect(results[0].Items).toHaveLength(1)
+  expect(results[0].Items).toContainEqual({ TEST_PK: 1, b: 2 })
 })
 
 test('scanOnePage throws error when unsupported properties are provided', async () => {
@@ -594,6 +647,35 @@ test('scanAllPages accepts ConsistentRead parameter but ignores it', async () =>
   expect(results[0].Items).toHaveLength(2)
   expect(results[0].Items).toContainEqual({ TEST_PK: 1, b: 2 })
   expect(results[0].Items).toContainEqual({ TEST_PK: 2, b: 4 })
+})
+
+test('scanOnePage accepts ReturnConsumedCapacity but ignores it', async () => {
+  const db = ddb()
+
+  await db.put({ ...PKONLY_TABLE_REQUEST, Item: { TEST_PK: 1, b: 2 } })
+
+  const result = await db.scanOnePage({
+    ...PKONLY_TABLE_REQUEST,
+    ReturnConsumedCapacity: 'TOTAL'
+  })
+
+  expect(result.Items).toHaveLength(1)
+  expect(result.Items).toContainEqual({ TEST_PK: 1, b: 2 })
+})
+
+test('scanAllPages accepts ReturnConsumedCapacity but ignores it', async () => {
+  const db = ddb()
+
+  await db.put({ ...PKONLY_TABLE_REQUEST, Item: { TEST_PK: 1, b: 2 } })
+
+  const results = await db.scanAllPages({
+    ...PKONLY_TABLE_REQUEST,
+    ReturnConsumedCapacity: 'INDEXES'
+  })
+
+  expect(results).toHaveLength(1)
+  expect(results[0].Items).toHaveLength(1)
+  expect(results[0].Items).toContainEqual({ TEST_PK: 1, b: 2 })
 })
 
 test('scanAllPages throws error when unsupported properties are provided', async () => {
@@ -853,6 +935,43 @@ test('queryAllPages accepts ConsistentRead parameter but ignores it', async () =
     KeyConditionExpression: 'TEST_PK = :pk',
     ExpressionAttributeValues: { ':pk': 1 },
     ConsistentRead: false
+  })
+
+  expect(results).toHaveLength(1)
+  expect(results[0].Items).toHaveLength(2)
+  expect(results[0].Items).toContainEqual({ TEST_PK: 1, TEST_SK: 'A', value: 10 })
+  expect(results[0].Items).toContainEqual({ TEST_PK: 1, TEST_SK: 'B', value: 20 })
+})
+
+test('queryOnePage accepts ReturnConsumedCapacity but ignores it', async () => {
+  const db = ddb()
+
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'A', value: 10 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'B', value: 20 } })
+
+  const result = await db.queryOnePage({
+    ...PKANDSK_TABLE_REQUEST,
+    KeyConditionExpression: 'TEST_PK = :pk',
+    ExpressionAttributeValues: { ':pk': 1 },
+    ReturnConsumedCapacity: 'TOTAL'
+  })
+
+  expect(result.Items).toHaveLength(2)
+  expect(result.Items).toContainEqual({ TEST_PK: 1, TEST_SK: 'A', value: 10 })
+  expect(result.Items).toContainEqual({ TEST_PK: 1, TEST_SK: 'B', value: 20 })
+})
+
+test('queryAllPages accepts ReturnConsumedCapacity but ignores it', async () => {
+  const db = ddb()
+
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'A', value: 10 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'B', value: 20 } })
+
+  const results = await db.queryAllPages({
+    ...PKANDSK_TABLE_REQUEST,
+    KeyConditionExpression: 'TEST_PK = :pk',
+    ExpressionAttributeValues: { ':pk': 1 },
+    ReturnConsumedCapacity: 'NONE'
   })
 
   expect(results).toHaveLength(1)

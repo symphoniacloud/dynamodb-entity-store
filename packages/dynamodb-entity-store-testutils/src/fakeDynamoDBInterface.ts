@@ -21,6 +21,10 @@ import {
 } from '@aws-sdk/lib-dynamodb'
 import { DynamoDBInterface } from '@symphoniacloud/dynamodb-entity-store'
 import { evaluateConditionExpression } from './conditionExpressionEvaluator.js'
+import {
+  parseKeyConditionExpression,
+  matchesKeyCondition
+} from './keyConditionExpressionEvaluator.js'
 
 export const METADATA = { $metadata: {} }
 
@@ -36,13 +40,36 @@ const supportedParamKeysByFunction = {
   delete: ['TableName', 'Key'],
   batchWrite: ['RequestItems'],
   transactionWrite: ['TransactItems'],
+  queryOnePage: [
+    'TableName',
+    'KeyConditionExpression',
+    'ExpressionAttributeNames',
+    'ExpressionAttributeValues',
+    'Limit',
+    'ExclusiveStartKey'
+  ],
+  queryAllPages: [
+    'TableName',
+    'KeyConditionExpression',
+    'ExpressionAttributeNames',
+    'ExpressionAttributeValues'
+  ],
   scanOnePage: ['TableName'],
   scanAllPages: ['TableName']
 }
 
 function checkSupportedParams(
   params: object,
-  functionName: 'put' | 'get' | 'delete' | 'batchWrite' | 'transactionWrite' | 'scanOnePage' | 'scanAllPages'
+  functionName:
+    | 'put'
+    | 'get'
+    | 'delete'
+    | 'batchWrite'
+    | 'transactionWrite'
+    | 'queryOnePage'
+    | 'queryAllPages'
+    | 'scanOnePage'
+    | 'scanAllPages'
 ) {
   const unsupportedKeys = Object.keys(params).filter(
     (key) => !supportedParamKeysByFunction[functionName].includes(key)
@@ -152,20 +179,52 @@ export class FakeDynamoDBInterface implements DynamoDBInterface {
     throw new Error('Not yet implemented')
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async queryOnePage(params: QueryCommandInput): Promise<QueryCommandOutput> {
-    throw new Error('Not yet implemented')
+    checkSupportedParams(params, 'queryOnePage')
+    const items = this.executeQuery(params)
+
+    // Apply limit if specified
+    const limitedItems = params.Limit ? items.slice(0, params.Limit) : items
+
+    return {
+      Items: limitedItems,
+      ...METADATA
+    }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async queryAllPages(params: QueryCommandInput): Promise<QueryCommandOutput[]> {
-    throw new Error('Not yet implemented')
+    checkSupportedParams(params, 'queryAllPages')
+    const items = this.executeQuery(params)
+
+    return [
+      {
+        Items: items,
+        ...METADATA
+      }
+    ]
+  }
+
+  private executeQuery(params: QueryCommandInput): Record<string, NativeAttributeValue>[] {
+    if (!params.KeyConditionExpression) {
+      throw new Error('KeyConditionExpression is required for query')
+    }
+
+    // Parse the key condition
+    const keyCondition = parseKeyConditionExpression(
+      params.KeyConditionExpression,
+      params.ExpressionAttributeNames,
+      params.ExpressionAttributeValues
+    )
+
+    // Get all items and filter by key condition
+    const allItems = this.getTableFrom(params).allItems()
+    return allItems.filter((item) => matchesKeyCondition(item, keyCondition))
   }
 
   async scanOnePage(params: ScanCommandInput): Promise<ScanCommandOutput> {
     checkSupportedParams(params, 'scanOnePage')
     return {
-      Items: this.getTableFrom(params).allItems(),
+      Items: this.executeScan(params),
       ...METADATA
     }
   }
@@ -174,10 +233,14 @@ export class FakeDynamoDBInterface implements DynamoDBInterface {
     checkSupportedParams(params, 'scanAllPages')
     return [
       {
-        Items: this.getTableFrom(params).allItems(),
+        Items: this.executeScan(params),
         ...METADATA
       }
     ]
+  }
+
+  private executeScan(params: ScanCommandInput): Record<string, NativeAttributeValue>[] {
+    return this.getTableFrom(params).allItems()
   }
 
   private getTableFrom(withTableName: { TableName: string | undefined }) {

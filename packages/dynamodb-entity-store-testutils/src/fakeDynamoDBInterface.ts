@@ -23,6 +23,22 @@ import { DynamoDBInterface } from '@symphoniacloud/dynamodb-entity-store'
 
 export const METADATA = { $metadata: {} }
 
+const supportedParamKeysByFunction = {
+  put: ['TableName', 'Item']
+}
+
+function checkSupportedParams(params: object, functionName: 'put') {
+  const unsupportedKeys = Object.keys(params).filter(
+    (key) => !supportedParamKeysByFunction[functionName].includes(key)
+  )
+
+  if (unsupportedKeys.length > 0) {
+    throw new Error(
+      `FakeDynamoDBInterface.${functionName} does not support the following properties: ${unsupportedKeys.join(', ')}`
+    )
+  }
+}
+
 // !! CAREFUL - this is not fully implemented!! !!
 export class FakeDynamoDBInterface implements DynamoDBInterface {
   public readonly tables: Record<string, FakeTable> = {}
@@ -41,17 +57,7 @@ export class FakeDynamoDBInterface implements DynamoDBInterface {
   }
 
   async put(params: PutCommandInput) {
-    // Validate that only TableName and Item are provided
-    const allowedKeys = ['TableName', 'Item']
-    const providedKeys = Object.keys(params)
-    const unsupportedKeys = providedKeys.filter(key => !allowedKeys.includes(key))
-
-    if (unsupportedKeys.length > 0) {
-      throw new Error(
-        `FakeDynamoDBInterface.put does not support the following properties: ${unsupportedKeys.join(', ')}`
-      )
-    }
-
+    checkSupportedParams(params, 'put')
     this.getTableFrom(params).putItem(params.Item)
     return METADATA
   }

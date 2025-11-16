@@ -34,12 +34,14 @@ const supportedParamKeysByFunction = {
     'Item',
     'ConditionExpression',
     'ExpressionAttributeNames',
-    'ExpressionAttributeValues'
+    'ExpressionAttributeValues',
+    'ReturnConsumedCapacity',
+    'ReturnItemCollectionMetrics'
   ],
-  get: ['TableName', 'Key', 'ConsistentRead'],
-  delete: ['TableName', 'Key'],
-  batchWrite: ['RequestItems'],
-  transactionWrite: ['TransactItems'],
+  get: ['TableName', 'Key', 'ConsistentRead', 'ReturnConsumedCapacity'],
+  delete: ['TableName', 'Key', 'ConsistentRead', 'ReturnConsumedCapacity', 'ReturnItemCollectionMetrics'],
+  batchWrite: ['RequestItems', 'ReturnConsumedCapacity', 'ReturnItemCollectionMetrics'],
+  transactionWrite: ['TransactItems', 'ReturnConsumedCapacity', 'ReturnItemCollectionMetrics', 'ClientRequestToken'],
   queryOnePage: [
     'TableName',
     'KeyConditionExpression',
@@ -47,17 +49,19 @@ const supportedParamKeysByFunction = {
     'ExpressionAttributeValues',
     'Limit',
     'ExclusiveStartKey',
-    'ConsistentRead'
+    'ConsistentRead',
+    'ReturnConsumedCapacity'
   ],
   queryAllPages: [
     'TableName',
     'KeyConditionExpression',
     'ExpressionAttributeNames',
     'ExpressionAttributeValues',
-    'ConsistentRead'
+    'ConsistentRead',
+    'ReturnConsumedCapacity'
   ],
-  scanOnePage: ['TableName', 'ConsistentRead'],
-  scanAllPages: ['TableName', 'ConsistentRead']
+  scanOnePage: ['TableName', 'ConsistentRead', 'ReturnConsumedCapacity'],
+  scanAllPages: ['TableName', 'ConsistentRead', 'ReturnConsumedCapacity']
 }
 
 function checkSupportedParams(

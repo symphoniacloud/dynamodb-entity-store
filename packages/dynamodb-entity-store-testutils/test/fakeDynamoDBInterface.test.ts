@@ -481,3 +481,111 @@ test('delete throws error when unsupported properties are provided', async () =>
     'FakeDynamoDBInterface.delete does not support the following properties: ReturnValues, ExpressionAttributeNames'
   )
 })
+
+test('batchWrite throws error when unsupported properties are provided', async () => {
+  const db = ddb()
+
+  await expect(
+    db.batchWrite({
+      RequestItems: {
+        pkOnly: [{ PutRequest: { Item: { TEST_PK: 1, b: 2 } } }]
+      },
+      ReturnConsumedCapacity: 'TOTAL'
+    })
+  ).rejects.toThrow(
+    'FakeDynamoDBInterface.batchWrite does not support the following properties: ReturnConsumedCapacity'
+  )
+
+  await expect(
+    db.batchWrite({
+      RequestItems: {
+        pkOnly: [{ PutRequest: { Item: { TEST_PK: 1, b: 2 } } }]
+      },
+      ReturnItemCollectionMetrics: 'SIZE',
+      ReturnConsumedCapacity: 'TOTAL'
+    })
+  ).rejects.toThrow(
+    'FakeDynamoDBInterface.batchWrite does not support the following properties: ReturnItemCollectionMetrics, ReturnConsumedCapacity'
+  )
+})
+
+test('transactionWrite throws error when unsupported properties are provided', async () => {
+  const db = ddb()
+
+  await expect(
+    db.transactionWrite({
+      TransactItems: [
+        {
+          Put: {
+            TableName: 'pkOnly',
+            Item: { TEST_PK: 1, b: 2 }
+          }
+        }
+      ],
+      ReturnConsumedCapacity: 'TOTAL'
+    })
+  ).rejects.toThrow(
+    'FakeDynamoDBInterface.transactionWrite does not support the following properties: ReturnConsumedCapacity'
+  )
+
+  await expect(
+    db.transactionWrite({
+      TransactItems: [
+        {
+          Put: {
+            TableName: 'pkOnly',
+            Item: { TEST_PK: 1, b: 2 }
+          }
+        }
+      ],
+      ClientRequestToken: 'token123',
+      ReturnItemCollectionMetrics: 'SIZE'
+    })
+  ).rejects.toThrow(
+    'FakeDynamoDBInterface.transactionWrite does not support the following properties: ClientRequestToken, ReturnItemCollectionMetrics'
+  )
+})
+
+test('scanOnePage throws error when unsupported properties are provided', async () => {
+  const db = ddb()
+
+  await expect(
+    db.scanOnePage({
+      ...PKONLY_TABLE_REQUEST,
+      Limit: 10
+    })
+  ).rejects.toThrow('FakeDynamoDBInterface.scanOnePage does not support the following properties: Limit')
+
+  await expect(
+    db.scanOnePage({
+      ...PKONLY_TABLE_REQUEST,
+      FilterExpression: 'b > :val',
+      ExpressionAttributeValues: { ':val': 5 }
+    })
+  ).rejects.toThrow(
+    'FakeDynamoDBInterface.scanOnePage does not support the following properties: FilterExpression, ExpressionAttributeValues'
+  )
+})
+
+test('scanAllPages throws error when unsupported properties are provided', async () => {
+  const db = ddb()
+
+  await expect(
+    db.scanAllPages({
+      ...PKONLY_TABLE_REQUEST,
+      ConsistentRead: true
+    })
+  ).rejects.toThrow(
+    'FakeDynamoDBInterface.scanAllPages does not support the following properties: ConsistentRead'
+  )
+
+  await expect(
+    db.scanAllPages({
+      ...PKONLY_TABLE_REQUEST,
+      ProjectionExpression: 'TEST_PK',
+      ExpressionAttributeNames: { '#pk': 'TEST_PK' }
+    })
+  ).rejects.toThrow(
+    'FakeDynamoDBInterface.scanAllPages does not support the following properties: ProjectionExpression, ExpressionAttributeNames'
+  )
+})

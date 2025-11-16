@@ -26,10 +26,17 @@ export const METADATA = { $metadata: {} }
 const supportedParamKeysByFunction = {
   put: ['TableName', 'Item'],
   get: ['TableName', 'Key'],
-  delete: ['TableName', 'Key']
+  delete: ['TableName', 'Key'],
+  batchWrite: ['RequestItems'],
+  transactionWrite: ['TransactItems'],
+  scanOnePage: ['TableName'],
+  scanAllPages: ['TableName']
 }
 
-function checkSupportedParams(params: object, functionName: 'put' | 'get' | 'delete') {
+function checkSupportedParams(
+  params: object,
+  functionName: 'put' | 'get' | 'delete' | 'batchWrite' | 'transactionWrite' | 'scanOnePage' | 'scanAllPages'
+) {
   const unsupportedKeys = Object.keys(params).filter(
     (key) => !supportedParamKeysByFunction[functionName].includes(key)
   )
@@ -65,6 +72,7 @@ export class FakeDynamoDBInterface implements DynamoDBInterface {
   }
 
   async batchWrite(params: BatchWriteCommandInput): Promise<BatchWriteCommandOutput> {
+    checkSupportedParams(params, 'batchWrite')
     if (!params.RequestItems) throw new Error('RequestItems is required')
 
     for (const [tableName, requests] of Object.entries(params.RequestItems)) {
@@ -106,6 +114,7 @@ export class FakeDynamoDBInterface implements DynamoDBInterface {
   }
 
   async transactionWrite(params: TransactWriteCommandInput): Promise<TransactWriteCommandOutput> {
+    checkSupportedParams(params, 'transactionWrite')
     for (const item of params.TransactItems ?? []) {
       if (item.Put) {
         this.getTableFrom(item.Put).putItem(item.Put.Item)
@@ -134,6 +143,7 @@ export class FakeDynamoDBInterface implements DynamoDBInterface {
   }
 
   async scanOnePage(params: ScanCommandInput): Promise<ScanCommandOutput> {
+    checkSupportedParams(params, 'scanOnePage')
     return {
       Items: this.getTableFrom(params).allItems(),
       ...METADATA
@@ -141,6 +151,7 @@ export class FakeDynamoDBInterface implements DynamoDBInterface {
   }
 
   async scanAllPages(params: ScanCommandInput): Promise<ScanCommandOutput[]> {
+    checkSupportedParams(params, 'scanAllPages')
     return [
       {
         Items: this.getTableFrom(params).allItems(),

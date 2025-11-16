@@ -20,11 +20,18 @@ import {
   UpdateCommandOutput
 } from '@aws-sdk/lib-dynamodb'
 import { DynamoDBInterface } from '@symphoniacloud/dynamodb-entity-store'
+import { evaluateConditionExpression } from './conditionExpressionEvaluator.js'
 
 export const METADATA = { $metadata: {} }
 
 const supportedParamKeysByFunction = {
-  put: ['TableName', 'Item'],
+  put: [
+    'TableName',
+    'Item',
+    'ConditionExpression',
+    'ExpressionAttributeNames',
+    'ExpressionAttributeValues'
+  ],
   get: ['TableName', 'Key'],
   delete: ['TableName', 'Key'],
   batchWrite: ['RequestItems'],
@@ -67,7 +74,20 @@ export class FakeDynamoDBInterface implements DynamoDBInterface {
 
   async put(params: PutCommandInput) {
     checkSupportedParams(params, 'put')
-    this.getTableFrom(params).putItem(params.Item)
+    const table = this.getTableFrom(params)
+
+    // Check condition expression if present
+    if (params.ConditionExpression) {
+      const existingItem = table.get(params.Item)
+      evaluateConditionExpression(
+        params.ConditionExpression,
+        existingItem || {},
+        params.ExpressionAttributeNames,
+        params.ExpressionAttributeValues
+      )
+    }
+
+    table.putItem(params.Item)
     return METADATA
   }
 

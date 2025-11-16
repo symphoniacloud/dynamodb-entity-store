@@ -416,22 +416,9 @@ test('put throws error when unsupported properties are provided', async () => {
     db.put({
       ...PKONLY_TABLE_REQUEST,
       Item: { TEST_PK: 1, b: 2 },
-      ConditionExpression: 'attribute_not_exists(TEST_PK)'
+      ReturnValues: 'ALL_OLD'
     })
-  ).rejects.toThrow(
-    'FakeDynamoDBInterface.put does not support the following properties: ConditionExpression'
-  )
-
-  await expect(
-    db.put({
-      ...PKONLY_TABLE_REQUEST,
-      Item: { TEST_PK: 1, b: 2 },
-      ReturnValues: 'ALL_OLD',
-      ExpressionAttributeNames: { '#a': 'b' }
-    })
-  ).rejects.toThrow(
-    'FakeDynamoDBInterface.put does not support the following properties: ReturnValues, ExpressionAttributeNames'
-  )
+  ).rejects.toThrow('FakeDynamoDBInterface.put does not support the following properties: ReturnValues')
 })
 
 test('get throws error when unsupported properties are provided', async () => {
@@ -588,4 +575,54 @@ test('scanAllPages throws error when unsupported properties are provided', async
   ).rejects.toThrow(
     'FakeDynamoDBInterface.scanAllPages does not support the following properties: ProjectionExpression, ExpressionAttributeNames'
   )
+})
+
+// Condition Expression Integration Tests
+
+test('put with ConditionExpression - attribute_not_exists', async () => {
+  const db = ddb()
+
+  // First put succeeds
+  await db.put({
+    ...PKONLY_TABLE_REQUEST,
+    Item: { TEST_PK: 1, name: 'alice' },
+    ConditionExpression: 'attribute_not_exists(TEST_PK)'
+  })
+
+  expect(await db.get({ ...PKONLY_TABLE_REQUEST, Key: { TEST_PK: 1 } })).toEqual({
+    Item: { TEST_PK: 1, name: 'alice' },
+    ...METADATA
+  })
+
+  // Second put with same condition should fail
+  await expect(
+    db.put({
+      ...PKONLY_TABLE_REQUEST,
+      Item: { TEST_PK: 1, name: 'bob' },
+      ConditionExpression: 'attribute_not_exists(TEST_PK)'
+    })
+  ).rejects.toThrow('The conditional request failed')
+})
+
+test('put with ConditionExpression - complex expression with ExpressionAttributeNames and ExpressionAttributeValues', async () => {
+  const db = ddb()
+
+  await db.put({
+    ...PKONLY_TABLE_REQUEST,
+    Item: { TEST_PK: 1, name: 'alice', status: 'active' }
+  })
+
+  // Complex condition: NOT #name = :invalidName
+  await db.put({
+    ...PKONLY_TABLE_REQUEST,
+    Item: { TEST_PK: 1, name: 'alice', status: 'inactive' },
+    ConditionExpression: 'NOT #name = :invalidName',
+    ExpressionAttributeNames: { '#name': 'name' },
+    ExpressionAttributeValues: { ':invalidName': 'bob' }
+  })
+
+  expect(await db.get({ ...PKONLY_TABLE_REQUEST, Key: { TEST_PK: 1 } })).toEqual({
+    Item: { TEST_PK: 1, name: 'alice', status: 'inactive' },
+    ...METADATA
+  })
 })

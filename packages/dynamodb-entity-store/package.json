@@ -23,13 +23,12 @@
     "lint": "eslint --max-warnings=0 --fix-dry-run \"{src,test}/**/*.{js,ts}\"",
     "format": "prettier --check \"{src,test}/**/*.{js,ts}\"",
     "unit-tests": "npx vitest run --dir test/unit",
-    "local-checks": "tsc && npm run lint && npm run unit-tests",
-    "integration-tests": "npx vitest run --dir test/integration --config ./test/integration/vitest.config.ts",
-    "all-checks": "npm run local-checks && npm run integration-tests",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json && cp ../../README.md . && cp ../../LICENSE .",
+    "local": "tsc && npm run lint && npm run unit-tests && npm run build",
+    "remote-tests": "npx vitest run --dir test/integration --config ./test/integration/vitest.config.ts",
     "deploy": "cd test/examples && aws cloudformation deploy --template-file template.yaml --stack-name \"${STACK_NAME-entity-store-test-stack}\" --no-fail-on-empty-changeset",
-    "deploy-and-all-checks": "npm run deploy && npm run all-checks",
-    "build": "rm -rf dist && tsc -p tsconfig.json && cp ../../README.md . && cp ../../LICENSE .",
-    "prepublishOnly": "npm run local-checks && npm run build",
+    "deploy-and-remote-tests": "npm run deploy && npm run remote-tests",
+    "prepublishOnly": "npm run local",
     "generate-docs": "typedoc src/lib/index.ts"
   },
   "engines": {

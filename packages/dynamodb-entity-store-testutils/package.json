@@ -1,0 +1,54 @@
+{
+  "name": "@symphoniacloud/dynamodb-entity-store-testutils",
+  "description": "Test utilities for @symphoniacloud/dynamodb-entity-store",
+  "license": "MIT",
+  "author": {
+    "email": "mike@symphonia.io",
+    "name": "Mike Roberts",
+    "url": "https://symphonia.io"
+  },
+  "keywords": [
+    "dynamodb",
+    "testing",
+    "test-utils",
+    "fake"
+  ],
+  "homepage": "https://github.com/symphoniacloud/dynamodb-entity-store",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/symphoniacloud/dynamodb-entity-store.git"
+  },
+  "bugs": {
+    "url": "https://github.com/symphoniacloud/dynamodb-entity-store/issues"
+  },
+  "type": "module",
+  "scripts": {
+    "lint": "eslint --max-warnings=0 --fix-dry-run \"{src,test}/**/*.{js,ts}\"",
+    "format": "prettier --check \"{src,test}/**/*.{js,ts}\"",
+    "test": "vitest run",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json && cp ../../README.md . && cp ../../LICENSE .",
+    "local": "tsc && npm run lint && npm run test && npm run build",
+    "prepublishOnly": "npm run local"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "dependencies": {
+    "@symphoniacloud/dynamodb-entity-store": "*"
+  },
+  "peerDependencies": {
+    "@aws-sdk/lib-dynamodb": "3.x"
+  },
+  "files": [
+    "package.json",
+    "README.md",
+    "LICENSE",
+    "dist/"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  }
+}

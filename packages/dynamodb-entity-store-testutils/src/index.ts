@@ -4,3 +4,10 @@ export {
   UnsupportedConditionExpressionError,
   ConditionalCheckFailedException
 } from './conditionExpressionEvaluator.js'
+export {
+  parseKeyConditionExpression,
+  matchesKeyCondition,
+  UnsupportedKeyConditionExpressionError,
+  type KeyCondition
+} from './keyConditionExpressionEvaluator.js'
+export { resolveAttributeName, resolveAttributeValue } from './expressionEvaluatorUtils.js'

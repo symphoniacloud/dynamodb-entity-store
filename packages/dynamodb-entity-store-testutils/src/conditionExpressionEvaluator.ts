@@ -1,4 +1,5 @@
 import { NativeAttributeValue } from '@aws-sdk/lib-dynamodb'
+import { resolveAttributeName, resolveAttributeValue } from './expressionEvaluatorUtils.js'
 
 // TODO - WARNING! THIS CODE IS FOR TESTS ONLY! DON'T USE THIS IN PRODUCTION
 //   I haven't fully validated this implementation, and so I can't guarantee it is correct
@@ -189,7 +190,7 @@ function splitByOperator(expression: string, operator: string): { left: string; 
  * Evaluates a function call.
  */
 function evaluateFunction(functionName: string, arg: string, context: EvaluationContext): boolean {
-  const resolvedPath = resolveAttributeName(arg, context)
+  const resolvedPath = resolveAttributeName(arg, context.expressionAttributeNames)
   const value = getValueAtPath(resolvedPath, context.item)
 
   switch (functionName.toLowerCase()) {
@@ -232,39 +233,12 @@ function resolveValue(expression: string, context: EvaluationContext): NativeAtt
 
   // Check if it's an expression attribute value
   if (trimmed.startsWith(':')) {
-    if (!context.expressionAttributeValues) {
-      throw new Error(`Expression attribute value ${trimmed} used but no ExpressionAttributeValues provided`)
-    }
-    const value = context.expressionAttributeValues[trimmed]
-    if (value === undefined) {
-      throw new Error(`Expression attribute value ${trimmed} not found in ExpressionAttributeValues`)
-    }
-    return value
+    return resolveAttributeValue(trimmed, context.expressionAttributeValues)
   }
 
   // Otherwise, it's an attribute path
-  const resolvedPath = resolveAttributeName(trimmed, context)
+  const resolvedPath = resolveAttributeName(trimmed, context.expressionAttributeNames)
   return getValueAtPath(resolvedPath, context.item)
-}
-
-/**
- * Resolves an attribute name (handles #placeholder syntax).
- */
-function resolveAttributeName(name: string, context: EvaluationContext): string {
-  const trimmed = name.trim()
-
-  if (trimmed.startsWith('#')) {
-    if (!context.expressionAttributeNames) {
-      throw new Error(`Expression attribute name ${trimmed} used but no ExpressionAttributeNames provided`)
-    }
-    const resolved = context.expressionAttributeNames[trimmed]
-    if (resolved === undefined) {
-      throw new Error(`Expression attribute name ${trimmed} not found in ExpressionAttributeNames`)
-    }
-    return resolved
-  }
-
-  return trimmed
 }
 
 /**

@@ -577,6 +577,220 @@ test('scanAllPages throws error when unsupported properties are provided', async
   )
 })
 
+// Query Integration Tests
+
+test('queryOnePage with PK only', async () => {
+  const db = ddb()
+
+  // Add some items
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'A', value: 10 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'B', value: 20 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 2, TEST_SK: 'A', value: 30 } })
+
+  const result = await db.queryOnePage({
+    ...PKANDSK_TABLE_REQUEST,
+    KeyConditionExpression: 'TEST_PK = :pk',
+    ExpressionAttributeValues: { ':pk': 1 }
+  })
+
+  expect(result.Items).toHaveLength(2)
+  expect(result.Items).toContainEqual({ TEST_PK: 1, TEST_SK: 'A', value: 10 })
+  expect(result.Items).toContainEqual({ TEST_PK: 1, TEST_SK: 'B', value: 20 })
+})
+
+test('queryOnePage with PK and SK equality', async () => {
+  const db = ddb()
+
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'A', value: 10 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'B', value: 20 } })
+
+  const result = await db.queryOnePage({
+    ...PKANDSK_TABLE_REQUEST,
+    KeyConditionExpression: 'TEST_PK = :pk AND TEST_SK = :sk',
+    ExpressionAttributeValues: { ':pk': 1, ':sk': 'A' }
+  })
+
+  expect(result.Items).toHaveLength(1)
+  expect(result.Items).toContainEqual({ TEST_PK: 1, TEST_SK: 'A', value: 10 })
+})
+
+test('queryOnePage with PK and SK greater than', async () => {
+  const db = ddb()
+
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'A', value: 10 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'B', value: 20 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'C', value: 30 } })
+
+  const result = await db.queryOnePage({
+    ...PKANDSK_TABLE_REQUEST,
+    KeyConditionExpression: 'TEST_PK = :pk AND TEST_SK > :sk',
+    ExpressionAttributeValues: { ':pk': 1, ':sk': 'A' }
+  })
+
+  expect(result.Items).toHaveLength(2)
+  expect(result.Items).toContainEqual({ TEST_PK: 1, TEST_SK: 'B', value: 20 })
+  expect(result.Items).toContainEqual({ TEST_PK: 1, TEST_SK: 'C', value: 30 })
+})
+
+test('queryOnePage with begins_with', async () => {
+  const db = ddb()
+
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'ITEM#100', value: 10 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'ITEM#200', value: 20 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'ORDER#100', value: 30 } })
+
+  const result = await db.queryOnePage({
+    ...PKANDSK_TABLE_REQUEST,
+    KeyConditionExpression: 'TEST_PK = :pk AND begins_with(TEST_SK, :prefix)',
+    ExpressionAttributeValues: { ':pk': 1, ':prefix': 'ITEM#' }
+  })
+
+  expect(result.Items).toHaveLength(2)
+  expect(result.Items).toContainEqual({ TEST_PK: 1, TEST_SK: 'ITEM#100', value: 10 })
+  expect(result.Items).toContainEqual({ TEST_PK: 1, TEST_SK: 'ITEM#200', value: 20 })
+})
+
+test('queryOnePage with Limit', async () => {
+  const db = ddb()
+
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'A', value: 10 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'B', value: 20 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'C', value: 30 } })
+
+  const result = await db.queryOnePage({
+    ...PKANDSK_TABLE_REQUEST,
+    KeyConditionExpression: 'TEST_PK = :pk',
+    ExpressionAttributeValues: { ':pk': 1 },
+    Limit: 2
+  })
+
+  expect(result.Items).toHaveLength(2)
+})
+
+test('queryOnePage with ExpressionAttributeNames', async () => {
+  const db = ddb()
+
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'A', value: 10 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'B', value: 20 } })
+
+  const result = await db.queryOnePage({
+    ...PKANDSK_TABLE_REQUEST,
+    KeyConditionExpression: '#pk = :pk AND #sk = :sk',
+    ExpressionAttributeNames: { '#pk': 'TEST_PK', '#sk': 'TEST_SK' },
+    ExpressionAttributeValues: { ':pk': 1, ':sk': 'A' }
+  })
+
+  expect(result.Items).toHaveLength(1)
+  expect(result.Items).toContainEqual({ TEST_PK: 1, TEST_SK: 'A', value: 10 })
+})
+
+test('queryOnePage returns empty when no matches', async () => {
+  const db = ddb()
+
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'A', value: 10 } })
+
+  const result = await db.queryOnePage({
+    ...PKANDSK_TABLE_REQUEST,
+    KeyConditionExpression: 'TEST_PK = :pk',
+    ExpressionAttributeValues: { ':pk': 999 }
+  })
+
+  expect(result.Items).toHaveLength(0)
+})
+
+test('queryOnePage throws on missing KeyConditionExpression', async () => {
+  const db = ddb()
+
+  await expect(
+    db.queryOnePage({
+      ...PKANDSK_TABLE_REQUEST
+    })
+  ).rejects.toThrow('KeyConditionExpression is required for query')
+})
+
+test('queryOnePage throws on unsupported properties', async () => {
+  const db = ddb()
+
+  await expect(
+    db.queryOnePage({
+      ...PKANDSK_TABLE_REQUEST,
+      KeyConditionExpression: 'TEST_PK = :pk',
+      ExpressionAttributeValues: { ':pk': 1 },
+      FilterExpression: 'value > :val'
+    })
+  ).rejects.toThrow(
+    'FakeDynamoDBInterface.queryOnePage does not support the following properties: FilterExpression'
+  )
+})
+
+test('queryAllPages returns all matching items', async () => {
+  const db = ddb()
+
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'A', value: 10 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'B', value: 20 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 2, TEST_SK: 'A', value: 30 } })
+
+  const results = await db.queryAllPages({
+    ...PKANDSK_TABLE_REQUEST,
+    KeyConditionExpression: 'TEST_PK = :pk',
+    ExpressionAttributeValues: { ':pk': 1 }
+  })
+
+  expect(results).toHaveLength(1)
+  expect(results[0].Items).toHaveLength(2)
+  expect(results[0].Items).toContainEqual({ TEST_PK: 1, TEST_SK: 'A', value: 10 })
+  expect(results[0].Items).toContainEqual({ TEST_PK: 1, TEST_SK: 'B', value: 20 })
+})
+
+test('queryAllPages with SK condition', async () => {
+  const db = ddb()
+
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'A', value: 10 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'B', value: 20 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'C', value: 30 } })
+
+  const results = await db.queryAllPages({
+    ...PKANDSK_TABLE_REQUEST,
+    KeyConditionExpression: 'TEST_PK = :pk AND TEST_SK >= :sk',
+    ExpressionAttributeValues: { ':pk': 1, ':sk': 'B' }
+  })
+
+  expect(results).toHaveLength(1)
+  expect(results[0].Items).toHaveLength(2)
+  expect(results[0].Items).toContainEqual({ TEST_PK: 1, TEST_SK: 'B', value: 20 })
+  expect(results[0].Items).toContainEqual({ TEST_PK: 1, TEST_SK: 'C', value: 30 })
+})
+
+test('queryAllPages returns empty when no matches', async () => {
+  const db = ddb()
+
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'A', value: 10 } })
+
+  const results = await db.queryAllPages({
+    ...PKANDSK_TABLE_REQUEST,
+    KeyConditionExpression: 'TEST_PK = :pk',
+    ExpressionAttributeValues: { ':pk': 999 }
+  })
+
+  expect(results).toHaveLength(1)
+  expect(results[0].Items).toHaveLength(0)
+})
+
+test('queryAllPages throws on unsupported properties', async () => {
+  const db = ddb()
+
+  await expect(
+    db.queryAllPages({
+      ...PKANDSK_TABLE_REQUEST,
+      KeyConditionExpression: 'TEST_PK = :pk',
+      ExpressionAttributeValues: { ':pk': 1 },
+      Limit: 10
+    })
+  ).rejects.toThrow(
+    'FakeDynamoDBInterface.queryAllPages does not support the following properties: Limit'
+  )
+})
+
 // Condition Expression Integration Tests
 
 test('put with ConditionExpression - attribute_not_exists', async () => {

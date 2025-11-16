@@ -37,11 +37,11 @@ jobs:
           role-to-assume: ${{ secrets.OIDC_ROLE }}
           aws-region: us-east-1
 
-      - name: Run tests
+      - name: Run tests and build (required for inter-package dependencies)
         env:
           STACK_NAME: dynamodb-entity-store-ci
         run: >
-          npm install && npm run local-checks && npm run deploy-and-remote-checks && npm run build
+          npm install && npm run local && npm run deploy-and-remote-tests
 
       # To test that doc generation works
       - run: npm run generate-docs

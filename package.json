@@ -14,15 +14,9 @@
     "examples"
   ],
   "scripts": {
-    "build": "npm run build --workspace=@symphoniacloud/dynamodb-entity-store && npm run build --workspace=@symphoniacloud/dynamodb-entity-store-testutils",
-    "test": "npm run test --workspace=@symphoniacloud/dynamodb-entity-store-testutils && npm run unit-tests --workspace=@symphoniacloud/dynamodb-entity-store && npm run integration-tests --workspace=@symphoniacloud/dynamodb-entity-store",
-    "unit-tests": "npm run unit-tests --workspace=@symphoniacloud/dynamodb-entity-store",
-    "integration-tests": "npm run integration-tests --workspace=@symphoniacloud/dynamodb-entity-store",
-    "lint": "npm run lint --workspaces --if-present",
-    "format": "npm run format --workspaces --if-present",
-    "local-checks": "npm run local-checks --workspace=@symphoniacloud/dynamodb-entity-store && npm run local-checks --workspace=@symphoniacloud/dynamodb-entity-store-testutils",
+    "local": "npm run local --workspace=@symphoniacloud/dynamodb-entity-store && npm run local --workspace=@symphoniacloud/dynamodb-entity-store-testutils",
     "deploy": "npm run deploy --workspace=@symphoniacloud/dynamodb-entity-store",
-    "deploy-and-remote-checks": "npm run deploy-and-remote-checks --workspace=@symphoniacloud/dynamodb-entity-store",
+    "deploy-and-remote-tests": "npm run deploy-and-remote-tests --workspace=@symphoniacloud/dynamodb-entity-store",
     "check-examples": "npm run local-checks --workspace=@symphoniacloud/dynamodb-entity-store-examples",
     "generate-docs": "npm run generate-docs --workspace=@symphoniacloud/dynamodb-entity-store"
   },

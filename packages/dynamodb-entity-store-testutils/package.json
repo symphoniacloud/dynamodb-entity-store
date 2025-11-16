@@ -26,9 +26,9 @@
     "lint": "eslint --max-warnings=0 --fix-dry-run \"{src,test}/**/*.{js,ts}\"",
     "format": "prettier --check \"{src,test}/**/*.{js,ts}\"",
     "test": "vitest run",
-    "local-checks": "tsc && npm run lint && npm run test",
     "build": "rm -rf dist && tsc -p tsconfig.build.json && cp ../../README.md . && cp ../../LICENSE .",
-    "prepublishOnly": "npm run local-checks && npm run build"
+    "local": "tsc && npm run lint && npm run test && npm run build",
+    "prepublishOnly": "npm run local"
   },
   "engines": {
     "node": ">=22.0.0"

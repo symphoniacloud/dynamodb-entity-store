@@ -408,3 +408,53 @@ test('transactionWrite', async () => {
     ]
   })
 })
+
+test('put throws error when unsupported properties are provided - single property', async () => {
+  const db = ddb()
+
+  await expect(
+    db.put({
+      ...PKONLY_TABLE_REQUEST,
+      Item: { TEST_PK: 1, b: 2 },
+      ConditionExpression: 'attribute_not_exists(TEST_PK)'
+    })
+  ).rejects.toThrow('FakeDynamoDBInterface.put does not support the following properties: ConditionExpression')
+})
+
+test('put throws error when unsupported properties are provided - multiple properties', async () => {
+  const db = ddb()
+
+  await expect(
+    db.put({
+      ...PKONLY_TABLE_REQUEST,
+      Item: { TEST_PK: 1, b: 2 },
+      ReturnValues: 'ALL_OLD',
+      ExpressionAttributeNames: { '#a': 'b' }
+    })
+  ).rejects.toThrow('FakeDynamoDBInterface.put does not support the following properties: ReturnValues, ExpressionAttributeNames')
+})
+
+test('put throws error when ReturnConsumedCapacity is provided', async () => {
+  const db = ddb()
+
+  await expect(
+    db.put({
+      ...PKONLY_TABLE_REQUEST,
+      Item: { TEST_PK: 1, b: 2 },
+      ReturnConsumedCapacity: 'TOTAL'
+    })
+  ).rejects.toThrow('FakeDynamoDBInterface.put does not support the following properties: ReturnConsumedCapacity')
+})
+
+test('put succeeds when only TableName and Item are provided', async () => {
+  const db = ddb()
+
+  await expect(
+    db.put({
+      TableName: 'pkOnly',
+      Item: { TEST_PK: 1, b: 2 }
+    })
+  ).resolves.toBeDefined()
+
+  expect(db.getFromTable('pkOnly', { TEST_PK: 1 })).toEqual({ TEST_PK: 1, b: 2 })
+})

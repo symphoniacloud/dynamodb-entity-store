@@ -41,6 +41,17 @@ export class FakeDynamoDBInterface implements DynamoDBInterface {
   }
 
   async put(params: PutCommandInput) {
+    // Validate that only TableName and Item are provided
+    const allowedKeys = ['TableName', 'Item']
+    const providedKeys = Object.keys(params)
+    const unsupportedKeys = providedKeys.filter(key => !allowedKeys.includes(key))
+
+    if (unsupportedKeys.length > 0) {
+      throw new Error(
+        `FakeDynamoDBInterface.put does not support the following properties: ${unsupportedKeys.join(', ')}`
+      )
+    }
+
     this.getTableFrom(params).putItem(params.Item)
     return METADATA
   }

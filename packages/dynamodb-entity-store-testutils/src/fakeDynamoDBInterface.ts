@@ -24,10 +24,12 @@ import { DynamoDBInterface } from '@symphoniacloud/dynamodb-entity-store'
 export const METADATA = { $metadata: {} }
 
 const supportedParamKeysByFunction = {
-  put: ['TableName', 'Item']
+  put: ['TableName', 'Item'],
+  get: ['TableName', 'Key'],
+  delete: ['TableName', 'Key']
 }
 
-function checkSupportedParams(params: object, functionName: 'put') {
+function checkSupportedParams(params: object, functionName: 'put' | 'get' | 'delete') {
   const unsupportedKeys = Object.keys(params).filter(
     (key) => !supportedParamKeysByFunction[functionName].includes(key)
   )
@@ -85,6 +87,7 @@ export class FakeDynamoDBInterface implements DynamoDBInterface {
   }
 
   async get(params: GetCommandInput): Promise<GetCommandOutput> {
+    checkSupportedParams(params, 'get')
     return {
       Item: this.getTableFrom(params).get(params.Key),
       ...METADATA
@@ -97,6 +100,7 @@ export class FakeDynamoDBInterface implements DynamoDBInterface {
   }
 
   async delete(params: DeleteCommandInput) {
+    checkSupportedParams(params, 'delete')
     this.getTableFrom(params).deleteItem(params.Key)
     return METADATA
   }

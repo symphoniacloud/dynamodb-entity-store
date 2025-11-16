@@ -36,7 +36,7 @@ const supportedParamKeysByFunction = {
     'ExpressionAttributeNames',
     'ExpressionAttributeValues'
   ],
-  get: ['TableName', 'Key'],
+  get: ['TableName', 'Key', 'ConsistentRead'],
   delete: ['TableName', 'Key'],
   batchWrite: ['RequestItems'],
   transactionWrite: ['TransactItems'],
@@ -46,16 +46,18 @@ const supportedParamKeysByFunction = {
     'ExpressionAttributeNames',
     'ExpressionAttributeValues',
     'Limit',
-    'ExclusiveStartKey'
+    'ExclusiveStartKey',
+    'ConsistentRead'
   ],
   queryAllPages: [
     'TableName',
     'KeyConditionExpression',
     'ExpressionAttributeNames',
-    'ExpressionAttributeValues'
+    'ExpressionAttributeValues',
+    'ConsistentRead'
   ],
-  scanOnePage: ['TableName'],
-  scanAllPages: ['TableName']
+  scanOnePage: ['TableName', 'ConsistentRead'],
+  scanAllPages: ['TableName', 'ConsistentRead']
 }
 
 function checkSupportedParams(

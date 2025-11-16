@@ -421,16 +421,25 @@ test('put throws error when unsupported properties are provided', async () => {
   ).rejects.toThrow('FakeDynamoDBInterface.put does not support the following properties: ReturnValues')
 })
 
-test('get throws error when unsupported properties are provided', async () => {
+test('get accepts ConsistentRead parameter but ignores it', async () => {
   const db = ddb()
 
-  await expect(
-    db.get({
-      ...PKONLY_TABLE_REQUEST,
-      Key: { TEST_PK: 1 },
-      ConsistentRead: true
-    })
-  ).rejects.toThrow('FakeDynamoDBInterface.get does not support the following properties: ConsistentRead')
+  await db.put({ ...PKONLY_TABLE_REQUEST, Item: { TEST_PK: 1, b: 2 } })
+
+  // ConsistentRead should be accepted but ignored
+  expect(await db.get({ ...PKONLY_TABLE_REQUEST, Key: { TEST_PK: 1 }, ConsistentRead: true })).toEqual({
+    Item: { TEST_PK: 1, b: 2 },
+    ...METADATA
+  })
+
+  expect(await db.get({ ...PKONLY_TABLE_REQUEST, Key: { TEST_PK: 1 }, ConsistentRead: false })).toEqual({
+    Item: { TEST_PK: 1, b: 2 },
+    ...METADATA
+  })
+})
+
+test('get throws error when unsupported properties are provided', async () => {
+  const db = ddb()
 
   await expect(
     db.get({
@@ -554,17 +563,41 @@ test('scanOnePage throws error when unsupported properties are provided', async 
   )
 })
 
-test('scanAllPages throws error when unsupported properties are provided', async () => {
+test('scanOnePage accepts ConsistentRead parameter but ignores it', async () => {
   const db = ddb()
 
-  await expect(
-    db.scanAllPages({
-      ...PKONLY_TABLE_REQUEST,
-      ConsistentRead: true
-    })
-  ).rejects.toThrow(
-    'FakeDynamoDBInterface.scanAllPages does not support the following properties: ConsistentRead'
-  )
+  await db.put({ ...PKONLY_TABLE_REQUEST, Item: { TEST_PK: 1, b: 2 } })
+  await db.put({ ...PKONLY_TABLE_REQUEST, Item: { TEST_PK: 2, b: 4 } })
+
+  const result = await db.scanOnePage({
+    ...PKONLY_TABLE_REQUEST,
+    ConsistentRead: true
+  })
+
+  expect(result.Items).toHaveLength(2)
+  expect(result.Items).toContainEqual({ TEST_PK: 1, b: 2 })
+  expect(result.Items).toContainEqual({ TEST_PK: 2, b: 4 })
+})
+
+test('scanAllPages accepts ConsistentRead parameter but ignores it', async () => {
+  const db = ddb()
+
+  await db.put({ ...PKONLY_TABLE_REQUEST, Item: { TEST_PK: 1, b: 2 } })
+  await db.put({ ...PKONLY_TABLE_REQUEST, Item: { TEST_PK: 2, b: 4 } })
+
+  const results = await db.scanAllPages({
+    ...PKONLY_TABLE_REQUEST,
+    ConsistentRead: false
+  })
+
+  expect(results).toHaveLength(1)
+  expect(results[0].Items).toHaveLength(2)
+  expect(results[0].Items).toContainEqual({ TEST_PK: 1, b: 2 })
+  expect(results[0].Items).toContainEqual({ TEST_PK: 2, b: 4 })
+})
+
+test('scanAllPages throws error when unsupported properties are provided', async () => {
+  const db = ddb()
 
   await expect(
     db.scanAllPages({
@@ -789,6 +822,43 @@ test('queryAllPages throws on unsupported properties', async () => {
   ).rejects.toThrow(
     'FakeDynamoDBInterface.queryAllPages does not support the following properties: Limit'
   )
+})
+
+test('queryOnePage accepts ConsistentRead parameter but ignores it', async () => {
+  const db = ddb()
+
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'A', value: 10 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'B', value: 20 } })
+
+  const result = await db.queryOnePage({
+    ...PKANDSK_TABLE_REQUEST,
+    KeyConditionExpression: 'TEST_PK = :pk',
+    ExpressionAttributeValues: { ':pk': 1 },
+    ConsistentRead: true
+  })
+
+  expect(result.Items).toHaveLength(2)
+  expect(result.Items).toContainEqual({ TEST_PK: 1, TEST_SK: 'A', value: 10 })
+  expect(result.Items).toContainEqual({ TEST_PK: 1, TEST_SK: 'B', value: 20 })
+})
+
+test('queryAllPages accepts ConsistentRead parameter but ignores it', async () => {
+  const db = ddb()
+
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'A', value: 10 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'B', value: 20 } })
+
+  const results = await db.queryAllPages({
+    ...PKANDSK_TABLE_REQUEST,
+    KeyConditionExpression: 'TEST_PK = :pk',
+    ExpressionAttributeValues: { ':pk': 1 },
+    ConsistentRead: false
+  })
+
+  expect(results).toHaveLength(1)
+  expect(results[0].Items).toHaveLength(2)
+  expect(results[0].Items).toContainEqual({ TEST_PK: 1, TEST_SK: 'A', value: 10 })
+  expect(results[0].Items).toContainEqual({ TEST_PK: 1, TEST_SK: 'B', value: 20 })
 })
 
 // Condition Expression Integration Tests

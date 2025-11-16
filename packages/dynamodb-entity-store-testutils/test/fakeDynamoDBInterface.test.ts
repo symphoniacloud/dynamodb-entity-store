@@ -433,3 +433,51 @@ test('put throws error when unsupported properties are provided', async () => {
     'FakeDynamoDBInterface.put does not support the following properties: ReturnValues, ExpressionAttributeNames'
   )
 })
+
+test('get throws error when unsupported properties are provided', async () => {
+  const db = ddb()
+
+  await expect(
+    db.get({
+      ...PKONLY_TABLE_REQUEST,
+      Key: { TEST_PK: 1 },
+      ConsistentRead: true
+    })
+  ).rejects.toThrow('FakeDynamoDBInterface.get does not support the following properties: ConsistentRead')
+
+  await expect(
+    db.get({
+      ...PKONLY_TABLE_REQUEST,
+      Key: { TEST_PK: 1 },
+      ProjectionExpression: 'b',
+      ExpressionAttributeNames: { '#b': 'b' }
+    })
+  ).rejects.toThrow(
+    'FakeDynamoDBInterface.get does not support the following properties: ProjectionExpression, ExpressionAttributeNames'
+  )
+})
+
+test('delete throws error when unsupported properties are provided', async () => {
+  const db = ddb()
+
+  await expect(
+    db.delete({
+      ...PKONLY_TABLE_REQUEST,
+      Key: { TEST_PK: 1 },
+      ConditionExpression: 'attribute_exists(TEST_PK)'
+    })
+  ).rejects.toThrow(
+    'FakeDynamoDBInterface.delete does not support the following properties: ConditionExpression'
+  )
+
+  await expect(
+    db.delete({
+      ...PKONLY_TABLE_REQUEST,
+      Key: { TEST_PK: 1 },
+      ReturnValues: 'ALL_OLD',
+      ExpressionAttributeNames: { '#a': 'b' }
+    })
+  ).rejects.toThrow(
+    'FakeDynamoDBInterface.delete does not support the following properties: ReturnValues, ExpressionAttributeNames'
+  )
+})

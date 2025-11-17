@@ -10,8 +10,13 @@ import { resolveAttributeName, resolveAttributeValue } from './expressionEvaluat
  * Supported features:
  * - attribute_exists(path)
  * - attribute_not_exists(path)
+ * - begins_with(path, substr)
  * - path = :value
  * - path <> :value
+ * - path < :value
+ * - path <= :value
+ * - path > :value
+ * - path >= :value
  * - NOT expr
  * - expr AND expr
  * - expr OR expr
@@ -30,7 +35,7 @@ export class UnsupportedConditionExpressionError extends Error {
   constructor(feature: string) {
     super(
       `Unsupported condition expression feature: ${feature}. ` +
-        `Currently supported: attribute_exists, attribute_not_exists, =, <>, NOT, AND, OR, and parentheses.`
+        `Currently supported: attribute_exists, attribute_not_exists, begins_with, =, <>, <, <=, >, >=, NOT, AND, OR, and parentheses.`
     )
     this.name = 'UnsupportedConditionExpressionError'
   }
@@ -83,12 +88,9 @@ function detectUnsupportedFeatures(expression: string): void {
   const unsupportedPatterns = [
     { pattern: /\bBETWEEN\b/i, name: 'BETWEEN operator' },
     { pattern: /\bIN\b\s*\(/i, name: 'IN operator' },
-    { pattern: /\bbegins_with\s*\(/i, name: 'begins_with function' },
     { pattern: /\bcontains\s*\(/i, name: 'contains function' },
     { pattern: /\bsize\s*\(/i, name: 'size function' },
     { pattern: /\battribute_type\s*\(/i, name: 'attribute_type function' },
-    // Match <, >, <=, >= but NOT <>
-    { pattern: /(?:<(?!>)|(?<!<)>|[<>]=)/g, name: 'comparison operators (<, >, <=, >=)' },
     { pattern: /\[\d+\]/g, name: 'list index access' },
     { pattern: /\.\w+/g, name: 'nested attribute paths (use ExpressionAttributeNames instead)' }
   ]
@@ -133,18 +135,53 @@ function evaluateExpression(expression: string, context: EvaluationContext): boo
   // Handle function calls
   const functionMatch = trimmed.match(/^(\w+)\s*\(\s*(.+?)\s*\)$/)
   if (functionMatch) {
-    const [, functionName, arg] = functionMatch
-    return evaluateFunction(functionName, arg, context)
+    const [, functionName, argsString] = functionMatch
+    const args = splitFunctionArguments(argsString)
+    return evaluateFunction(functionName, args, context)
   }
 
-  // Handle comparisons
-  const comparisonMatch = trimmed.match(/^(.+?)\s*(=|<>)\s*(.+)$/)
+  // Handle comparisons (match longer operators first: <=, >=, <> before <, >, =)
+  const comparisonMatch = trimmed.match(/^(.+?)\s*(<=|>=|<>|<|>|=)\s*(.+)$/)
   if (comparisonMatch) {
     const [, left, operator, right] = comparisonMatch
     return evaluateComparison(left.trim(), operator, right.trim(), context)
   }
 
   throw new Error(`Unable to parse condition expression: ${trimmed}`)
+}
+
+/**
+ * Splits function arguments by comma, respecting parentheses.
+ */
+function splitFunctionArguments(argsString: string): string[] {
+  const args: string[] = []
+  let currentArg = ''
+  let depth = 0
+
+  for (let i = 0; i < argsString.length; i++) {
+    const char = argsString[i]
+
+    if (char === '(') {
+      depth++
+      currentArg += char
+    } else if (char === ')') {
+      depth--
+      currentArg += char
+    } else if (char === ',' && depth === 0) {
+      // Found a comma at depth 0, so this is an argument separator
+      args.push(currentArg.trim())
+      currentArg = ''
+    } else {
+      currentArg += char
+    }
+  }
+
+  // Add the last argument
+  if (currentArg.trim()) {
+    args.push(currentArg.trim())
+  }
+
+  return args
 }
 
 /**
@@ -189,15 +226,37 @@ function splitByOperator(expression: string, operator: string): { left: string; 
 /**
  * Evaluates a function call.
  */
-function evaluateFunction(functionName: string, arg: string, context: EvaluationContext): boolean {
-  const resolvedPath = resolveAttributeName(arg, context.expressionAttributeNames)
-  const value = getValueAtPath(resolvedPath, context.item)
-
+function evaluateFunction(functionName: string, args: string[], context: EvaluationContext): boolean {
   switch (functionName.toLowerCase()) {
-    case 'attribute_exists':
+    case 'attribute_exists': {
+      if (args.length !== 1) {
+        throw new Error(`attribute_exists() expects 1 argument, got ${args.length}`)
+      }
+      const resolvedPath = resolveAttributeName(args[0], context.expressionAttributeNames)
+      const value = getValueAtPath(resolvedPath, context.item)
       return value !== undefined
-    case 'attribute_not_exists':
+    }
+    case 'attribute_not_exists': {
+      if (args.length !== 1) {
+        throw new Error(`attribute_not_exists() expects 1 argument, got ${args.length}`)
+      }
+      const resolvedPath = resolveAttributeName(args[0], context.expressionAttributeNames)
+      const value = getValueAtPath(resolvedPath, context.item)
       return value === undefined
+    }
+    case 'begins_with': {
+      if (args.length !== 2) {
+        throw new Error(`begins_with() expects 2 arguments, got ${args.length}`)
+      }
+      const pathValue = resolveValue(args[0], context)
+      const substrValue = resolveValue(args[1], context)
+
+      // begins_with works with strings
+      if (typeof pathValue !== 'string' || typeof substrValue !== 'string') {
+        return false
+      }
+      return pathValue.startsWith(substrValue)
+    }
     default:
       throw new UnsupportedConditionExpressionError(`function ${functionName}()`)
   }
@@ -220,6 +279,14 @@ function evaluateComparison(
       return leftValue === rightValue
     case '<>':
       return leftValue !== rightValue
+    case '<':
+      return (leftValue as number | string) < (rightValue as number | string)
+    case '<=':
+      return (leftValue as number | string) <= (rightValue as number | string)
+    case '>':
+      return (leftValue as number | string) > (rightValue as number | string)
+    case '>=':
+      return (leftValue as number | string) >= (rightValue as number | string)
     default:
       throw new UnsupportedConditionExpressionError(`operator ${operator}`)
   }

@@ -11,6 +11,7 @@ import { resolveAttributeName, resolveAttributeValue } from './expressionEvaluat
  * - PK = :value (required)
  * - SK = :value
  * - SK < :value, SK > :value, SK <= :value, SK >= :value
+ * - SK BETWEEN :low AND :high
  * - begins_with(SK, :value)
  * - PK = :pk AND SK <condition>
  *
@@ -21,7 +22,7 @@ export class UnsupportedKeyConditionExpressionError extends Error {
   constructor(feature: string) {
     super(
       `Unsupported key condition expression feature: ${feature}. ` +
-        `Currently supported: PK = :value, SK comparisons (=, <, >, <=, >=), begins_with(SK, :value), and AND.`
+        `Currently supported: PK = :value, SK comparisons (=, <, >, <=, >=), SK BETWEEN :low AND :high, begins_with(SK, :value), and AND.`
     )
     this.name = 'UnsupportedKeyConditionExpressionError'
   }
@@ -32,8 +33,9 @@ export interface KeyCondition {
   pkValue: NativeAttributeValue
   skCondition?: {
     attributeName: string
-    operator: '=' | '<' | '>' | '<=' | '>=' | 'begins_with'
+    operator: '=' | '<' | '>' | '<=' | '>=' | 'begins_with' | 'between'
     value: NativeAttributeValue
+    highValue?: NativeAttributeValue // Only used for 'between' operator
   }
 }
 
@@ -107,6 +109,14 @@ export function matchesKeyCondition(
           typeof keyCondition.skCondition.value === 'string' &&
           skValue.startsWith(keyCondition.skCondition.value)
         )
+      case 'between':
+        if (!keyCondition.skCondition.highValue) {
+          throw new Error('BETWEEN operator requires highValue')
+        }
+        return (
+          compare(skValue, keyCondition.skCondition.value) >= 0 &&
+          compare(skValue, keyCondition.skCondition.highValue) <= 0
+        )
     }
   }
 
@@ -134,7 +144,6 @@ function compare(a: NativeAttributeValue, b: NativeAttributeValue): number {
 function detectUnsupportedFeatures(expression: string): void {
   const unsupportedPatterns = [
     { pattern: /\bOR\b/i, name: 'OR operator' },
-    { pattern: /\bBETWEEN\b/i, name: 'BETWEEN operator' },
     { pattern: /\bIN\b\s*\(/i, name: 'IN operator' },
     { pattern: /\battribute_exists\s*\(/i, name: 'attribute_exists function' },
     { pattern: /\battribute_not_exists\s*\(/i, name: 'attribute_not_exists function' },
@@ -151,12 +160,13 @@ function detectUnsupportedFeatures(expression: string): void {
 }
 
 /**
- * Splits expression by AND, respecting function calls and parentheses.
+ * Splits expression by AND, respecting function calls, parentheses, and BETWEEN clauses.
  */
 function splitByAnd(expression: string): string[] {
   const parts: string[] = []
   let depth = 0
   let currentPart = ''
+  let inBetween = false
 
   for (let i = 0; i < expression.length; i++) {
     const char = expression[i]
@@ -168,14 +178,32 @@ function splitByAnd(expression: string): string[] {
       depth--
       currentPart += char
     } else if (depth === 0) {
-      // Check for AND keyword
+      // Check if we're entering a BETWEEN clause
       const remaining = expression.slice(i)
+      const betweenMatch = remaining.match(/^\s*BETWEEN\s+/i)
+      if (betweenMatch) {
+        inBetween = true
+        currentPart += remaining.slice(0, betweenMatch[0].length)
+        i += betweenMatch[0].length - 1
+        continue
+      }
+
+      // Check for AND keyword
       const andMatch = remaining.match(/^\s*AND\s+/i)
       if (andMatch) {
-        parts.push(currentPart.trim())
-        currentPart = ''
-        i += andMatch[0].length - 1
-        continue
+        if (inBetween) {
+          // This AND is part of BETWEEN clause, don't split
+          inBetween = false
+          currentPart += andMatch[0]
+          i += andMatch[0].length - 1
+          continue
+        } else {
+          // This is a real AND separator
+          parts.push(currentPart.trim())
+          currentPart = ''
+          i += andMatch[0].length - 1
+          continue
+        }
       }
       currentPart += char
     } else {
@@ -226,6 +254,18 @@ function parseSkCondition(
       attributeName: resolveAttributeName(attrName.trim(), expressionAttributeNames),
       operator: 'begins_with',
       value: resolveAttributeValue(valuePlaceholder.trim(), expressionAttributeValues)
+    }
+  }
+
+  // Check for BETWEEN operator
+  const betweenMatch = condition.match(/^(.+?)\s+BETWEEN\s+(.+?)\s+AND\s+(.+)$/i)
+  if (betweenMatch) {
+    const [, attrName, lowValuePlaceholder, highValuePlaceholder] = betweenMatch
+    return {
+      attributeName: resolveAttributeName(attrName.trim(), expressionAttributeNames),
+      operator: 'between',
+      value: resolveAttributeValue(lowValuePlaceholder.trim(), expressionAttributeValues),
+      highValue: resolveAttributeValue(highValuePlaceholder.trim(), expressionAttributeValues)
     }
   }
 

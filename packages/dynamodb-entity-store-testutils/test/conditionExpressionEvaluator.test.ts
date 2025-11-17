@@ -290,15 +290,54 @@ test('throws on IN operator', () => {
   ).toThrow(UnsupportedConditionExpressionError)
 })
 
-test('throws on begins_with function', () => {
-  expect(() =>
-    evaluateConditionExpression(
-      'begins_with(name, :prefix)',
-      { name: 'alice' },
-      undefined,
-      { ':prefix': 'al' }
-    )
-  ).toThrow(UnsupportedConditionExpressionError)
+// begins_with function
+
+test('begins_with returns true when string starts with prefix', () => {
+  shouldPass('begins_with(name, :prefix)', { name: 'alice' }, undefined, { ':prefix': 'al' })
+})
+
+test('begins_with returns false when string does not start with prefix', () => {
+  shouldFail('begins_with(name, :prefix)', { name: 'alice' }, undefined, { ':prefix': 'bob' })
+})
+
+test('begins_with with exact match', () => {
+  shouldPass('begins_with(name, :prefix)', { name: 'alice' }, undefined, { ':prefix': 'alice' })
+})
+
+test('begins_with with empty prefix', () => {
+  shouldPass('begins_with(name, :prefix)', { name: 'alice' }, undefined, { ':prefix': '' })
+})
+
+test('begins_with returns false when attribute does not exist', () => {
+  shouldFail('begins_with(name, :prefix)', {}, undefined, { ':prefix': 'al' })
+})
+
+test('begins_with returns false when attribute is not a string', () => {
+  shouldFail('begins_with(age, :prefix)', { age: 30 }, undefined, { ':prefix': '3' })
+})
+
+test('begins_with works with ExpressionAttributeNames', () => {
+  shouldPass('begins_with(#n, :prefix)', { name: 'alice' }, { '#n': 'name' }, { ':prefix': 'al' })
+})
+
+test('begins_with works in complex expressions', () => {
+  shouldPass(
+    'begins_with(name, :prefix) AND status = :status',
+    { name: 'alice', status: 'active' },
+    undefined,
+    { ':prefix': 'al', ':status': 'active' }
+  )
+  shouldFail(
+    'begins_with(name, :prefix) AND status = :status',
+    { name: 'alice', status: 'inactive' },
+    undefined,
+    { ':prefix': 'al', ':status': 'active' }
+  )
+})
+
+test('begins_with with NOT operator', () => {
+  shouldPass('NOT begins_with(name, :prefix)', { name: 'alice' }, undefined, { ':prefix': 'bob' })
+  shouldFail('NOT begins_with(name, :prefix)', { name: 'alice' }, undefined, { ':prefix': 'al' })
 })
 
 test('throws on contains function', () => {
@@ -329,28 +368,84 @@ test('throws on attribute_type function', () => {
   ).toThrow(UnsupportedConditionExpressionError)
 })
 
-test('throws on < comparison operator', () => {
-  expect(() =>
-    evaluateConditionExpression('age < :max', { age: 30 }, undefined, { ':max': 40 })
-  ).toThrow(UnsupportedConditionExpressionError)
+// Comparison operators (<, >, <=, >=)
+
+test('< operator with numbers - true case', () => {
+  shouldPass('age < :max', { age: 30 }, undefined, { ':max': 40 })
 })
 
-test('throws on > comparison operator', () => {
-  expect(() =>
-    evaluateConditionExpression('age > :min', { age: 30 }, undefined, { ':min': 20 })
-  ).toThrow(UnsupportedConditionExpressionError)
+test('< operator with numbers - false case (equal)', () => {
+  shouldFail('age < :max', { age: 30 }, undefined, { ':max': 30 })
 })
 
-test('throws on <= comparison operator', () => {
-  expect(() =>
-    evaluateConditionExpression('age <= :max', { age: 30 }, undefined, { ':max': 40 })
-  ).toThrow(UnsupportedConditionExpressionError)
+test('< operator with numbers - false case (greater)', () => {
+  shouldFail('age < :max', { age: 30 }, undefined, { ':max': 20 })
 })
 
-test('throws on >= comparison operator', () => {
-  expect(() =>
-    evaluateConditionExpression('age >= :min', { age: 30 }, undefined, { ':min': 20 })
-  ).toThrow(UnsupportedConditionExpressionError)
+test('< operator with strings - lexicographic comparison', () => {
+  shouldPass('name < :value', { name: 'alice' }, undefined, { ':value': 'bob' })
+  shouldFail('name < :value', { name: 'charlie' }, undefined, { ':value': 'bob' })
+})
+
+test('<= operator with numbers - true case (less)', () => {
+  shouldPass('age <= :max', { age: 30 }, undefined, { ':max': 40 })
+})
+
+test('<= operator with numbers - true case (equal)', () => {
+  shouldPass('age <= :max', { age: 30 }, undefined, { ':max': 30 })
+})
+
+test('<= operator with numbers - false case', () => {
+  shouldFail('age <= :max', { age: 30 }, undefined, { ':max': 20 })
+})
+
+test('> operator with numbers - true case', () => {
+  shouldPass('age > :min', { age: 30 }, undefined, { ':min': 20 })
+})
+
+test('> operator with numbers - false case (equal)', () => {
+  shouldFail('age > :min', { age: 30 }, undefined, { ':min': 30 })
+})
+
+test('> operator with numbers - false case (less)', () => {
+  shouldFail('age > :min', { age: 30 }, undefined, { ':min': 40 })
+})
+
+test('> operator with strings - lexicographic comparison', () => {
+  shouldPass('name > :value', { name: 'charlie' }, undefined, { ':value': 'bob' })
+  shouldFail('name > :value', { name: 'alice' }, undefined, { ':value': 'bob' })
+})
+
+test('>= operator with numbers - true case (greater)', () => {
+  shouldPass('age >= :min', { age: 30 }, undefined, { ':min': 20 })
+})
+
+test('>= operator with numbers - true case (equal)', () => {
+  shouldPass('age >= :min', { age: 30 }, undefined, { ':min': 30 })
+})
+
+test('>= operator with numbers - false case', () => {
+  shouldFail('age >= :min', { age: 30 }, undefined, { ':min': 40 })
+})
+
+test('comparison operators work with ExpressionAttributeNames', () => {
+  shouldPass('#a < :max', { age: 30 }, { '#a': 'age' }, { ':max': 40 })
+  shouldPass('#a > :min', { age: 30 }, { '#a': 'age' }, { ':min': 20 })
+})
+
+test('comparison operators work in complex expressions', () => {
+  shouldPass(
+    'age >= :min AND age <= :max',
+    { age: 30 },
+    undefined,
+    { ':min': 20, ':max': 40 }
+  )
+  shouldFail(
+    'age >= :min AND age <= :max',
+    { age: 50 },
+    undefined,
+    { ':min': 20, ':max': 40 }
+  )
 })
 
 test('throws on nested attribute path with dot notation', () => {
@@ -373,7 +468,7 @@ test('throws on list index access', () => {
 
 test('unsupported feature error includes helpful message', () => {
   try {
-    evaluateConditionExpression('age > :min', { age: 30 }, undefined, { ':min': 20 })
+    evaluateConditionExpression('age BETWEEN :min AND :max', { age: 30 }, undefined, { ':min': 20, ':max': 40 })
     expect.fail('Should have thrown')
   } catch (e) {
     expect(e).toBeInstanceOf(UnsupportedConditionExpressionError)

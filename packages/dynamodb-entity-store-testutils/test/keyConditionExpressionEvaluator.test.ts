@@ -279,14 +279,86 @@ test('throws on OR operator', () => {
   ).toThrow(UnsupportedKeyConditionExpressionError)
 })
 
-test('throws on BETWEEN operator', () => {
-  expect(() =>
-    parseKeyConditionExpression('PK = :pk AND SK BETWEEN :low AND :high', undefined, {
-      ':pk': 'USER#123',
-      ':low': 'A',
-      ':high': 'Z'
-    })
-  ).toThrow(UnsupportedKeyConditionExpressionError)
+// BETWEEN operator
+
+test('parse PK and SK with BETWEEN', () => {
+  const result = parseKeyConditionExpression('PK = :pk AND SK BETWEEN :low AND :high', undefined, {
+    ':pk': 'USER#123',
+    ':low': 'ITEM#050',
+    ':high': 'ITEM#150'
+  })
+
+  expect(result.skCondition).toEqual({
+    attributeName: 'SK',
+    operator: 'between',
+    value: 'ITEM#050',
+    highValue: 'ITEM#150'
+  })
+})
+
+test('SK BETWEEN matches correctly - within range', () => {
+  const condition: KeyCondition = {
+    pkAttributeName: 'PK',
+    pkValue: 'USER#123',
+    skCondition: {
+      attributeName: 'SK',
+      operator: 'between',
+      value: 'ITEM#050',
+      highValue: 'ITEM#150'
+    }
+  }
+
+  expect(matchesKeyCondition({ PK: 'USER#123', SK: 'ITEM#050' }, condition)).toBe(true)
+  expect(matchesKeyCondition({ PK: 'USER#123', SK: 'ITEM#100' }, condition)).toBe(true)
+  expect(matchesKeyCondition({ PK: 'USER#123', SK: 'ITEM#150' }, condition)).toBe(true)
+})
+
+test('SK BETWEEN matches correctly - outside range', () => {
+  const condition: KeyCondition = {
+    pkAttributeName: 'PK',
+    pkValue: 'USER#123',
+    skCondition: {
+      attributeName: 'SK',
+      operator: 'between',
+      value: 'ITEM#050',
+      highValue: 'ITEM#150'
+    }
+  }
+
+  expect(matchesKeyCondition({ PK: 'USER#123', SK: 'ITEM#049' }, condition)).toBe(false)
+  expect(matchesKeyCondition({ PK: 'USER#123', SK: 'ITEM#151' }, condition)).toBe(false)
+  expect(matchesKeyCondition({ PK: 'USER#123', SK: 'ITEM#200' }, condition)).toBe(false)
+})
+
+test('SK BETWEEN works with numbers', () => {
+  const condition: KeyCondition = {
+    pkAttributeName: 'PK',
+    pkValue: 'USER#123',
+    skCondition: {
+      attributeName: 'timestamp',
+      operator: 'between',
+      value: 100,
+      highValue: 200
+    }
+  }
+
+  expect(matchesKeyCondition({ PK: 'USER#123', timestamp: 100 }, condition)).toBe(true)
+  expect(matchesKeyCondition({ PK: 'USER#123', timestamp: 150 }, condition)).toBe(true)
+  expect(matchesKeyCondition({ PK: 'USER#123', timestamp: 200 }, condition)).toBe(true)
+  expect(matchesKeyCondition({ PK: 'USER#123', timestamp: 50 }, condition)).toBe(false)
+  expect(matchesKeyCondition({ PK: 'USER#123', timestamp: 250 }, condition)).toBe(false)
+})
+
+test('SK BETWEEN works with ExpressionAttributeNames', () => {
+  const result = parseKeyConditionExpression(
+    '#pk = :pk AND #sk BETWEEN :low AND :high',
+    { '#pk': 'PK', '#sk': 'SK' },
+    { ':pk': 'USER#123', ':low': 'A', ':high': 'Z' }
+  )
+
+  expect(result.skCondition?.operator).toBe('between')
+  expect(result.skCondition?.value).toBe('A')
+  expect(result.skCondition?.highValue).toBe('Z')
 })
 
 test('throws on IN operator', () => {

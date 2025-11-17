@@ -50,7 +50,8 @@ const supportedParamKeysByFunction = {
     'Limit',
     'ExclusiveStartKey',
     'ConsistentRead',
-    'ReturnConsumedCapacity'
+    'ReturnConsumedCapacity',
+    'ScanIndexForward'
   ],
   queryAllPages: [
     'TableName',
@@ -58,7 +59,8 @@ const supportedParamKeysByFunction = {
     'ExpressionAttributeNames',
     'ExpressionAttributeValues',
     'ConsistentRead',
-    'ReturnConsumedCapacity'
+    'ReturnConsumedCapacity',
+    'ScanIndexForward'
   ],
   scanOnePage: ['TableName', 'ConsistentRead', 'ReturnConsumedCapacity'],
   scanAllPages: ['TableName', 'ConsistentRead', 'ReturnConsumedCapacity']
@@ -223,8 +225,42 @@ export class FakeDynamoDBInterface implements DynamoDBInterface {
     )
 
     // Get all items and filter by key condition
-    const allItems = this.getTableFrom(params).allItems()
-    return allItems.filter((item) => matchesKeyCondition(item, keyCondition))
+    const table = this.getTableFrom(params)
+    const allItems = table.allItems()
+    const filteredItems = allItems.filter((item) => matchesKeyCondition(item, keyCondition))
+
+    // Sort by sort key if the table has one
+    // In DynamoDB, query results are always sorted by SK if it exists
+    // ScanIndexForward defaults to true (ascending) if not specified
+    const scanIndexForward = params.ScanIndexForward !== false
+    const skAttributeName = table.getSkName()
+
+    if (skAttributeName) {
+      filteredItems.sort((a, b) => {
+        const aValue = a[skAttributeName]
+        const bValue = b[skAttributeName]
+
+        const comparison = this.compareValues(aValue, bValue)
+        return scanIndexForward ? comparison : -comparison
+      })
+    }
+
+    return filteredItems
+  }
+
+  /**
+   * Compare two DynamoDB attribute values for sorting.
+   * Supports strings and numbers.
+   */
+  private compareValues(a: NativeAttributeValue, b: NativeAttributeValue): number {
+    if (typeof a === 'string' && typeof b === 'string') {
+      return a.localeCompare(b)
+    }
+    if (typeof a === 'number' && typeof b === 'number') {
+      return a - b
+    }
+    // For other types, treat as equal
+    return 0
   }
 
   async scanOnePage(params: ScanCommandInput): Promise<ScanCommandOutput> {
@@ -313,6 +349,10 @@ class FakeTable {
 
   allItems() {
     return Array.from(this.items.values())
+  }
+
+  getSkName(): string | undefined {
+    return this.skName
   }
 
   private keyFromItem(item: Record<string, NativeAttributeValue> | undefined): TableKey {

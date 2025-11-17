@@ -1029,3 +1029,145 @@ test('put with ConditionExpression - complex expression with ExpressionAttribute
     ...METADATA
   })
 })
+
+// ScanIndexForward Tests
+
+test('queryOnePage with ScanIndexForward=true returns items in ascending order', async () => {
+  const db = ddb()
+
+  // Insert items in random order
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'C', value: 30 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'A', value: 10 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'B', value: 20 } })
+
+  const result = await db.queryOnePage({
+    ...PKANDSK_TABLE_REQUEST,
+    KeyConditionExpression: 'TEST_PK = :pk',
+    ExpressionAttributeValues: { ':pk': 1 },
+    ScanIndexForward: true
+  })
+
+  expect(result.Items).toHaveLength(3)
+  expect(result.Items?.[0]).toEqual({ TEST_PK: 1, TEST_SK: 'A', value: 10 })
+  expect(result.Items?.[1]).toEqual({ TEST_PK: 1, TEST_SK: 'B', value: 20 })
+  expect(result.Items?.[2]).toEqual({ TEST_PK: 1, TEST_SK: 'C', value: 30 })
+})
+
+test('queryOnePage with ScanIndexForward=false returns items in descending order', async () => {
+  const db = ddb()
+
+  // Insert items in random order
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'C', value: 30 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'A', value: 10 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'B', value: 20 } })
+
+  const result = await db.queryOnePage({
+    ...PKANDSK_TABLE_REQUEST,
+    KeyConditionExpression: 'TEST_PK = :pk',
+    ExpressionAttributeValues: { ':pk': 1 },
+    ScanIndexForward: false
+  })
+
+  expect(result.Items).toHaveLength(3)
+  expect(result.Items?.[0]).toEqual({ TEST_PK: 1, TEST_SK: 'C', value: 30 })
+  expect(result.Items?.[1]).toEqual({ TEST_PK: 1, TEST_SK: 'B', value: 20 })
+  expect(result.Items?.[2]).toEqual({ TEST_PK: 1, TEST_SK: 'A', value: 10 })
+})
+
+test('queryOnePage defaults to ascending order when ScanIndexForward is not specified', async () => {
+  const db = ddb()
+
+  // Insert items in random order
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'C', value: 30 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'A', value: 10 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'B', value: 20 } })
+
+  const result = await db.queryOnePage({
+    ...PKANDSK_TABLE_REQUEST,
+    KeyConditionExpression: 'TEST_PK = :pk',
+    ExpressionAttributeValues: { ':pk': 1 }
+    // ScanIndexForward not specified - should default to true (ascending)
+  })
+
+  expect(result.Items).toHaveLength(3)
+  expect(result.Items?.[0]).toEqual({ TEST_PK: 1, TEST_SK: 'A', value: 10 })
+  expect(result.Items?.[1]).toEqual({ TEST_PK: 1, TEST_SK: 'B', value: 20 })
+  expect(result.Items?.[2]).toEqual({ TEST_PK: 1, TEST_SK: 'C', value: 30 })
+})
+
+test('queryAllPages with ScanIndexForward=false returns items in descending order', async () => {
+  const db = ddb()
+
+  // Insert items in random order
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'C', value: 30 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'A', value: 10 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'B', value: 20 } })
+
+  const results = await db.queryAllPages({
+    ...PKANDSK_TABLE_REQUEST,
+    KeyConditionExpression: 'TEST_PK = :pk',
+    ExpressionAttributeValues: { ':pk': 1 },
+    ScanIndexForward: false
+  })
+
+  expect(results).toHaveLength(1)
+  expect(results[0].Items).toHaveLength(3)
+  expect(results[0].Items?.[0]).toEqual({ TEST_PK: 1, TEST_SK: 'C', value: 30 })
+  expect(results[0].Items?.[1]).toEqual({ TEST_PK: 1, TEST_SK: 'B', value: 20 })
+  expect(results[0].Items?.[2]).toEqual({ TEST_PK: 1, TEST_SK: 'A', value: 10 })
+})
+
+test('queryOnePage with ScanIndexForward works with numeric sort keys', async () => {
+  const db = ddb()
+
+  // Insert items with numeric sort keys
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 30, value: 'c' } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 10, value: 'a' } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 20, value: 'b' } })
+
+  const ascResult = await db.queryOnePage({
+    ...PKANDSK_TABLE_REQUEST,
+    KeyConditionExpression: 'TEST_PK = :pk',
+    ExpressionAttributeValues: { ':pk': 1 },
+    ScanIndexForward: true
+  })
+
+  expect(ascResult.Items).toHaveLength(3)
+  expect(ascResult.Items?.[0]).toEqual({ TEST_PK: 1, TEST_SK: 10, value: 'a' })
+  expect(ascResult.Items?.[1]).toEqual({ TEST_PK: 1, TEST_SK: 20, value: 'b' })
+  expect(ascResult.Items?.[2]).toEqual({ TEST_PK: 1, TEST_SK: 30, value: 'c' })
+
+  const descResult = await db.queryOnePage({
+    ...PKANDSK_TABLE_REQUEST,
+    KeyConditionExpression: 'TEST_PK = :pk',
+    ExpressionAttributeValues: { ':pk': 1 },
+    ScanIndexForward: false
+  })
+
+  expect(descResult.Items).toHaveLength(3)
+  expect(descResult.Items?.[0]).toEqual({ TEST_PK: 1, TEST_SK: 30, value: 'c' })
+  expect(descResult.Items?.[1]).toEqual({ TEST_PK: 1, TEST_SK: 20, value: 'b' })
+  expect(descResult.Items?.[2]).toEqual({ TEST_PK: 1, TEST_SK: 10, value: 'a' })
+})
+
+test('queryOnePage with ScanIndexForward and SK condition', async () => {
+  const db = ddb()
+
+  // Insert items
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'A', value: 10 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'B', value: 20 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'C', value: 30 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'D', value: 40 } })
+
+  const result = await db.queryOnePage({
+    ...PKANDSK_TABLE_REQUEST,
+    KeyConditionExpression: 'TEST_PK = :pk AND TEST_SK >= :sk',
+    ExpressionAttributeValues: { ':pk': 1, ':sk': 'B' },
+    ScanIndexForward: false
+  })
+
+  expect(result.Items).toHaveLength(3)
+  expect(result.Items?.[0]).toEqual({ TEST_PK: 1, TEST_SK: 'D', value: 40 })
+  expect(result.Items?.[1]).toEqual({ TEST_PK: 1, TEST_SK: 'C', value: 30 })
+  expect(result.Items?.[2]).toEqual({ TEST_PK: 1, TEST_SK: 'B', value: 20 })
+})

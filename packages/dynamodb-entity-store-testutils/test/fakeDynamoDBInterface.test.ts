@@ -1171,3 +1171,357 @@ test('queryOnePage with ScanIndexForward and SK condition', async () => {
   expect(result.Items?.[1]).toEqual({ TEST_PK: 1, TEST_SK: 'C', value: 30 })
   expect(result.Items?.[2]).toEqual({ TEST_PK: 1, TEST_SK: 'B', value: 20 })
 })
+
+// GSI Tests
+
+function ddbWithGSI() {
+  return new FakeDynamoDBInterface({
+    testTable: {
+      pkName: 'PK',
+      skName: 'SK',
+      gsis: {
+        GSI1: { pkName: 'GSI1PK', skName: 'GSI1SK' },
+        GSI2: { pkName: 'GSI2PK' } // GSI without SK
+      }
+    }
+  })
+}
+
+const GSI_TABLE_REQUEST = { TableName: 'testTable' }
+
+test('queryOnePage with GSI - basic GSI query with PK only', async () => {
+  const db = ddbWithGSI()
+
+  // Insert items with GSI1 attributes
+  await db.put({
+    ...GSI_TABLE_REQUEST,
+    Item: { PK: 'ITEM#1', SK: 'A', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#100', value: 10 }
+  })
+  await db.put({
+    ...GSI_TABLE_REQUEST,
+    Item: { PK: 'ITEM#2', SK: 'B', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#200', value: 20 }
+  })
+  await db.put({
+    ...GSI_TABLE_REQUEST,
+    Item: { PK: 'ITEM#3', SK: 'C', GSI1PK: 'USER#bob', GSI1SK: 'ORDER#300', value: 30 }
+  })
+
+  const result = await db.queryOnePage({
+    ...GSI_TABLE_REQUEST,
+    IndexName: 'GSI1',
+    KeyConditionExpression: 'GSI1PK = :gsi1pk',
+    ExpressionAttributeValues: { ':gsi1pk': 'USER#alice' }
+  })
+
+  expect(result.Items).toHaveLength(2)
+  expect(result.Items).toContainEqual({ PK: 'ITEM#1', SK: 'A', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#100', value: 10 })
+  expect(result.Items).toContainEqual({ PK: 'ITEM#2', SK: 'B', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#200', value: 20 })
+})
+
+test('queryOnePage with GSI - query with both PK and SK', async () => {
+  const db = ddbWithGSI()
+
+  await db.put({
+    ...GSI_TABLE_REQUEST,
+    Item: { PK: 'ITEM#1', SK: 'A', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#100', value: 10 }
+  })
+  await db.put({
+    ...GSI_TABLE_REQUEST,
+    Item: { PK: 'ITEM#2', SK: 'B', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#200', value: 20 }
+  })
+
+  const result = await db.queryOnePage({
+    ...GSI_TABLE_REQUEST,
+    IndexName: 'GSI1',
+    KeyConditionExpression: 'GSI1PK = :gsi1pk AND GSI1SK = :gsi1sk',
+    ExpressionAttributeValues: { ':gsi1pk': 'USER#alice', ':gsi1sk': 'ORDER#100' }
+  })
+
+  expect(result.Items).toHaveLength(1)
+  expect(result.Items).toContainEqual({ PK: 'ITEM#1', SK: 'A', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#100', value: 10 })
+})
+
+test('queryOnePage with GSI - sparse index behavior (items without GSI PK are excluded)', async () => {
+  const db = ddbWithGSI()
+
+  // Insert items, some with GSI attributes, some without
+  await db.put({
+    ...GSI_TABLE_REQUEST,
+    Item: { PK: 'ITEM#1', SK: 'A', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#100', value: 10 }
+  })
+  await db.put({
+    ...GSI_TABLE_REQUEST,
+    Item: { PK: 'ITEM#2', SK: 'B', value: 20 } // No GSI1 attributes
+  })
+  await db.put({
+    ...GSI_TABLE_REQUEST,
+    Item: { PK: 'ITEM#3', SK: 'C', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#200', value: 30 }
+  })
+
+  const result = await db.queryOnePage({
+    ...GSI_TABLE_REQUEST,
+    IndexName: 'GSI1',
+    KeyConditionExpression: 'GSI1PK = :gsi1pk',
+    ExpressionAttributeValues: { ':gsi1pk': 'USER#alice' }
+  })
+
+  // Should only return items that have GSI1PK attribute
+  expect(result.Items).toHaveLength(2)
+  expect(result.Items).toContainEqual({ PK: 'ITEM#1', SK: 'A', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#100', value: 10 })
+  expect(result.Items).toContainEqual({ PK: 'ITEM#3', SK: 'C', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#200', value: 30 })
+})
+
+test('queryOnePage with GSI - GSI without sort key', async () => {
+  const db = ddbWithGSI()
+
+  await db.put({
+    ...GSI_TABLE_REQUEST,
+    Item: { PK: 'ITEM#1', SK: 'A', GSI2PK: 'STATUS#active', value: 10 }
+  })
+  await db.put({
+    ...GSI_TABLE_REQUEST,
+    Item: { PK: 'ITEM#2', SK: 'B', GSI2PK: 'STATUS#active', value: 20 }
+  })
+  await db.put({
+    ...GSI_TABLE_REQUEST,
+    Item: { PK: 'ITEM#3', SK: 'C', GSI2PK: 'STATUS#inactive', value: 30 }
+  })
+
+  const result = await db.queryOnePage({
+    ...GSI_TABLE_REQUEST,
+    IndexName: 'GSI2',
+    KeyConditionExpression: 'GSI2PK = :gsi2pk',
+    ExpressionAttributeValues: { ':gsi2pk': 'STATUS#active' }
+  })
+
+  expect(result.Items).toHaveLength(2)
+  expect(result.Items).toContainEqual({ PK: 'ITEM#1', SK: 'A', GSI2PK: 'STATUS#active', value: 10 })
+  expect(result.Items).toContainEqual({ PK: 'ITEM#2', SK: 'B', GSI2PK: 'STATUS#active', value: 20 })
+})
+
+test('queryOnePage with GSI - SK comparison operators', async () => {
+  const db = ddbWithGSI()
+
+  await db.put({
+    ...GSI_TABLE_REQUEST,
+    Item: { PK: 'ITEM#1', SK: 'A', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#100', value: 10 }
+  })
+  await db.put({
+    ...GSI_TABLE_REQUEST,
+    Item: { PK: 'ITEM#2', SK: 'B', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#200', value: 20 }
+  })
+  await db.put({
+    ...GSI_TABLE_REQUEST,
+    Item: { PK: 'ITEM#3', SK: 'C', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#300', value: 30 }
+  })
+
+  const result = await db.queryOnePage({
+    ...GSI_TABLE_REQUEST,
+    IndexName: 'GSI1',
+    KeyConditionExpression: 'GSI1PK = :gsi1pk AND GSI1SK > :gsi1sk',
+    ExpressionAttributeValues: { ':gsi1pk': 'USER#alice', ':gsi1sk': 'ORDER#150' }
+  })
+
+  expect(result.Items).toHaveLength(2)
+  expect(result.Items).toContainEqual({ PK: 'ITEM#2', SK: 'B', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#200', value: 20 })
+  expect(result.Items).toContainEqual({ PK: 'ITEM#3', SK: 'C', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#300', value: 30 })
+})
+
+test('queryOnePage with GSI - begins_with function', async () => {
+  const db = ddbWithGSI()
+
+  await db.put({
+    ...GSI_TABLE_REQUEST,
+    Item: { PK: 'ITEM#1', SK: 'A', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#100', value: 10 }
+  })
+  await db.put({
+    ...GSI_TABLE_REQUEST,
+    Item: { PK: 'ITEM#2', SK: 'B', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#200', value: 20 }
+  })
+  await db.put({
+    ...GSI_TABLE_REQUEST,
+    Item: { PK: 'ITEM#3', SK: 'C', GSI1PK: 'USER#alice', GSI1SK: 'PAYMENT#100', value: 30 }
+  })
+
+  const result = await db.queryOnePage({
+    ...GSI_TABLE_REQUEST,
+    IndexName: 'GSI1',
+    KeyConditionExpression: 'GSI1PK = :gsi1pk AND begins_with(GSI1SK, :prefix)',
+    ExpressionAttributeValues: { ':gsi1pk': 'USER#alice', ':prefix': 'ORDER#' }
+  })
+
+  expect(result.Items).toHaveLength(2)
+  expect(result.Items).toContainEqual({ PK: 'ITEM#1', SK: 'A', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#100', value: 10 })
+  expect(result.Items).toContainEqual({ PK: 'ITEM#2', SK: 'B', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#200', value: 20 })
+})
+
+test('queryOnePage with GSI - BETWEEN operator', async () => {
+  const db = ddbWithGSI()
+
+  await db.put({
+    ...GSI_TABLE_REQUEST,
+    Item: { PK: 'ITEM#1', SK: 'A', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#100', value: 10 }
+  })
+  await db.put({
+    ...GSI_TABLE_REQUEST,
+    Item: { PK: 'ITEM#2', SK: 'B', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#200', value: 20 }
+  })
+  await db.put({
+    ...GSI_TABLE_REQUEST,
+    Item: { PK: 'ITEM#3', SK: 'C', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#300', value: 30 }
+  })
+
+  const result = await db.queryOnePage({
+    ...GSI_TABLE_REQUEST,
+    IndexName: 'GSI1',
+    KeyConditionExpression: 'GSI1PK = :gsi1pk AND GSI1SK BETWEEN :low AND :high',
+    ExpressionAttributeValues: { ':gsi1pk': 'USER#alice', ':low': 'ORDER#150', ':high': 'ORDER#250' }
+  })
+
+  expect(result.Items).toHaveLength(1)
+  expect(result.Items).toContainEqual({ PK: 'ITEM#2', SK: 'B', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#200', value: 20 })
+})
+
+test('queryOnePage with GSI - ScanIndexForward sorting', async () => {
+  const db = ddbWithGSI()
+
+  // Insert items in random order
+  await db.put({
+    ...GSI_TABLE_REQUEST,
+    Item: { PK: 'ITEM#3', SK: 'C', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#300', value: 30 }
+  })
+  await db.put({
+    ...GSI_TABLE_REQUEST,
+    Item: { PK: 'ITEM#1', SK: 'A', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#100', value: 10 }
+  })
+  await db.put({
+    ...GSI_TABLE_REQUEST,
+    Item: { PK: 'ITEM#2', SK: 'B', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#200', value: 20 }
+  })
+
+  // Ascending order (default)
+  const ascResult = await db.queryOnePage({
+    ...GSI_TABLE_REQUEST,
+    IndexName: 'GSI1',
+    KeyConditionExpression: 'GSI1PK = :gsi1pk',
+    ExpressionAttributeValues: { ':gsi1pk': 'USER#alice' },
+    ScanIndexForward: true
+  })
+
+  expect(ascResult.Items).toHaveLength(3)
+  expect(ascResult.Items?.[0].GSI1SK).toBe('ORDER#100')
+  expect(ascResult.Items?.[1].GSI1SK).toBe('ORDER#200')
+  expect(ascResult.Items?.[2].GSI1SK).toBe('ORDER#300')
+
+  // Descending order
+  const descResult = await db.queryOnePage({
+    ...GSI_TABLE_REQUEST,
+    IndexName: 'GSI1',
+    KeyConditionExpression: 'GSI1PK = :gsi1pk',
+    ExpressionAttributeValues: { ':gsi1pk': 'USER#alice' },
+    ScanIndexForward: false
+  })
+
+  expect(descResult.Items).toHaveLength(3)
+  expect(descResult.Items?.[0].GSI1SK).toBe('ORDER#300')
+  expect(descResult.Items?.[1].GSI1SK).toBe('ORDER#200')
+  expect(descResult.Items?.[2].GSI1SK).toBe('ORDER#100')
+})
+
+test('queryAllPages with GSI - returns all matching items', async () => {
+  const db = ddbWithGSI()
+
+  await db.put({
+    ...GSI_TABLE_REQUEST,
+    Item: { PK: 'ITEM#1', SK: 'A', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#100', value: 10 }
+  })
+  await db.put({
+    ...GSI_TABLE_REQUEST,
+    Item: { PK: 'ITEM#2', SK: 'B', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#200', value: 20 }
+  })
+  await db.put({
+    ...GSI_TABLE_REQUEST,
+    Item: { PK: 'ITEM#3', SK: 'C', GSI1PK: 'USER#bob', GSI1SK: 'ORDER#300', value: 30 }
+  })
+
+  const results = await db.queryAllPages({
+    ...GSI_TABLE_REQUEST,
+    IndexName: 'GSI1',
+    KeyConditionExpression: 'GSI1PK = :gsi1pk',
+    ExpressionAttributeValues: { ':gsi1pk': 'USER#alice' }
+  })
+
+  expect(results).toHaveLength(1)
+  expect(results[0].Items).toHaveLength(2)
+  expect(results[0].Items).toContainEqual({ PK: 'ITEM#1', SK: 'A', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#100', value: 10 })
+  expect(results[0].Items).toContainEqual({ PK: 'ITEM#2', SK: 'B', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#200', value: 20 })
+})
+
+test('queryOnePage with GSI - returns all attributes (not just keys)', async () => {
+  const db = ddbWithGSI()
+
+  await db.put({
+    ...GSI_TABLE_REQUEST,
+    Item: {
+      PK: 'ITEM#1',
+      SK: 'A',
+      GSI1PK: 'USER#alice',
+      GSI1SK: 'ORDER#100',
+      value: 10,
+      name: 'Test Item',
+      status: 'active',
+      metadata: { foo: 'bar' }
+    }
+  })
+
+  const result = await db.queryOnePage({
+    ...GSI_TABLE_REQUEST,
+    IndexName: 'GSI1',
+    KeyConditionExpression: 'GSI1PK = :gsi1pk',
+    ExpressionAttributeValues: { ':gsi1pk': 'USER#alice' }
+  })
+
+  expect(result.Items).toHaveLength(1)
+  expect(result.Items?.[0]).toEqual({
+    PK: 'ITEM#1',
+    SK: 'A',
+    GSI1PK: 'USER#alice',
+    GSI1SK: 'ORDER#100',
+    value: 10,
+    name: 'Test Item',
+    status: 'active',
+    metadata: { foo: 'bar' }
+  })
+})
+
+test('queryOnePage with GSI - throws error for non-existent GSI', async () => {
+  const db = ddbWithGSI()
+
+  await expect(
+    db.queryOnePage({
+      ...GSI_TABLE_REQUEST,
+      IndexName: 'NonExistentGSI',
+      KeyConditionExpression: 'SomePK = :pk',
+      ExpressionAttributeValues: { ':pk': 'value' }
+    })
+  ).rejects.toThrow('GSI NonExistentGSI not configured')
+})
+
+test('queryOnePage with GSI - accepts IndexName parameter', async () => {
+  const db = ddbWithGSI()
+
+  await db.put({
+    ...GSI_TABLE_REQUEST,
+    Item: { PK: 'ITEM#1', SK: 'A', GSI1PK: 'USER#alice', value: 10 }
+  })
+
+  // Should not throw error about unsupported IndexName parameter
+  const result = await db.queryOnePage({
+    ...GSI_TABLE_REQUEST,
+    IndexName: 'GSI1',
+    KeyConditionExpression: 'GSI1PK = :gsi1pk',
+    ExpressionAttributeValues: { ':gsi1pk': 'USER#alice' }
+  })
+
+  expect(result.Items).toHaveLength(1)
+})

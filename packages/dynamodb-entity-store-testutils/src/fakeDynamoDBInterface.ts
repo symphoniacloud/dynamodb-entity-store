@@ -21,10 +21,7 @@ import {
 } from '@aws-sdk/lib-dynamodb'
 import { DynamoDBInterface } from '@symphoniacloud/dynamodb-entity-store'
 import { evaluateConditionExpression } from './conditionExpressionEvaluator.js'
-import {
-  parseKeyConditionExpression,
-  matchesKeyCondition
-} from './keyConditionExpressionEvaluator.js'
+import { matchesKeyCondition, parseKeyConditionExpression } from './keyConditionExpressionEvaluator.js'
 
 export const METADATA = { $metadata: {} }
 
@@ -41,7 +38,12 @@ const supportedParamKeysByFunction = {
   get: ['TableName', 'Key', 'ConsistentRead', 'ReturnConsumedCapacity'],
   delete: ['TableName', 'Key', 'ConsistentRead', 'ReturnConsumedCapacity', 'ReturnItemCollectionMetrics'],
   batchWrite: ['RequestItems', 'ReturnConsumedCapacity', 'ReturnItemCollectionMetrics'],
-  transactionWrite: ['TransactItems', 'ReturnConsumedCapacity', 'ReturnItemCollectionMetrics', 'ClientRequestToken'],
+  transactionWrite: [
+    'TransactItems',
+    'ReturnConsumedCapacity',
+    'ReturnItemCollectionMetrics',
+    'ClientRequestToken'
+  ],
   queryOnePage: [
     'TableName',
     'KeyConditionExpression',
@@ -51,7 +53,8 @@ const supportedParamKeysByFunction = {
     'ExclusiveStartKey',
     'ConsistentRead',
     'ReturnConsumedCapacity',
-    'ScanIndexForward'
+    'ScanIndexForward',
+    'IndexName'
   ],
   queryAllPages: [
     'TableName',
@@ -60,7 +63,8 @@ const supportedParamKeysByFunction = {
     'ExpressionAttributeValues',
     'ConsistentRead',
     'ReturnConsumedCapacity',
-    'ScanIndexForward'
+    'ScanIndexForward',
+    'IndexName'
   ],
   scanOnePage: ['TableName', 'ConsistentRead', 'ReturnConsumedCapacity'],
   scanAllPages: ['TableName', 'ConsistentRead', 'ReturnConsumedCapacity']
@@ -90,13 +94,22 @@ function checkSupportedParams(
   }
 }
 
+export interface KeyDefinition {
+  pkName: string
+  skName?: string
+}
+
+export interface TableDefinition extends KeyDefinition {
+  gsis?: Record<string, KeyDefinition>
+}
+
 // !! CAREFUL - this is not fully implemented!! !!
 export class FakeDynamoDBInterface implements DynamoDBInterface {
   public readonly tables: Record<string, FakeTable> = {}
 
-  constructor(tableDefs: Record<string, { pkName: string; skName?: string }>) {
-    for (const [tableName, { pkName, skName }] of Object.entries(tableDefs)) {
-      this.tables[tableName] = new FakeTable(pkName, skName)
+  constructor(tableDefs: Record<string, TableDefinition>) {
+    for (const [tableName, tableDef] of Object.entries(tableDefs)) {
+      this.tables[tableName] = new FakeTable(tableDef)
     }
 
     // Needed because of Javascript 'this' behavior when using dynamic binding
@@ -217,6 +230,9 @@ export class FakeDynamoDBInterface implements DynamoDBInterface {
       throw new Error('KeyConditionExpression is required for query')
     }
 
+    const table = this.getTableFrom(params)
+    const keySchema = table.getKeySchema(params.IndexName)
+
     // Parse the key condition
     const keyCondition = parseKeyConditionExpression(
       params.KeyConditionExpression,
@@ -224,16 +240,19 @@ export class FakeDynamoDBInterface implements DynamoDBInterface {
       params.ExpressionAttributeValues
     )
 
-    // Get all items and filter by key condition
-    const table = this.getTableFrom(params)
-    const allItems = table.allItems()
+    let allItems = table.allItems()
+
+    // For GSI queries, filter out items that don't have the GSI PK attribute (sparse index behavior)
+    if (params.IndexName) {
+      allItems = allItems.filter((item) => item[keySchema.pkName] !== undefined)
+    }
+
     const filteredItems = allItems.filter((item) => matchesKeyCondition(item, keyCondition))
 
-    // Sort by sort key if the table has one
     // In DynamoDB, query results are always sorted by SK if it exists
     // ScanIndexForward defaults to true (ascending) if not specified
     const scanIndexForward = params.ScanIndexForward !== false
-    const skAttributeName = table.getSkName()
+    const skAttributeName = keySchema.skName
 
     if (skAttributeName) {
       filteredItems.sort((a, b) => {
@@ -316,16 +335,14 @@ interface TableKey {
 }
 
 class FakeTable {
-  private readonly pkName: string
-  private readonly skName: string | undefined
+  private readonly definition: TableDefinition
   private readonly items: Map<TableKey, Record<string, NativeAttributeValue>> = new Map<
     TableKey,
     Record<string, NativeAttributeValue>
   >()
 
-  constructor(pkName: string, skName: string | undefined) {
-    this.pkName = pkName
-    this.skName = skName
+  constructor(definition: TableDefinition) {
+    this.definition = definition
   }
 
   putItem(item: Record<string, NativeAttributeValue> | undefined) {
@@ -351,17 +368,24 @@ class FakeTable {
     return Array.from(this.items.values())
   }
 
-  getSkName(): string | undefined {
-    return this.skName
+  getKeySchema(indexName?: string): { pkName: string; skName?: string } {
+    if (indexName) {
+      const gsiDefinition = (this.definition.gsis ?? {})[indexName]
+      if (!gsiDefinition) throw new Error(`GSI ${indexName} not configured`)
+      return gsiDefinition
+    }
+    return this.definition
   }
 
   private keyFromItem(item: Record<string, NativeAttributeValue> | undefined): TableKey {
+    const { pkName, skName } = this.definition
+
     if (!item) throw new Error('Item is undefined')
-    const pkValue = item[this.pkName]
-    if (!pkValue) throw new Error(`PK field [${this.pkName}] is not found`)
-    if (this.skName) {
-      const skValue = item[this.skName]
-      if (!skValue) throw new Error(`SK field [${this.skName}] is not found`)
+    const pkValue = item[pkName]
+    if (!pkValue) throw new Error(`PK field [${pkName}] is not found`)
+    if (skName) {
+      const skValue = item[skName]
+      if (!skValue) throw new Error(`SK field [${skName}] is not found`)
       return { PK: pkValue, SK: skValue }
     } else {
       return { PK: pkValue }

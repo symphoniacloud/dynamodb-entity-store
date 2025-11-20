@@ -29,7 +29,7 @@ export async function initAWSResources() {
     farmTableName: findTableName('FarmTableName')
   }
 
-  console.log(JSON.stringify(tableNames))
+  // console.log(JSON.stringify(tableNames))
 
   return {
     documentClient,

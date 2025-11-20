@@ -153,7 +153,7 @@ describe('standard single table', () => {
 
       // getOrThrow
       expect(await sheepOperations.getOrThrow(shaunIdentifier)).toEqual(shaunTheSheep)
-      expect(async () => await sheepOperations.getOrThrow(bobIdentifier)).rejects.toThrowError(
+      await expect(async () => await sheepOperations.getOrThrow(bobIdentifier)).rejects.toThrowError(
         'Unable to find item for entity [sheep] with key source {"breed":"merino","name":"bob"}'
       )
 
@@ -225,7 +225,7 @@ describe('standard single table', () => {
       // Valid condition should be successful
       await sheepOperations.put(shaunTheSheep, { conditionExpression: 'attribute_not_exists(PK)' })
       // Invalid condition should fail
-      expect(
+      await expect(
         async () =>
           await sheepOperations.put(shaunTheSheep, { conditionExpression: 'attribute_not_exists(PK)' })
       ).rejects.toThrowError('The conditional request failed')
@@ -242,7 +242,7 @@ describe('standard single table', () => {
         }
       })
       // Invalid condition should fail
-      expect(
+      await expect(
         async () =>
           await sheepOperations.put(shaunTheSheep, {
             conditionExpression: 'NOT #name = :invalidname',
@@ -256,7 +256,7 @@ describe('standard single table', () => {
       ).rejects.toThrowError('The conditional request failed')
 
       await sheepOperations.put(shaunTheSheep)
-      expect(
+      await expect(
         async () =>
           await sheepOperations.update(shaunIdentifier, {
             update: {
@@ -274,7 +274,7 @@ describe('standard single table', () => {
       ).rejects.toThrowError('The conditional request failed')
 
       // Shouldn't be able to delete bob if asserting he exists (we haven't previous put him here)
-      expect(
+      await expect(
         async () =>
           await sheepOperations.delete(bobIdentifier, {
             conditionExpression: 'attribute_exists(PK)'
@@ -351,7 +351,7 @@ describe('standard single table', () => {
       })
 
       test('scan disabled by default', async () => {
-        expect(async () => await sheepOperations.scanOnePage()).rejects.toThrowError(
+        await expect(async () => await sheepOperations.scanOnePage()).rejects.toThrowError(
           'Scan operations are disabled for this store'
         )
       })
@@ -418,7 +418,7 @@ describe('standard single table', () => {
 
       // The actual attributes from the existing record in the table are available in the 'Item' field of the error
       // This is just the error generated in the AWS SDK
-      expect(
+      await expect(
         async () =>
           await sheepOperations.advancedOperations.put(
             { ...shaunTheSheep, ageInYears: 31 },
@@ -541,7 +541,7 @@ describe('standard single table', () => {
       })
 
       test('scan disabled by default', async () => {
-        expect(async () => await sheepOperations.advancedOperations.scanOnePage()).rejects.toThrowError(
+        await expect(async () => await sheepOperations.advancedOperations.scanOnePage()).rejects.toThrowError(
           'Scan operations are disabled for this store'
         )
       })
@@ -743,10 +743,10 @@ describe('standard single table', () => {
       })
 
       test('scan GSI disabled by default', async () => {
-        expect(async () => await chickenOperations.scanOnePageWithGsi()).rejects.toThrowError(
+        await expect(async () => await chickenOperations.scanOnePageWithGsi()).rejects.toThrowError(
           'Scan operations are disabled for this store'
         )
-        expect(async () => await chickenOperations.scanAllWithGsi()).rejects.toThrowError(
+        await expect(async () => await chickenOperations.scanAllWithGsi()).rejects.toThrowError(
           'Scan operations are disabled for this store'
         )
       })
@@ -849,7 +849,7 @@ describe('standard single table', () => {
 
     test('conditition check', async () => {
       // Should fail because bob doesn't exist
-      expect(
+      await expect(
         async () =>
           await store.transactions
             .buildWriteTransaction(SHEEP_ENTITY)
@@ -1001,7 +1001,7 @@ describe('standard single table', () => {
       await store.for(SHEEP_ENTITY).put(shaunTheSheep)
       await store.for(CHICKEN_ENTITY).put(ginger)
 
-      expect(
+      await expect(
         async () => await store.forMultiple([SHEEP_ENTITY, CHICKEN_ENTITY]).scanOnePage()
       ).rejects.toThrowError('Scan operations are disabled for this store')
 
@@ -1288,7 +1288,7 @@ describe('multi table standard config', () => {
 
     expect(await store.for(SHEEP_ENTITY).getOrThrow(shaunIdentifier)).toEqual(shaunTheSheep)
     expect(await store.for(DOG_ENTITY).getOrThrow(chesterDog)).toEqual(chesterDog)
-    expect(async () => await store.for(CHICKEN_ENTITY).getOrThrow(ginger)).rejects.toThrowError(
+    await expect(async () => await store.for(CHICKEN_ENTITY).getOrThrow(ginger)).rejects.toThrowError(
       'Unable to locate table that supports entity type chicken'
     )
 

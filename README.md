@@ -504,6 +504,13 @@ Name: Worthy Farm, Address: Glastonbury, England
 Name: Sunflower Farm, Address: Green Shoots Road, Honesdale, PA
 ```
 
+## Testing support
+
+A companion package - [`@symphoniacloud/dynamodb-entity-store-testutils`](https://www.npmjs.com/package/@symphoniacloud/dynamodb-entity-store-testutils) -
+provides `FakeDynamoDBInterface`: an in-memory fake of the library's DynamoDB wrapper, so that your unit tests
+can exercise code that uses Entity Store without connecting to DynamoDB.
+See [its README](packages/dynamodb-entity-store-testutils/README.md) for details.
+
 ## Next steps
 
 If you want to read more on how to use DynamoDB Entity Store, then checkout [the manual](documentation/README.md), which also covers topics not included in this README:

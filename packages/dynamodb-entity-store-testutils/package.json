@@ -26,7 +26,7 @@
     "lint": "eslint --max-warnings=0 --fix-dry-run \"{src,test}/**/*.{js,ts}\"",
     "format": "prettier --check \"{src,test}/**/*.{js,ts}\"",
     "test": "vitest run",
-    "build": "rm -rf dist && tsc -p tsconfig.build.json && cp ../../README.md . && cp ../../LICENSE .",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json && cp ../../LICENSE .",
     "local": "tsc && npm run lint && npm run test && npm run build",
     "prepublishOnly": "npm run local"
   },

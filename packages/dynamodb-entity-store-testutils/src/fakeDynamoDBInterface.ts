@@ -103,7 +103,12 @@ export interface TableDefinition extends KeyDefinition {
   gsis?: Record<string, KeyDefinition>
 }
 
-// !! CAREFUL - this is not fully implemented!! !!
+/**
+ * In-memory fake of DynamoDBInterface, for use in unit / in-process tests. NOT for production use.
+ *
+ * Only a subset of DynamoDB behavior is implemented, but the contract is fail-fast: any operation
+ * or parameter that isn't supported throws an error, rather than silently misbehaving.
+ */
 export class FakeDynamoDBInterface implements DynamoDBInterface {
   public readonly tables: Record<string, FakeTable> = {}
 
@@ -204,13 +209,30 @@ export class FakeDynamoDBInterface implements DynamoDBInterface {
     checkSupportedParams(params, 'queryOnePage')
     const items = this.executeQuery(params)
 
-    // Apply limit if specified
-    const limitedItems = params.Limit ? items.slice(0, params.Limit) : items
+    // Start after ExclusiveStartKey, if specified
+    const startIndex = params.ExclusiveStartKey ? indexOfItemWithKey(items, params.ExclusiveStartKey) + 1 : 0
+    const remainingItems = items.slice(startIndex)
+
+    // Apply limit if specified, returning LastEvaluatedKey when there are further items
+    const isTruncated = params.Limit !== undefined && params.Limit < remainingItems.length
+    const pageItems = isTruncated ? remainingItems.slice(0, params.Limit) : remainingItems
 
     return {
-      Items: limitedItems,
+      Items: pageItems,
+      ...(isTruncated
+        ? { LastEvaluatedKey: this.lastEvaluatedKeyFor(params, pageItems[pageItems.length - 1]) }
+        : {}),
       ...METADATA
     }
+  }
+
+  // As per real DynamoDB behavior, LastEvaluatedKey contains the table key attributes,
+  // plus the index key attributes when querying a GSI
+  private lastEvaluatedKeyFor(params: QueryCommandInput, lastItem: Record<string, NativeAttributeValue>) {
+    const table = this.getTableFrom(params)
+    return Object.fromEntries(
+      table.keyAttributeNames(params.IndexName).map((attributeName) => [attributeName, lastItem[attributeName]])
+    )
   }
 
   async queryAllPages(params: QueryCommandInput): Promise<QueryCommandOutput[]> {
@@ -329,6 +351,19 @@ export class FakeDynamoDBInterface implements DynamoDBInterface {
   }
 }
 
+// An item matches a key if every attribute on the key is equal on the item. This handles
+// both table keys (PK / SK) and the key format used for GSI queries (table key + index key)
+function indexOfItemWithKey(
+  items: Record<string, NativeAttributeValue>[],
+  key: Record<string, NativeAttributeValue>
+): number {
+  const index = items.findIndex((item) =>
+    Object.entries(key).every(([attributeName, value]) => item[attributeName] === value)
+  )
+  if (index < 0) throw new Error('ExclusiveStartKey does not match any item in the query result')
+  return index
+}
+
 interface TableKey {
   PK: NativeAttributeValue
   SK?: NativeAttributeValue
@@ -366,6 +401,17 @@ class FakeTable {
 
   allItems() {
     return Array.from(this.items.values())
+  }
+
+  keyAttributeNames(indexName?: string): string[] {
+    const { pkName, skName } = this.definition
+    const names = [pkName, ...(skName ? [skName] : [])]
+    if (indexName) {
+      const indexSchema = this.getKeySchema(indexName)
+      names.push(indexSchema.pkName)
+      if (indexSchema.skName) names.push(indexSchema.skName)
+    }
+    return names
   }
 
   getKeySchema(indexName?: string): { pkName: string; skName?: string } {

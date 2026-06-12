@@ -55,6 +55,10 @@ jobs:
       - run: npm version $RELEASE_VERSION --no-git-tag-version --workspace=@symphoniacloud/dynamodb-entity-store
       - run: npm version $RELEASE_VERSION --no-git-tag-version --workspace=@symphoniacloud/dynamodb-entity-store-testutils
 
+      # Pin testutils' dependency on the main package to this release's version (it is "*" in
+      # the repo for local workspace resolution). Releases of the two packages are in lockstep.
+      - run: npm pkg set "dependencies.@symphoniacloud/dynamodb-entity-store=${RELEASE_VERSION#v}" --workspace=@symphoniacloud/dynamodb-entity-store-testutils
+
       # Perform publish with appropriate tag and provenance, which will also run prepublishOnly
       # Uses npm provenance (OIDC) instead of long-lived token for security
       # Publish main package first, then testutils (which depends on main)

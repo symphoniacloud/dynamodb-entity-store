@@ -780,6 +780,100 @@ test('queryOnePage with Limit', async () => {
   })
 
   expect(result.Items).toHaveLength(2)
+  expect(result.LastEvaluatedKey).toEqual({ TEST_PK: 1, TEST_SK: 'B' })
+})
+
+test('queryOnePage pages through all items with Limit and ExclusiveStartKey', async () => {
+  const db = ddb()
+
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'A', value: 10 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'B', value: 20 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'C', value: 30 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'D', value: 40 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'E', value: 50 } })
+
+  const pages = []
+  let lastEvaluatedKey = undefined
+  do {
+    const result = await db.queryOnePage({
+      ...PKANDSK_TABLE_REQUEST,
+      KeyConditionExpression: 'TEST_PK = :pk',
+      ExpressionAttributeValues: { ':pk': 1 },
+      Limit: 2,
+      ...(lastEvaluatedKey ? { ExclusiveStartKey: lastEvaluatedKey } : {})
+    })
+    pages.push(result.Items)
+    lastEvaluatedKey = result.LastEvaluatedKey
+  } while (lastEvaluatedKey)
+
+  expect(pages).toHaveLength(3)
+  expect(pages[0]?.map((item) => item.TEST_SK)).toEqual(['A', 'B'])
+  expect(pages[1]?.map((item) => item.TEST_SK)).toEqual(['C', 'D'])
+  expect(pages[2]?.map((item) => item.TEST_SK)).toEqual(['E'])
+})
+
+test('queryOnePage omits LastEvaluatedKey when Limit equals remaining item count', async () => {
+  const db = ddb()
+
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'A', value: 10 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'B', value: 20 } })
+
+  const result = await db.queryOnePage({
+    ...PKANDSK_TABLE_REQUEST,
+    KeyConditionExpression: 'TEST_PK = :pk',
+    ExpressionAttributeValues: { ':pk': 1 },
+    Limit: 2
+  })
+
+  expect(result.Items).toHaveLength(2)
+  expect(result.LastEvaluatedKey).toBeUndefined()
+})
+
+test('queryOnePage pages with Limit, ExclusiveStartKey, and ScanIndexForward false', async () => {
+  const db = ddb()
+
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'A', value: 10 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'B', value: 20 } })
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'C', value: 30 } })
+
+  const firstPage = await db.queryOnePage({
+    ...PKANDSK_TABLE_REQUEST,
+    KeyConditionExpression: 'TEST_PK = :pk',
+    ExpressionAttributeValues: { ':pk': 1 },
+    Limit: 2,
+    ScanIndexForward: false
+  })
+
+  expect(firstPage.Items?.map((item) => item.TEST_SK)).toEqual(['C', 'B'])
+  expect(firstPage.LastEvaluatedKey).toEqual({ TEST_PK: 1, TEST_SK: 'B' })
+
+  const secondPage = await db.queryOnePage({
+    ...PKANDSK_TABLE_REQUEST,
+    KeyConditionExpression: 'TEST_PK = :pk',
+    ExpressionAttributeValues: { ':pk': 1 },
+    Limit: 2,
+    ScanIndexForward: false,
+    ExclusiveStartKey: firstPage.LastEvaluatedKey
+  })
+
+  expect(secondPage.Items?.map((item) => item.TEST_SK)).toEqual(['A'])
+  expect(secondPage.LastEvaluatedKey).toBeUndefined()
+})
+
+test('queryOnePage throws when ExclusiveStartKey does not match any item', async () => {
+  const db = ddb()
+
+  await db.put({ ...PKANDSK_TABLE_REQUEST, Item: { TEST_PK: 1, TEST_SK: 'A', value: 10 } })
+
+  await expect(
+    async () =>
+      await db.queryOnePage({
+        ...PKANDSK_TABLE_REQUEST,
+        KeyConditionExpression: 'TEST_PK = :pk',
+        ExpressionAttributeValues: { ':pk': 1 },
+        ExclusiveStartKey: { TEST_PK: 1, TEST_SK: 'Z' }
+      })
+  ).rejects.toThrowError('ExclusiveStartKey does not match any item in the query result')
 })
 
 test('queryOnePage with ExpressionAttributeNames', async () => {
@@ -1216,6 +1310,52 @@ test('queryOnePage with GSI - basic GSI query with PK only', async () => {
   expect(result.Items).toHaveLength(2)
   expect(result.Items).toContainEqual({ PK: 'ITEM#1', SK: 'A', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#100', value: 10 })
   expect(result.Items).toContainEqual({ PK: 'ITEM#2', SK: 'B', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#200', value: 20 })
+})
+
+test('queryOnePage with GSI - pages with Limit and ExclusiveStartKey', async () => {
+  const db = ddbWithGSI()
+
+  await db.put({
+    ...GSI_TABLE_REQUEST,
+    Item: { PK: 'ITEM#1', SK: 'A', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#100', value: 10 }
+  })
+  await db.put({
+    ...GSI_TABLE_REQUEST,
+    Item: { PK: 'ITEM#2', SK: 'B', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#200', value: 20 }
+  })
+  await db.put({
+    ...GSI_TABLE_REQUEST,
+    Item: { PK: 'ITEM#3', SK: 'C', GSI1PK: 'USER#alice', GSI1SK: 'ORDER#300', value: 30 }
+  })
+
+  const firstPage = await db.queryOnePage({
+    ...GSI_TABLE_REQUEST,
+    IndexName: 'GSI1',
+    KeyConditionExpression: 'GSI1PK = :gsi1pk',
+    ExpressionAttributeValues: { ':gsi1pk': 'USER#alice' },
+    Limit: 2
+  })
+
+  expect(firstPage.Items?.map((item) => item.GSI1SK)).toEqual(['ORDER#100', 'ORDER#200'])
+  // LastEvaluatedKey for a GSI query contains both the table key and the index key
+  expect(firstPage.LastEvaluatedKey).toEqual({
+    PK: 'ITEM#2',
+    SK: 'B',
+    GSI1PK: 'USER#alice',
+    GSI1SK: 'ORDER#200'
+  })
+
+  const secondPage = await db.queryOnePage({
+    ...GSI_TABLE_REQUEST,
+    IndexName: 'GSI1',
+    KeyConditionExpression: 'GSI1PK = :gsi1pk',
+    ExpressionAttributeValues: { ':gsi1pk': 'USER#alice' },
+    Limit: 2,
+    ExclusiveStartKey: firstPage.LastEvaluatedKey
+  })
+
+  expect(secondPage.Items?.map((item) => item.GSI1SK)).toEqual(['ORDER#300'])
+  expect(secondPage.LastEvaluatedKey).toBeUndefined()
 })
 
 test('queryOnePage with GSI - query with both PK and SK', async () => {
